@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nos actions — Dogcytocin et Racines</title>
+<meta name="description" content="Sauvetage et soin des chiens, accueil de bénévoles isolés ou en situation de handicap.">
+<link rel="icon" type="image/jpeg" href="images/logo.jpg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="password-gate">
+  <div class="gate-box">
+    <img src="images/logo.jpg" alt="Dogcytocin et Racines" class="gate-logo">
+    <h2>Accès protégé</h2>
+    <p>Ce site est en cours de préparation. Merci d'entrer le mot de passe pour continuer.</p>
+    <form id="gate-form" autocomplete="off">
+      <input type="password" id="gate-password" placeholder="Mot de passe" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Entrer</button>
+    </form>
+    <p id="gate-error" class="gate-error" hidden>Mot de passe incorrect.</p>
+  </div>
+</div>
+<script>
+  if (localStorage.getItem('dogcytocin_unlocked') === 'true') {
+    document.getElementById('password-gate').style.display = 'none';
+  }
+</script>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <img src="images/logo.jpg" alt="Dogcytocin et Racines" class="logo-mark">
+      <span class="logo-text">
+        <span class="name">Dogcytocin et Racines</span>
+        <span class="tagline">Protéger. Combattre. Sauver.</span>
+      </span>
+    </a>
+    <button class="nav-toggle" aria-label="Ouvrir le menu">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="notre-histoire.html">Notre histoire</a></li>
+      <li><a href="nos-actions.html" class="active">Nos actions</a></li>
+      <li><a href="nous-soutenir.html">Nous soutenir</a></li>
+    </ul>
+  </div>
+</header>
+
+<div class="page-header">
+  <div class="container">
+    <span class="kicker">Ce que nous faisons</span>
+    <h1>Nos actions</h1>
+    <div class="divider on-green"></div>
+    <p>Deux missions, une même importance : sauver les chiens, et accueillir les humains
+      qui trouvent ici un endroit où se rendre utiles.</p>
+  </div>
+</div>
+
+<section>
+  <div class="container">
+    <div class="actions-grid">
+
+      <div class="action-block fade-in">
+        <span class="icon">🐕</span>
+        <h2>Sauvetage &amp; soin des chiens</h2>
+        <p>Nous accueillons des chiens abandonnés, oubliés, maltraités ou condamnés ailleurs — beaucoup
+          venus de la fourrière de Târgu Jiu, en Roumanie. Ici, nous leur offrons du temps et de
+          l'espace : le temps de souffler, de courir, de se soigner, et d'apprendre ou de réapprendre
+          à faire confiance.</p>
+        <p>Notre objectif n'est pas de placer un chien le plus vite possible, mais de lui trouver la
+          bonne famille — celle qui correspond à son caractère, à son histoire et parfois à ses
+          blessures.</p>
+        <ul>
+          <li>Sortie de fourrière et mise à l'abri</li>
+          <li>Soins vétérinaires et convalescence</li>
+          <li>Socialisation et rééducation au rythme du chien</li>
+          <li>Recherche de familles adaptées, pas seulement disponibles</li>
+        </ul>
+      </div>
+
+      <div class="action-block fade-in">
+        <span class="icon">🤝</span>
+        <h2>Accueil de bénévoles</h2>
+        <p>Dogcytocin et Racines n'a jamais eu vocation à être uniquement un refuge. Nous voulons aussi
+          être un endroit pour les personnes isolées, en situation de handicap, en reconstruction, ou
+          simplement à la recherche d'un lieu où se sentir utiles.</p>
+        <p>Il y a toujours des choses utiles à faire ici — chacun avec ses possibilités, ce qu'il sait
+          faire, ou simplement l'envie d'apprendre.</p>
+        <ul>
+          <li>S'occuper des animaux au quotidien</li>
+          <li>Entretenir les espaces, planter, réparer, construire</li>
+          <li>Créer, écrire, photographier, entretenir les chemins</li>
+          <li>Trouver sa place, à son propre rythme</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="progress-box fade-in">
+      <h2>Les chantiers en cours</h2>
+      <p>Le terrain se transforme petit à petit, avec les moyens du bord et beaucoup d'huile de coude.</p>
+      <div class="progress-photos">
+        <figure>
+          <img src="images/chantier-renovation.jpg" alt="Rénovation d'une dépendance">
+          <figcaption>Rénovation des dépendances</figcaption>
+        </figure>
+        <figure>
+          <img src="images/chantier-debroussaillage.jpg" alt="Débroussaillage du terrain">
+          <figcaption>Aménagement des parcs</figcaption>
+        </figure>
+        <figure>
+          <img src="images/chantier-construction.jpg" alt="Travaux de construction">
+          <figcaption>Travaux de construction</figcaption>
+        </figure>
+        <figure>
+          <img src="images/chantier-vie-refuge.jpg" alt="Un chien du refuge">
+          <figcaption>La vie continue pendant les travaux</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-logo"><img src="images/logo.jpg" alt="Dogcytocin et Racines">Dogcytocin et Racines</div>
+    <p>Refuge pour chiens en Bretagne</p>
+    <div class="footer-contact">
+      <a href="tel:+33659120271">📞 +33 6 59 12 02 71</a>
+      <a href="https://wa.me/33659120271" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a href="mailto:contact@dogcytocin-racines.fr">✉️ contact@dogcytocin-racines.fr</a>
+      <span>Messenger : Dogcytocin &amp; Racines</span>
+    </div>
+    <p class="footer-credit">Site réalisé par Hugo H</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

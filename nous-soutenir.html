@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nous soutenir — Dogcytocin et Racines</title>
+<meta name="description" content="Dons, matériel, temps, compétences, famille d'accueil : plusieurs façons de soutenir Dogcytocin et Racines.">
+<link rel="icon" type="image/jpeg" href="images/logo.jpg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="password-gate">
+  <div class="gate-box">
+    <img src="images/logo.jpg" alt="Dogcytocin et Racines" class="gate-logo">
+    <h2>Accès protégé</h2>
+    <p>Ce site est en cours de préparation. Merci d'entrer le mot de passe pour continuer.</p>
+    <form id="gate-form" autocomplete="off">
+      <input type="password" id="gate-password" placeholder="Mot de passe" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Entrer</button>
+    </form>
+    <p id="gate-error" class="gate-error" hidden>Mot de passe incorrect.</p>
+  </div>
+</div>
+<script>
+  if (localStorage.getItem('dogcytocin_unlocked') === 'true') {
+    document.getElementById('password-gate').style.display = 'none';
+  }
+</script>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <img src="images/logo.jpg" alt="Dogcytocin et Racines" class="logo-mark">
+      <span class="logo-text">
+        <span class="name">Dogcytocin et Racines</span>
+        <span class="tagline">Protéger. Combattre. Sauver.</span>
+      </span>
+    </a>
+    <button class="nav-toggle" aria-label="Ouvrir le menu">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="notre-histoire.html">Notre histoire</a></li>
+      <li><a href="nos-actions.html">Nos actions</a></li>
+      <li><a href="nous-soutenir.html" class="active">Nous soutenir</a></li>
+    </ul>
+  </div>
+</header>
+
+<div class="page-header">
+  <div class="container">
+    <span class="kicker">Nous aider</span>
+    <h1>Nous soutenir</h1>
+    <div class="divider on-green"></div>
+    <p>Nous ne sommes déjà plus seules. Autour de ce projet se rassemblent des personnes qui donnent
+      du matériel, quelques euros, du temps, des compétences… Chaque geste compte.</p>
+  </div>
+</div>
+
+<section>
+  <div class="container">
+    <div class="support-grid">
+
+      <div class="support-item fade-in">
+        <span class="icon">💶</span>
+        <h3>Dons</h3>
+        <p>Un don ponctuel ou régulier pour les soins vétérinaires, la nourriture et l'aménagement du
+          terrain.</p>
+      </div>
+
+      <div class="support-item fade-in">
+        <span class="icon">📦</span>
+        <h3>Matériel</h3>
+        <p>Croquettes, laisses, couvertures, matériel de clôture ou de construction : rien ne se perd.</p>
+      </div>
+
+      <div class="support-item fade-in">
+        <span class="icon">⏰</span>
+        <h3>Temps</h3>
+        <p>Quelques heures pour promener, nourrir, ou simplement tenir compagnie aux chiens.</p>
+      </div>
+
+      <div class="support-item fade-in">
+        <span class="icon">🛠️</span>
+        <h3>Compétences</h3>
+        <p>Bricolage, vétérinaire, communication, photographie… chaque savoir-faire trouve sa place.</p>
+      </div>
+
+      <div class="support-item fade-in">
+        <span class="icon">🏡</span>
+        <h3>Famille d'accueil</h3>
+        <p>Accueillir un chien le temps qu'il retrouve confiance, avant de trouver sa famille définitive.</p>
+      </div>
+
+      <div class="support-item fade-in">
+        <span class="icon">📣</span>
+        <h3>Partager</h3>
+        <p>Parler du refuge autour de vous, relayer nos publications : ça ne coûte rien et ça compte
+          beaucoup.</p>
+      </div>
+
+    </div>
+
+    <div class="cta-box fade-in">
+      <h2>Envie d'aider ?</h2>
+      <div class="divider on-green"></div>
+      <p style="margin-top: 18px;">Contactez-nous pour un don, un don de matériel, du bénévolat ou une famille d'accueil — nous
+        répondons à chaque message.</p>
+      <div class="btn-row">
+        <a href="https://wa.me/33659120271" target="_blank" rel="noopener" class="btn btn-secondary">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-logo"><img src="images/logo.jpg" alt="Dogcytocin et Racines">Dogcytocin et Racines</div>
+    <p>Refuge pour chiens en Bretagne</p>
+    <div class="footer-contact">
+      <a href="tel:+33659120271">📞 +33 6 59 12 02 71</a>
+      <a href="https://wa.me/33659120271" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a href="mailto:contact@dogcytocin-racines.fr">✉️ contact@dogcytocin-racines.fr</a>
+      <span>Messenger : Dogcytocin &amp; Racines</span>
+    </div>
+    <p class="footer-credit">Site réalisé par Hugo H</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dogcytocin et Racines — Refuge pour chiens en Bretagne</title>
+<meta name="description" content="Un refuge pour chiens en Bretagne où sauvetage, nature et lien humain se retrouvent.">
+<link rel="icon" type="image/jpeg" href="images/logo.jpg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="password-gate">
+  <div class="gate-box">
+    <img src="images/logo.jpg" alt="Dogcytocin et Racines" class="gate-logo">
+    <h2>Accès protégé</h2>
+    <p>Ce site est en cours de préparation. Merci d'entrer le mot de passe pour continuer.</p>
+    <form id="gate-form" autocomplete="off">
+      <input type="password" id="gate-password" placeholder="Mot de passe" autocomplete="off">
+      <button type="submit" class="btn btn-primary">Entrer</button>
+    </form>
+    <p id="gate-error" class="gate-error" hidden>Mot de passe incorrect.</p>
+  </div>
+</div>
+<script>
+  if (localStorage.getItem('dogcytocin_unlocked') === 'true') {
+    document.getElementById('password-gate').style.display = 'none';
+  }
+</script>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <img src="images/logo.jpg" alt="Dogcytocin et Racines" class="logo-mark">
+      <span class="logo-text">
+        <span class="name">Dogcytocin et Racines</span>
+        <span class="tagline">Protéger. Combattre. Sauver.</span>
+      </span>
+    </a>
+    <button class="nav-toggle" aria-label="Ouvrir le menu">☰</button>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Accueil</a></li>
+      <li><a href="notre-histoire.html">Notre histoire</a></li>
+      <li><a href="nos-actions.html">Nos actions</a></li>
+      <li><a href="nous-soutenir.html">Nous soutenir</a></li>
+    </ul>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-eyebrow">Refuge pour chiens · Bretagne</span>
+    <h1>« Si j'attends d'être prête, certains d'entre eux ne seront plus là »</h1>
+    <p class="subtitle">Un lieu de un hectare et demi en Bretagne, pensé pour le sauvetage, le soin
+      et la reconstruction — pour les chiens, et pour les humains qui les entourent.</p>
+    <div class="btn-row">
+      <a href="notre-histoire.html" class="btn btn-primary">Notre histoire</a>
+      <a href="nous-soutenir.html" class="btn btn-secondary">Nous soutenir</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-intro fade-in">
+      <h2>Ce que nous construisons</h2>
+      <div class="divider on-cream"></div>
+      <p style="margin-top: 18px;">Un endroit pensé autrement, pour les chiens comme pour les humains qui gravitent autour d'eux.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card fade-in">
+        <span class="icon">🐕</span>
+        <h3>Sauver et soigner</h3>
+        <p>Des chiens abandonnés, oubliés ou condamnés ailleurs, à qui nous offrons du temps, de l'espace
+          et une vraie seconde chance.</p>
+        <a href="nos-actions.html" class="link-more">En savoir plus →</a>
+      </div>
+
+      <div class="card fade-in">
+        <span class="icon">🤝</span>
+        <h3>Accueillir des humains</h3>
+        <p>Des bénévoles isolés ou en situation de handicap trouvent ici un endroit où se rendre utiles,
+          entourés d'animaux et de nature.</p>
+        <a href="nos-actions.html" class="link-more">En savoir plus →</a>
+      </div>
+
+      <div class="card fade-in">
+        <span class="icon">🌱</span>
+        <h3>Faire pousser le projet</h3>
+        <p>Dons, matériel, temps ou compétences : chaque petit geste nous aide à construire quelque chose
+          de beaucoup plus grand.</p>
+        <a href="nous-soutenir.html" class="link-more">En savoir plus →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-logo"><img src="images/logo.jpg" alt="Dogcytocin et Racines">Dogcytocin et Racines</div>
+    <p>Refuge pour chiens en Bretagne</p>
+    <div class="footer-contact">
+      <a href="tel:+33659120271">📞 +33 6 59 12 02 71</a>
+      <a href="https://wa.me/33659120271" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a href="mailto:contact@dogcytocin-racines.fr">✉️ contact@dogcytocin-racines.fr</a>
+      <span>Messenger : Dogcytocin &amp; Racines</span>
+    </div>
+    <p class="footer-credit">Site réalisé par Hugo H</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
