@@ -550,6 +550,32 @@ section {
 
 /* ===== Support page ===== */
 
+.fundraiser-box {
+  background: linear-gradient(160deg, #fff9ea, #fdf3d9);
+  border: 1px solid rgba(217, 194, 126, 0.5);
+  border-radius: 24px;
+  padding: 48px 32px;
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.fundraiser-box .icon {
+  font-size: 2.4rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.fundraiser-box p {
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #4a4436;
+}
+
+.fundraiser-box .btn {
+  margin-top: 28px;
+}
+
 .support-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -574,6 +600,16 @@ section {
 }
 
 .support-item .icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+
+.support-item .link-more {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 600;
+  color: var(--green-sage);
+  transition: color 0.2s;
+}
+
+.support-item .link-more:hover { color: var(--gold); }
 
 .cta-box {
   background: var(--green-deep);
