@@ -346,6 +346,23 @@ section {
   font-size: 2.4rem;
   margin-bottom: 16px;
   display: block;
+  color: var(--green-deep);
+}
+
+.icon svg {
+  width: 1em;
+  height: 1em;
+  stroke: currentColor;
+  fill: none;
+}
+
+.footer-contact svg {
+  width: 1em;
+  height: 1em;
+  stroke: currentColor;
+  fill: none;
+  vertical-align: -0.15em;
+  margin-right: 2px;
 }
 
 .card p { margin-bottom: 16px; color: #4a4436; }
@@ -508,6 +525,7 @@ section {
   font-size: 2.8rem;
   margin-bottom: 20px;
   display: block;
+  color: var(--green-deep);
 }
 
 .action-block ul {
@@ -572,7 +590,10 @@ section {
   font-size: 2.4rem;
   display: block;
   margin-bottom: 8px;
+  color: var(--gold);
 }
+
+.fundraiser-box .icon svg { fill: currentColor; stroke: none; }
 
 .fundraiser-box p {
   max-width: 480px;
@@ -608,7 +629,7 @@ section {
   text-align: center;
 }
 
-.support-item .icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+.support-item .icon { font-size: 2rem; margin-bottom: 12px; display: block; color: var(--green-deep); }
 
 .support-item .link-more {
   display: inline-block;
