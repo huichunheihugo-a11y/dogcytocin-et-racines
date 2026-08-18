@@ -816,6 +816,241 @@ select.field {
 
 .form-success h2 { margin-bottom: 12px; }
 
+/* ===== Dogs / adoption page ===== */
+
+.dogs-hero { min-height: 440px; }
+
+.dogs-hero-mark {
+  position: absolute;
+  z-index: 1;
+  width: 480px;
+  max-width: none;
+  height: 480px;
+  object-fit: contain;
+  right: -20px;
+  bottom: -40px;
+  opacity: 0.16;
+  filter: invert(1);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.dogs-hero .hero-content { max-width: 620px; }
+
+.dog-filters {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 4px 8px;
+  margin: 0 0 44px;
+}
+
+.filter-pill {
+  flex-shrink: 0;
+  background: transparent;
+  border: 2px solid rgba(47, 69, 48, 0.25);
+  color: var(--green-deep);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+  padding: 14px 32px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-pill:hover {
+  border-color: var(--green-deep);
+  background-color: rgba(47, 69, 48, 0.06);
+  transform: scale(1.04);
+}
+
+.filter-pill.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--green-deep);
+  box-shadow: 0 6px 18px rgba(217, 194, 126, 0.4);
+}
+
+.filter-pill.active:hover { transform: scale(1.04); }
+
+.dogs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+@media (max-width: 900px) {
+  .dogs-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .dogs-grid { grid-template-columns: 1fr; }
+}
+
+.dog-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (hover: hover) {
+  .dog-card:hover {
+    transform: translateY(-4px) scale(1.015);
+    box-shadow: 0 10px 28px rgba(47, 42, 34, 0.14);
+  }
+
+  .dog-card:hover .dog-silhouette { transform: scale(1.06); }
+}
+
+.dog-photo {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.dog-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 1px rgba(217, 194, 126, 0.3);
+  pointer-events: none;
+}
+
+.dog-photo-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(160deg, #eef1e8, #e3e8da);
+}
+
+.dog-photo-placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 25% 18%, rgba(217, 194, 126, 0.16), transparent 55%),
+    radial-gradient(circle at 88% 92%, rgba(61, 90, 61, 0.1), transparent 50%);
+}
+
+.dog-silhouette {
+  position: absolute;
+  inset: 7%;
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  opacity: 0.32;
+  transition: transform 0.4s ease;
+}
+
+.dog-stamp {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(217, 194, 126, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transform: rotate(-9deg);
+  color: var(--gold);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 0.62rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  background: rgba(255, 253, 247, 0.4);
+  backdrop-filter: blur(3px);
+  box-shadow: 0 3px 10px rgba(47, 42, 34, 0.18);
+}
+
+.dog-stamp::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(217, 194, 126, 0.9);
+  border-radius: 50%;
+}
+
+.dog-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(47, 69, 48, 0.9);
+  color: var(--cream);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 7px 14px 7px 12px;
+  border-radius: 50px;
+  box-shadow: 0 3px 10px rgba(47, 42, 34, 0.18);
+}
+
+.dog-badge svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.dog-info { padding: 20px 22px 24px; }
+
+.dog-info h3 { margin-bottom: 4px; }
+
+.dog-meta {
+  font-size: 0.85rem;
+  color: var(--green-sage);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.dog-quote {
+  font-style: italic;
+  color: #4a4436;
+  margin-bottom: 0;
+}
+
+.dogs-empty {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.dogs-empty-icon {
+  width: 34px;
+  height: 34px;
+  color: var(--gold);
+  display: block;
+  margin: 0 auto 14px;
+}
+
+.dogs-empty p {
+  font-style: italic;
+  color: var(--green-sage);
+  font-size: 1.05rem;
+}
+
+.dogs-contact-note {
+  text-align: center;
+  margin-top: 48px;
+  color: #4a4436;
+}
+
 /* ===== Footer ===== */
 
 .site-footer {

@@ -97,4 +97,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  const filterPills = document.querySelectorAll('.filter-pill');
+  const dogCards = document.querySelectorAll('.dog-card');
+  const dogsEmpty = document.getElementById('dogs-empty');
+
+  if (filterPills.length && dogCards.length) {
+    filterPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        filterPills.forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        const filter = pill.dataset.filter;
+        let visibleCount = 0;
+
+        dogCards.forEach((card) => {
+          const show = filter === 'all' || card.dataset.status === filter;
+          card.hidden = !show;
+          if (show) visibleCount++;
+        });
+
+        if (dogsEmpty) dogsEmpty.hidden = visibleCount !== 0;
+      });
+    });
+  }
 });
