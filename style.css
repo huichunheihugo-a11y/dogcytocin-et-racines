@@ -213,6 +213,13 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--green-deep); font-we
   .logo-text .tagline { display: none; }
 }
 
+@media (max-width: 340px) {
+  .logo { gap: 6px; }
+  .logo-mark { width: 30px; height: 30px; }
+  .logo-text .name { font-size: 0.78rem; letter-spacing: 0.4px; }
+  .site-header .container { padding-top: 12px; padding-bottom: 12px; }
+}
+
 /* ===== Buttons ===== */
 
 .btn {
