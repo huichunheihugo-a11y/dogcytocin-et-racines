@@ -52,11 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = document.getElementById('foster-submit');
     const animauxDetails = document.getElementById('autres-animaux-details');
 
-    const encodeFormData = (data) =>
-      Object.keys(data)
-        .map((key) => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
-        .join('&');
-
     document.querySelectorAll('input[name="autres_animaux"]').forEach((radio) => {
       radio.addEventListener('change', () => {
         if (!radio.checked) return;
@@ -79,11 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const response = await fetch(fosterForm.action, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: encodeFormData(payload),
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
         });
 
-        if (!response.ok) throw new Error('Réponse invalide');
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('Réponse invalide');
 
         fosterForm.hidden = true;
         successBlock.hidden = false;
