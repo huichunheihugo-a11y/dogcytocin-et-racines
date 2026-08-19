@@ -79,10 +79,8 @@
           <input type="hidden" name="subject" value="Nouvelle candidature famille d'accueil">
           <input type="hidden" name="from_name" value="Dogcytocin et Racines — Site web">
 
-          <!-- Piège à robots (anti-spam), invisible pour un humain -->
-          <p class="hidden" aria-hidden="true" hidden>
-            <label>Ne remplissez pas ce champ si vous êtes humain : <input name="bot-field" tabindex="-1" autocomplete="off"></label>
-          </p>
+          <!-- Piège à robots (anti-spam) : Web3Forms rejette silencieusement toute soumission où cette case est cochée -->
+          <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
 
           <div class="form-field">
             <label for="fa-name">Nom complet</label>

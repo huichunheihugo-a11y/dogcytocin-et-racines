@@ -64,6 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fosterForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (fosterForm.elements.botcheck.checked) {
+        fosterForm.hidden = true;
+        successBlock.hidden = false;
+        return;
+      }
+
       errorBlock.hidden = true;
       submitBtn.disabled = true;
       submitBtn.textContent = 'Envoi en cours...';
