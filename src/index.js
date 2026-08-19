@@ -24,7 +24,7 @@ Durée de disponibilité : ${fields.duree_disponibilite}
 `;
 }
 
-export async function onRequestPost({ request, env }) {
+async function handleFamilleAccueil(request, env) {
   let formData;
   try {
     formData = await request.formData();
@@ -75,8 +75,20 @@ export async function onRequestPost({ request, env }) {
 
   if (!resendResponse.ok) {
     const detail = await resendResponse.text();
-    return new Response(JSON.stringify({ error: 'Échec de l\'envoi', detail }), { status: 502 });
+    return new Response(JSON.stringify({ error: "Échec de l'envoi", detail }), { status: 502 });
   }
 
   return new Response(JSON.stringify({ success: true }), { status: 200 });
 }
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (url.pathname === '/api/famille-accueil' && request.method === 'POST') {
+      return handleFamilleAccueil(request, env);
+    }
+
+    return env.ASSETS.fetch(request);
+  },
+};
