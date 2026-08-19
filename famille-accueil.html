@@ -73,11 +73,9 @@
       </div>
 
       <div class="form-card fade-in">
-        <form id="foster-form" name="famille-accueil" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" action="/">
+        <form id="foster-form" name="famille-accueil" method="POST" action="/api/famille-accueil">
 
-          <!-- Requis par Netlify pour associer les soumissions au bon formulaire -->
-          <input type="hidden" name="form-name" value="famille-accueil">
-          <!-- Piège à robots (anti-spam Netlify), invisible pour un humain -->
+          <!-- Piège à robots (anti-spam), invisible pour un humain -->
           <p class="hidden" aria-hidden="true" hidden>
             <label>Ne remplissez pas ce champ si vous êtes humain : <input name="bot-field" tabindex="-1" autocomplete="off"></label>
           </p>

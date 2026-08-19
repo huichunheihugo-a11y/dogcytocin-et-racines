@@ -77,13 +77,13 @@ document.addEventListener('DOMContentLoaded', () => {
       new FormData(fosterForm).forEach((value, key) => { payload[key] = value; });
 
       try {
-        const response = await fetch('/', {
+        const response = await fetch(fosterForm.action, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: encodeFormData(payload),
         });
 
-        if (!response.ok) throw new Error('Réponse Netlify non valide');
+        if (!response.ok) throw new Error('Réponse invalide');
 
         fosterForm.hidden = true;
         successBlock.hidden = false;
