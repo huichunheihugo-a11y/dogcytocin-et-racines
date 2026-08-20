@@ -152,6 +152,11 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--green-deep); font-we
   list-style: none;
 }
 
+@media (max-width: 1080px) and (min-width: 901px) {
+  .nav-links { gap: 20px; }
+  .nav-links a { font-size: 0.78rem; }
+}
+
 .nav-links a {
   font-weight: 500;
   font-size: 0.85rem;
@@ -356,20 +361,28 @@ section {
 .card {
   background: #fff;
   border-radius: 16px;
+  border-top: 3px solid transparent;
   box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
   padding: 36px 28px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 28px rgba(47, 42, 34, 0.12);
+  border-top-color: var(--gold);
 }
 
 .card .icon {
-  font-size: 2.4rem;
-  margin-bottom: 16px;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 20px;
+  border-radius: 50%;
+  background: rgba(47, 69, 48, 0.08);
+  font-size: 1.6rem;
   color: var(--green-deep);
 }
 
@@ -556,9 +569,15 @@ section {
 }
 
 .action-block .icon {
-  font-size: 2.8rem;
-  margin-bottom: 20px;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: rgba(47, 69, 48, 0.08);
+  font-size: 1.9rem;
   color: var(--green-deep);
 }
 
@@ -593,12 +612,23 @@ section {
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(47, 42, 34, 0.1);
   background: #fff;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.progress-photos figure:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 26px rgba(47, 42, 34, 0.16);
 }
 
 .progress-photos img {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.progress-photos figure:hover img {
+  transform: scale(1.06);
 }
 
 .progress-photos figcaption {
@@ -611,8 +641,7 @@ section {
 
 /* ===== Support page ===== */
 
-.fundraiser-box,
-.foster-box {
+.fundraiser-box {
   background: linear-gradient(160deg, #fff9ea, #fdf3d9);
   border: 1px solid rgba(217, 194, 126, 0.5);
   border-radius: 24px;
@@ -621,28 +650,29 @@ section {
   text-align: center;
 }
 
-.fundraiser-box .icon,
-.foster-box .icon {
-  font-size: 2.4rem;
-  display: block;
-  margin-bottom: 8px;
+.fundraiser-box .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  font-size: 1.8rem;
+  background: rgba(217, 194, 126, 0.28);
+  color: var(--gold);
 }
-
-.fundraiser-box .icon { color: var(--gold); }
-.foster-box .icon { color: var(--green-deep); }
 
 .fundraiser-box .icon svg { fill: currentColor; stroke: none; }
 
-.fundraiser-box p,
-.foster-box p {
+.fundraiser-box p {
   max-width: 480px;
   margin-left: auto;
   margin-right: auto;
   color: #4a4436;
 }
 
-.fundraiser-box .btn,
-.foster-box .btn {
+.fundraiser-box .btn {
   margin-top: 28px;
 }
 
@@ -669,7 +699,18 @@ section {
   text-align: center;
 }
 
-.support-item .icon { font-size: 2rem; margin-bottom: 12px; display: block; color: var(--green-deep); }
+.support-item .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: rgba(47, 69, 48, 0.08);
+  font-size: 1.4rem;
+  color: var(--green-deep);
+}
 
 .support-item .link-more {
   display: inline-block;
