@@ -1,3 +1,8 @@
+if (localStorage.getItem('dogcytocin_unlocked') === 'true') {
+  const gate = document.getElementById('password-gate');
+  if (gate) gate.style.display = 'none';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const faders = document.querySelectorAll('.fade-in');
   const observer = new IntersectionObserver((entries) => {
