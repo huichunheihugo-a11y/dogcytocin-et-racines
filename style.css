@@ -367,6 +367,54 @@ section {
   margin: 0 auto 48px;
 }
 
+/* ===== Story teaser (homepage) ===== */
+
+.story-teaser {
+  background: linear-gradient(160deg, #eef1e6, #f7f3ea);
+  padding: 72px 0;
+}
+
+.story-teaser-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.story-teaser-inner .eyebrow {
+  font-family: var(--font-marker);
+  color: var(--green-sage);
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.story-teaser-inner p {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.story-teaser-inner p.highlight {
+  font-size: 1.55rem;
+  color: var(--green-deep);
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 20px 0 28px;
+}
+
+.story-teaser-inner .link-more {
+  font-weight: 600;
+  color: var(--green-sage);
+  transition: color 0.2s;
+}
+
+.story-teaser-inner .link-more:hover { color: var(--gold); }
+
 /* ===== Cards ===== */
 
 .cards {
@@ -449,10 +497,11 @@ section {
 }
 
 .page-header .kicker {
+  font-family: var(--font-marker);
   color: var(--gold);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 0.8rem;
+  letter-spacing: 1px;
+  font-size: 1.1rem;
   display: block;
   margin-bottom: 16px;
 }
