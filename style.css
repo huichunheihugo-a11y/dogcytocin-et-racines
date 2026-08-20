@@ -806,6 +806,37 @@ section {
   margin-top: 28px;
 }
 
+.two-ways {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-bottom: 64px;
+}
+
+.two-ways .fundraiser-box {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.two-ways .fundraiser-box .btn { margin-top: auto; padding-top: 28px; }
+
+@media (max-width: 800px) {
+  .two-ways { grid-template-columns: 1fr; gap: 24px; }
+}
+
+.foster-feature {
+  background: linear-gradient(160deg, #eef1e6, #e3ead9);
+  border-color: rgba(61, 90, 61, 0.3);
+}
+
+.foster-feature .icon {
+  background: rgba(47, 69, 48, 0.1);
+  color: var(--green-deep);
+}
+
+.foster-feature .icon svg { fill: none; stroke: currentColor; }
+
 .support-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -819,6 +850,16 @@ section {
 
 @media (max-width: 560px) {
   .support-grid { grid-template-columns: 1fr; }
+}
+
+.support-grid-secondary { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 900px) {
+  .support-grid-secondary { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .support-grid-secondary { grid-template-columns: 1fr; }
 }
 
 .support-item {
