@@ -52,8 +52,7 @@ textarea:focus-visible {
 .hero :focus-visible,
 .page-header :focus-visible,
 .cta-box :focus-visible,
-.dogs-hero :focus-visible,
-.story-teaser :focus-visible {
+.dogs-hero :focus-visible {
   outline-color: var(--gold);
 }
 
@@ -378,12 +377,9 @@ section {
 .story-teaser {
   position: relative;
   overflow: hidden;
-  border-top: 1px solid rgba(217, 194, 126, 0.25);
-  background:
-    radial-gradient(circle at 18% 22%, rgba(217, 194, 126, 0.16), transparent 45%),
-    radial-gradient(circle at 82% 78%, rgba(217, 194, 126, 0.1), transparent 50%),
-    linear-gradient(160deg, #24361f, #3d5a3d 60%, #2f4530);
-  padding: 112px 0;
+  border-top: 1px solid rgba(217, 194, 126, 0.4);
+  background: linear-gradient(160deg, #eef1e6, #f7f3ea);
+  padding: 88px 0;
 }
 
 .story-teaser-inner {
@@ -396,7 +392,7 @@ section {
 
 .story-teaser-inner .eyebrow {
   font-family: var(--font-marker);
-  color: var(--gold);
+  color: var(--green-sage);
   font-size: 1.25rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -409,13 +405,13 @@ section {
   font-style: italic;
   font-size: 1.25rem;
   line-height: 1.6;
-  color: rgba(247, 243, 234, 0.75);
+  color: var(--text);
   margin-bottom: 16px;
 }
 
 .story-teaser-inner p.highlight {
-  font-size: clamp(1.7rem, 3.2vw, 2.3rem);
-  color: var(--cream);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  color: var(--green-deep);
   font-weight: 600;
   line-height: 1.35;
   margin: 28px 0 36px;
@@ -424,11 +420,11 @@ section {
 
 .story-teaser-inner .link-more {
   font-weight: 600;
-  color: var(--gold);
+  color: var(--green-sage);
   transition: color 0.2s;
 }
 
-.story-teaser-inner .link-more:hover { color: var(--cream); }
+.story-teaser-inner .link-more:hover { color: var(--gold); }
 
 .bts-strip {
   display: grid;
