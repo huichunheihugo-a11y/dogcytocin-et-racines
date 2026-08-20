@@ -57,7 +57,8 @@
   <div class="container">
     <div style="max-width: 700px; margin: 0 auto;">
 
-      <div class="form-card fade-in">
+      <div class="form-card intro-card fade-in">
+        <span class="icon"><svg viewBox='0 0 24 24' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M3 11l9-8 9 8'/><path d='M5 10v10h14V10'/><path d='M9 20v-6h6v6'/></svg></span>
         <h2>Ce que ce rôle implique</h2>
         <div class="divider on-white"></div>
         <p style="margin-top: 18px;">Être famille d'accueil, c'est ouvrir sa maison pour quelques semaines ou
@@ -77,6 +78,8 @@
           <!-- Piège à robots (anti-spam) : Web3Forms rejette silencieusement toute soumission où cette case est cochée -->
           <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
 
+          <span class="form-section-label">Vos coordonnées</span>
+
           <div class="form-field">
             <label for="fa-name">Nom complet</label>
             <input type="text" id="fa-name" name="nom_complet" required autocomplete="name" class="field" placeholder="Prénom et nom">
@@ -92,6 +95,8 @@
               <input type="email" id="fa-email" name="email" required autocomplete="email" class="field" placeholder="vous@exemple.fr">
             </div>
           </div>
+
+          <span class="form-section-label">Votre foyer</span>
 
           <div class="form-field">
             <label for="fa-logement">Type de logement</label>
@@ -139,6 +144,8 @@
             </fieldset>
           </div>
 
+          <span class="form-section-label">Votre motivation</span>
+
           <div class="form-field">
             <label for="fa-experience">Expérience avec les animaux</label>
             <textarea id="fa-experience" name="experience_animaux" rows="4" required class="field" placeholder="Racontez-nous votre expérience avec les animaux, passée ou présente."></textarea>
@@ -163,6 +170,8 @@
           <p id="foster-error" class="form-msg-error" hidden></p>
 
           <button type="submit" id="foster-submit" class="btn btn-primary">Envoyer ma candidature</button>
+          <p class="form-reassurance">Envoyer ce formulaire ne vous engage à rien — c'est le début d'une
+            conversation, pas un contrat.</p>
         </form>
 
         <div id="foster-success" class="form-success" hidden>
