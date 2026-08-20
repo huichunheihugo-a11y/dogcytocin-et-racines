@@ -174,11 +174,6 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--green-deep); font-we
   list-style: none;
 }
 
-@media (max-width: 1080px) and (min-width: 901px) {
-  .nav-links { gap: 20px; }
-  .nav-links a { font-size: 0.78rem; }
-}
-
 .nav-links a {
   font-weight: 500;
   font-size: 0.85rem;
@@ -187,12 +182,18 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--green-deep); font-we
   padding: 6px 2px;
   border-bottom: 2px solid transparent;
   transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
 }
 
 .nav-links a:hover,
 .nav-links a.active {
   color: var(--gold);
   border-bottom-color: var(--gold);
+}
+
+@media (max-width: 1080px) and (min-width: 901px) {
+  .nav-links { gap: 20px; }
+  .nav-links a { font-size: 0.78rem; }
 }
 
 .nav-toggle {
