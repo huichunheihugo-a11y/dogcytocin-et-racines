@@ -887,17 +887,29 @@ section {
 
 .form-card > p { color: #4a4436; line-height: 1.7; }
 
+.intro-card {
+  background: linear-gradient(160deg, #fff9ea, #fdf3d9);
+  border: 1px solid rgba(217, 194, 126, 0.5);
+  text-align: center;
+}
+
 .intro-card .icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
-  margin-bottom: 20px;
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 20px;
   border-radius: 50%;
-  background: rgba(47, 69, 48, 0.08);
-  font-size: 1.6rem;
-  color: var(--green-deep);
+  background: rgba(217, 194, 126, 0.28);
+  font-size: 1.8rem;
+  color: var(--gold);
+}
+
+.intro-card > p {
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .form-section-label {
