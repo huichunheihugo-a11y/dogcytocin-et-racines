@@ -701,6 +701,8 @@ section {
 }
 
 .action-block {
+  position: relative;
+  overflow: hidden;
   background: #fff;
   border-radius: 20px;
   padding: 40px;
@@ -732,57 +734,6 @@ section {
 }
 
 .action-block li { margin-bottom: 8px; }
-
-.progress-box {
-  background: var(--cream);
-  border: 1px solid rgba(47, 69, 48, 0.15);
-  border-radius: 20px;
-  padding: 40px;
-  margin-top: 48px;
-}
-
-.progress-photos {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-top: 28px;
-}
-
-@media (max-width: 800px) {
-  .progress-photos { grid-template-columns: repeat(2, 1fr); }
-}
-
-.progress-photos figure {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(47, 42, 34, 0.1);
-  background: #fff;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.progress-photos figure:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 26px rgba(47, 42, 34, 0.16);
-}
-
-.progress-photos img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.progress-photos figure:hover img {
-  transform: scale(1.06);
-}
-
-.progress-photos figcaption {
-  padding: 10px 12px;
-  font-size: 0.82rem;
-  color: var(--green-deep);
-  font-weight: 500;
-  text-align: center;
-}
 
 /* ===== Support page ===== */
 
@@ -1373,8 +1324,15 @@ select.field {
   grid-template-columns: 1.2fr 1fr 1.3fr;
   gap: 32px;
   text-align: left;
-  padding-bottom: 28px;
-  border-bottom: 1px solid rgba(247, 243, 234, 0.15);
+  padding-bottom: 8px;
+}
+
+.footer-tagline {
+  font-family: var(--font-marker);
+  color: var(--gold);
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
 }
 
 @media (max-width: 700px) {
