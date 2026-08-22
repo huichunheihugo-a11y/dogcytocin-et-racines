@@ -34,20 +34,43 @@
   <div class="cover-half cover-left">
     <div class="cover-art">
       <div class="cover-strap"></div>
-      <svg class="cover-roots" viewBox="0 0 400 500" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M200 500 Q170 480 150 460" stroke-width="4"/>
-          <path d="M200 500 Q230 480 250 460" stroke-width="4"/>
-          <path d="M200 500 Q195 440 200 400 Q205 360 195 340" stroke-width="5"/>
-          <path d="M195 340 Q190 300 185 260 Q182 230 180 205" stroke-width="3"/>
-          <path d="M195 340 Q210 320 225 290 Q235 265 245 240" stroke-width="3"/>
-          <path d="M185 260 Q165 245 145 220 Q130 200 120 180" stroke-width="2"/>
-          <path d="M185 260 Q195 235 210 215 Q220 200 235 190" stroke-width="2"/>
-          <path d="M225 290 Q245 275 265 255 Q280 240 295 225" stroke-width="2"/>
-          <path d="M225 290 Q220 268 230 248" stroke-width="1.5"/>
-          <path d="M120 180 Q110 165 100 155" stroke-width="1"/>
-          <path d="M235 190 Q245 175 255 165" stroke-width="1"/>
-          <path d="M295 225 Q307 210 318 200" stroke-width="1"/>
+      <svg class="cover-tree" viewBox="0 0 400 500" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+        <defs>
+          <g id="leaf-cluster">
+            <ellipse cx="0" cy="-7" rx="6" ry="3"/>
+            <ellipse cx="0" cy="-7" rx="6" ry="3" transform="rotate(38)"/>
+            <ellipse cx="0" cy="-7" rx="6" ry="3" transform="rotate(-38)"/>
+            <ellipse cx="0" cy="-7" rx="5" ry="2.5" transform="rotate(75)"/>
+          </g>
+        </defs>
+        <g class="tree-branches" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M200 500 Q172 482 152 462" stroke-width="5"/>
+          <path d="M200 500 Q228 482 248 462" stroke-width="5"/>
+          <path d="M200 500 C198 455 202 415 199 375 C197 345 201 315 200 288" stroke-width="13"/>
+          <path d="M200 288 C185 268 165 253 145 233 C130 218 115 203 105 185" stroke-width="7"/>
+          <path d="M200 288 C215 268 235 250 255 228 C270 213 285 196 295 178" stroke-width="7"/>
+          <path d="M200 288 C198 258 202 228 199 198 C197 173 200 148 198 123" stroke-width="8"/>
+          <path d="M145 233 C130 223 110 213 95 198" stroke-width="4"/>
+          <path d="M165 253 C150 248 130 243 115 238" stroke-width="3.5"/>
+          <path d="M255 228 C270 220 288 212 302 203" stroke-width="4"/>
+          <path d="M235 250 C250 246 268 243 282 240" stroke-width="3.5"/>
+          <path d="M199 198 C180 188 160 180 145 170" stroke-width="3.5"/>
+          <path d="M199 198 C218 188 238 181 253 172" stroke-width="3.5"/>
+          <path d="M198 123 C185 110 168 103 155 96" stroke-width="3"/>
+          <path d="M198 123 C212 110 228 104 240 98" stroke-width="3"/>
+        </g>
+        <g class="tree-leaves" fill="currentColor" stroke="none">
+          <use href="#leaf-cluster" transform="translate(95,198) rotate(-25)"/>
+          <use href="#leaf-cluster" transform="translate(115,238) rotate(-55) scale(0.85)"/>
+          <use href="#leaf-cluster" transform="translate(145,170) rotate(-15)"/>
+          <use href="#leaf-cluster" transform="translate(155,96) rotate(-10) scale(1.05)"/>
+          <use href="#leaf-cluster" transform="translate(198,123) scale(1.1)"/>
+          <use href="#leaf-cluster" transform="translate(240,98) rotate(12) scale(1.05)"/>
+          <use href="#leaf-cluster" transform="translate(253,172) rotate(18)"/>
+          <use href="#leaf-cluster" transform="translate(302,203) rotate(28)"/>
+          <use href="#leaf-cluster" transform="translate(282,240) rotate(50) scale(0.85)"/>
+          <use href="#leaf-cluster" transform="translate(105,185) rotate(-35) scale(0.95)"/>
+          <use href="#leaf-cluster" transform="translate(295,178) rotate(32) scale(0.95)"/>
         </g>
       </svg>
     </div>
@@ -55,20 +78,43 @@
   <div class="cover-half cover-right">
     <div class="cover-art">
       <div class="cover-strap"></div>
-      <svg class="cover-roots" viewBox="0 0 400 500" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M200 500 Q170 480 150 460" stroke-width="4"/>
-          <path d="M200 500 Q230 480 250 460" stroke-width="4"/>
-          <path d="M200 500 Q195 440 200 400 Q205 360 195 340" stroke-width="5"/>
-          <path d="M195 340 Q190 300 185 260 Q182 230 180 205" stroke-width="3"/>
-          <path d="M195 340 Q210 320 225 290 Q235 265 245 240" stroke-width="3"/>
-          <path d="M185 260 Q165 245 145 220 Q130 200 120 180" stroke-width="2"/>
-          <path d="M185 260 Q195 235 210 215 Q220 200 235 190" stroke-width="2"/>
-          <path d="M225 290 Q245 275 265 255 Q280 240 295 225" stroke-width="2"/>
-          <path d="M225 290 Q220 268 230 248" stroke-width="1.5"/>
-          <path d="M120 180 Q110 165 100 155" stroke-width="1"/>
-          <path d="M235 190 Q245 175 255 165" stroke-width="1"/>
-          <path d="M295 225 Q307 210 318 200" stroke-width="1"/>
+      <svg class="cover-tree" viewBox="0 0 400 500" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+        <defs>
+          <g id="leaf-cluster">
+            <ellipse cx="0" cy="-7" rx="6" ry="3"/>
+            <ellipse cx="0" cy="-7" rx="6" ry="3" transform="rotate(38)"/>
+            <ellipse cx="0" cy="-7" rx="6" ry="3" transform="rotate(-38)"/>
+            <ellipse cx="0" cy="-7" rx="5" ry="2.5" transform="rotate(75)"/>
+          </g>
+        </defs>
+        <g class="tree-branches" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M200 500 Q172 482 152 462" stroke-width="5"/>
+          <path d="M200 500 Q228 482 248 462" stroke-width="5"/>
+          <path d="M200 500 C198 455 202 415 199 375 C197 345 201 315 200 288" stroke-width="13"/>
+          <path d="M200 288 C185 268 165 253 145 233 C130 218 115 203 105 185" stroke-width="7"/>
+          <path d="M200 288 C215 268 235 250 255 228 C270 213 285 196 295 178" stroke-width="7"/>
+          <path d="M200 288 C198 258 202 228 199 198 C197 173 200 148 198 123" stroke-width="8"/>
+          <path d="M145 233 C130 223 110 213 95 198" stroke-width="4"/>
+          <path d="M165 253 C150 248 130 243 115 238" stroke-width="3.5"/>
+          <path d="M255 228 C270 220 288 212 302 203" stroke-width="4"/>
+          <path d="M235 250 C250 246 268 243 282 240" stroke-width="3.5"/>
+          <path d="M199 198 C180 188 160 180 145 170" stroke-width="3.5"/>
+          <path d="M199 198 C218 188 238 181 253 172" stroke-width="3.5"/>
+          <path d="M198 123 C185 110 168 103 155 96" stroke-width="3"/>
+          <path d="M198 123 C212 110 228 104 240 98" stroke-width="3"/>
+        </g>
+        <g class="tree-leaves" fill="currentColor" stroke="none">
+          <use href="#leaf-cluster" transform="translate(95,198) rotate(-25)"/>
+          <use href="#leaf-cluster" transform="translate(115,238) rotate(-55) scale(0.85)"/>
+          <use href="#leaf-cluster" transform="translate(145,170) rotate(-15)"/>
+          <use href="#leaf-cluster" transform="translate(155,96) rotate(-10) scale(1.05)"/>
+          <use href="#leaf-cluster" transform="translate(198,123) scale(1.1)"/>
+          <use href="#leaf-cluster" transform="translate(240,98) rotate(12) scale(1.05)"/>
+          <use href="#leaf-cluster" transform="translate(253,172) rotate(18)"/>
+          <use href="#leaf-cluster" transform="translate(302,203) rotate(28)"/>
+          <use href="#leaf-cluster" transform="translate(282,240) rotate(50) scale(0.85)"/>
+          <use href="#leaf-cluster" transform="translate(105,185) rotate(-35) scale(0.95)"/>
+          <use href="#leaf-cluster" transform="translate(295,178) rotate(32) scale(0.95)"/>
         </g>
       </svg>
     </div>

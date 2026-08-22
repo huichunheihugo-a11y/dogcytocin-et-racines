@@ -1565,43 +1565,73 @@ select.field {
   height: 100%;
   width: 200%;
   background:
-    radial-gradient(ellipse 55% 45% at 28% 32%, rgba(110, 82, 52, 0.38), transparent 60%),
-    radial-gradient(ellipse 50% 55% at 74% 62%, rgba(58, 82, 58, 0.32), transparent 55%),
-    radial-gradient(ellipse 65% 50% at 52% 82%, rgba(30, 22, 15, 0.4), transparent 60%),
-    radial-gradient(ellipse 45% 40% at 62% 18%, rgba(95, 105, 72, 0.16), transparent 60%),
-    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 38%, rgba(14, 11, 7, 0.55) 100%),
-    linear-gradient(135deg, #3c4f36, #4a3826 65%, #2f4530);
+    radial-gradient(ellipse 55% 45% at 26% 30%, rgba(150, 112, 68, 0.32), transparent 60%),
+    radial-gradient(ellipse 50% 55% at 76% 64%, rgba(90, 62, 38, 0.32), transparent 55%),
+    radial-gradient(ellipse 65% 50% at 52% 84%, rgba(35, 22, 12, 0.42), transparent 60%),
+    radial-gradient(ellipse 45% 40% at 60% 16%, rgba(170, 133, 85, 0.18), transparent 60%),
+    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 34%, rgba(16, 10, 5, 0.58) 100%),
+    linear-gradient(135deg, #6b4a30, #4a3220 62%, #382415);
 }
 
 .cover-left .cover-art { left: 0; }
 .cover-right .cover-art { right: 0; }
 
+.cover-half::before {
+  content: '';
+  position: absolute;
+  top: 4%;
+  bottom: 4%;
+  width: 5px;
+  background: repeating-linear-gradient(0deg, #d8c69a, #d8c69a 2px, #b8a06e 2px, #b8a06e 4px);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.35);
+  z-index: 1;
+  opacity: 0.7;
+}
+
+.cover-left::before { left: 2px; }
+.cover-right::before { right: 2px; }
+
 .cover-strap {
   position: absolute;
-  top: -8%;
+  top: 40%;
   left: 50%;
-  width: 145%;
-  height: 44px;
-  transform: translateX(-50%) rotate(-18deg);
-  background: linear-gradient(180deg, #5f4a32, #3d2f1f);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), inset 0 2px 2px rgba(255, 255, 255, 0.07), inset 0 -2px 3px rgba(0, 0, 0, 0.3);
-  opacity: 0.85;
+  width: 135%;
+  height: 9px;
+  transform: translateX(-50%) rotate(-24deg);
+  background: linear-gradient(180deg, #6b4a30, #3d2a1a);
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  opacity: 0.92;
 }
 
-.cover-roots {
+.cover-strap::after {
+  content: '';
+  position: absolute;
+  right: 8%;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  background: radial-gradient(circle at 35% 30%, #9a7548, #3d2a1a 75%);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.cover-tree {
   position: absolute;
   left: 50%;
-  bottom: 5%;
+  bottom: 4%;
   transform: translateX(-50%);
-  width: min(72vw, 420px);
-  height: 60%;
+  width: min(66vw, 380px);
+  height: 74%;
+  color: rgba(200, 163, 116, 0.9);
   filter:
-    drop-shadow(-1px -1px 0.5px rgba(217, 194, 126, 0.4))
-    drop-shadow(1px 1.5px 1.5px rgba(0, 0, 0, 0.55));
+    drop-shadow(-1px -1px 0.5px rgba(224, 195, 150, 0.35))
+    drop-shadow(1.5px 2px 2px rgba(0, 0, 0, 0.5));
 }
 
-.cover-roots path {
-  stroke: rgba(18, 13, 9, 0.55);
+.tree-branches path {
+  stroke: rgba(196, 158, 110, 0.88);
 }
 
 .cover-skip {
@@ -1630,13 +1660,15 @@ select.field {
 
 @media (max-width: 640px) {
   .cover-strap {
-    width: 60%;
-    height: 34px;
-    transform: translateX(-50%) rotate(-72deg);
-    opacity: 0.55;
+    width: 55%;
+    top: 42%;
+    transform: translateX(-50%) rotate(-80deg);
+    opacity: 0.65;
   }
 
-  .cover-roots { width: min(85vw, 300px); }
+  .cover-strap::after { right: 4%; width: 18px; height: 18px; }
+
+  .cover-tree { width: min(80vw, 300px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
