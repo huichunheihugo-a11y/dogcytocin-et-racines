@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         successBlock.hidden = false;
         successBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } catch (err) {
-        errorBlock.textContent = "Une erreur est survenue lors de l'envoi. Merci de réessayer, ou de nous contacter directement.";
+        errorBlock.textContent = "Aïe, l'envoi n'est pas passé. Réessayez, ou écrivez-nous directement — on ne veut surtout pas rater votre message.";
         errorBlock.hidden = false;
       } finally {
         submitBtn.disabled = false;

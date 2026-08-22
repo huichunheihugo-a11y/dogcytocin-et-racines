@@ -585,6 +585,7 @@ section {
   width: 1em;
   height: 1em;
   stroke: currentColor;
+  stroke-width: 1.85;
   fill: none;
 }
 
@@ -1604,4 +1605,60 @@ select.field {
   color: #b23b3b;
   font-size: 0.85rem;
   margin-top: 14px;
+}
+
+/* ===== Hand-drawn feel for feature icons ===== */
+
+.card .icon,
+.action-block .icon,
+.support-item .icon,
+.fundraiser-box .icon,
+.intro-card .icon {
+  border-radius: 42% 58% 53% 47% / 45% 42% 58% 55%;
+  transition: transform 0.2s ease;
+}
+
+.cards .card:nth-child(odd) .icon,
+.actions-grid .action-block:nth-child(odd) .icon,
+.support-grid .support-item:nth-child(odd) .icon,
+.two-ways .fundraiser-box:nth-child(1) .icon {
+  transform: rotate(-4deg);
+}
+
+.cards .card:nth-child(even) .icon,
+.actions-grid .action-block:nth-child(even) .icon,
+.support-grid .support-item:nth-child(even) .icon,
+.two-ways .fundraiser-box:nth-child(2) .icon {
+  transform: rotate(4deg);
+}
+
+.intro-card .icon { transform: rotate(-3deg); }
+
+.card:hover .icon,
+.action-block:hover .icon,
+.support-item:hover .icon {
+  transform: rotate(0deg) scale(1.06);
+}
+
+/* ===== Signature manuscrite (fin de "Notre histoire") ===== */
+
+.story-sign-off {
+  display: inline-block;
+  margin-top: 26px;
+  font-family: var(--font-marker);
+  font-size: 1.6rem;
+  line-height: 1.4;
+  color: var(--green-deep);
+  transform: rotate(-1.5deg);
+}
+
+.sign-flourish {
+  display: block;
+  width: 170px;
+  height: 24px;
+  margin: 4px auto 0;
+  stroke: var(--gold);
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
 }
