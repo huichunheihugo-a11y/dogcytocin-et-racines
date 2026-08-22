@@ -1537,3 +1537,108 @@ select.field {
   font-size: 0.85rem;
   margin-top: 14px;
 }
+
+/* ===== Cover page (leather journal opening) ===== */
+
+#cover-page {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  cursor: pointer;
+}
+
+.cover-half {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  overflow: hidden;
+  transition: transform 0.8s ease-in-out;
+}
+
+.cover-left { left: 0; }
+.cover-right { right: 0; }
+
+.cover-art {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 200%;
+  background:
+    radial-gradient(ellipse 55% 45% at 28% 32%, rgba(110, 82, 52, 0.38), transparent 60%),
+    radial-gradient(ellipse 50% 55% at 74% 62%, rgba(58, 82, 58, 0.32), transparent 55%),
+    radial-gradient(ellipse 65% 50% at 52% 82%, rgba(30, 22, 15, 0.4), transparent 60%),
+    radial-gradient(ellipse 45% 40% at 62% 18%, rgba(95, 105, 72, 0.16), transparent 60%),
+    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 38%, rgba(14, 11, 7, 0.55) 100%),
+    linear-gradient(135deg, #3c4f36, #4a3826 65%, #2f4530);
+}
+
+.cover-left .cover-art { left: 0; }
+.cover-right .cover-art { right: 0; }
+
+.cover-strap {
+  position: absolute;
+  top: -8%;
+  left: 50%;
+  width: 145%;
+  height: 44px;
+  transform: translateX(-50%) rotate(-18deg);
+  background: linear-gradient(180deg, #5f4a32, #3d2f1f);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4), inset 0 2px 2px rgba(255, 255, 255, 0.07), inset 0 -2px 3px rgba(0, 0, 0, 0.3);
+  opacity: 0.85;
+}
+
+.cover-roots {
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  transform: translateX(-50%);
+  width: min(72vw, 420px);
+  height: 60%;
+  filter:
+    drop-shadow(-1px -1px 0.5px rgba(217, 194, 126, 0.4))
+    drop-shadow(1px 1.5px 1.5px rgba(0, 0, 0, 0.55));
+}
+
+.cover-roots path {
+  stroke: rgba(18, 13, 9, 0.55);
+}
+
+.cover-skip {
+  position: absolute;
+  bottom: 26px;
+  right: 30px;
+  z-index: 10;
+  background: none;
+  border: none;
+  color: rgba(247, 243, 234, 0.7);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  padding: 10px 6px;
+  transition: color 0.2s, opacity 0.3s;
+}
+
+.cover-skip:hover,
+.cover-skip:focus-visible { color: var(--gold); }
+
+#cover-page.opening .cover-left { transform: translateX(-100%); }
+#cover-page.opening .cover-right { transform: translateX(100%); }
+#cover-page.opening .cover-skip { opacity: 0; pointer-events: none; }
+
+@media (max-width: 640px) {
+  .cover-strap {
+    width: 60%;
+    height: 34px;
+    transform: translateX(-50%) rotate(-72deg);
+    opacity: 0.55;
+  }
+
+  .cover-roots { width: min(85vw, 300px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cover-page { display: none !important; }
+}

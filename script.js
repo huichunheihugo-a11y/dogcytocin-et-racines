@@ -3,6 +3,42 @@ if (localStorage.getItem('dogcytocin_unlocked') === 'true') {
   if (gate) gate.style.display = 'none';
 }
 
+(() => {
+  const cover = document.getElementById('cover-page');
+  if (!cover) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const alreadySeen = sessionStorage.getItem('dogcytocin_cover_seen') === 'true';
+
+  if (alreadySeen || reduceMotion) {
+    cover.style.display = 'none';
+    return;
+  }
+
+  const openCover = () => {
+    if (cover.classList.contains('opening')) return;
+    sessionStorage.setItem('dogcytocin_cover_seen', 'true');
+    cover.classList.add('opening');
+    setTimeout(() => { cover.style.display = 'none'; }, 850);
+  };
+
+  cover.addEventListener('click', openCover);
+  cover.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openCover();
+    }
+  });
+
+  const skip = document.getElementById('cover-skip');
+  if (skip) {
+    skip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openCover();
+    });
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   const faders = document.querySelectorAll('.fade-in');
   const observer = new IntersectionObserver((entries) => {
