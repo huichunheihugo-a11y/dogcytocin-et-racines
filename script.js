@@ -129,4 +129,34 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  const shareBtn = document.getElementById('share-btn');
+
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const shareData = {
+        title: 'Dogcytocin et Racines',
+        text: 'Un refuge pour chiens en Bretagne où sauvetage, nature et lien humain se retrouvent.',
+        url: window.location.origin + '/index.html',
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          /* Partage annulé par l'utilisateur, rien à faire. */
+        }
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        const original = shareBtn.textContent;
+        shareBtn.textContent = 'Lien copié !';
+        setTimeout(() => { shareBtn.textContent = original; }, 2200);
+      } catch (err) {
+        shareBtn.textContent = shareData.url;
+      }
+    });
+  }
 });
