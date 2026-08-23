@@ -109,9 +109,14 @@ async function handlePostComment(request, env) {
   const ipHash = await hashIp(ip);
 
   try {
+    // created_at est stocké au format ISO (toISOString) : on compare avec une borne
+    // du même format plutôt que le format SQLite datetime(), pour que la comparaison
+    // texte reste chronologiquement correcte.
+    const oneHourAgoIso = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
     const check = await env.DB.prepare(
-      "SELECT COUNT(*) as cnt, MAX(created_at) as last_at FROM comments WHERE ip_hash = ?1 AND created_at > datetime('now', '-1 hours')"
-    ).bind(ipHash).first();
+      'SELECT COUNT(*) as cnt, MAX(created_at) as last_at FROM comments WHERE ip_hash = ?1 AND created_at > ?2'
+    ).bind(ipHash, oneHourAgoIso).first();
 
     if (check && check.cnt >= 5) {
       return json({
@@ -122,8 +127,8 @@ async function handlePostComment(request, env) {
     }
 
     if (check && check.last_at) {
-      const lastMs = new Date(check.last_at.replace(' ', 'T') + 'Z').getTime();
-      if (Date.now() - lastMs < 15000) {
+      const lastMs = new Date(check.last_at).getTime();
+      if (!Number.isNaN(lastMs) && Date.now() - lastMs < 15000) {
         return json({
           success: false,
           reason: 'rate_limit',
