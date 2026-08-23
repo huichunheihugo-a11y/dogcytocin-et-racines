@@ -7,5 +7,12 @@
     "binding": "ASSETS",
     "run_worker_first": true,
     "not_found_handling": "404-page"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "dogcytocin-comments",
+      "database_id": "e078cb36-bbc3-44ec-a95a-6c278a662df9"
+    }
+  ]
 }
