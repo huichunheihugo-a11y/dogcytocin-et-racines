@@ -175,6 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.className = 'guestbook-entry fade-in visible';
 
+      const top = document.createElement('div');
+      top.className = 'guestbook-entry-top';
+
+      const avatar = document.createElement('span');
+      avatar.className = 'guestbook-avatar';
+      avatar.textContent = entry.name.trim().charAt(0).toUpperCase();
+
       const head = document.createElement('div');
       head.className = 'guestbook-entry-head';
 
@@ -188,12 +195,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       head.appendChild(name);
       head.appendChild(date);
+      top.appendChild(avatar);
+      top.appendChild(head);
 
       const message = document.createElement('p');
       message.className = 'guestbook-entry-message';
       message.textContent = entry.message;
 
-      card.appendChild(head);
+      card.appendChild(top);
       card.appendChild(message);
       return card;
     };
