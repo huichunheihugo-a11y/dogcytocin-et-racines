@@ -1731,11 +1731,8 @@ select.field {
   pointer-events: none;
 }
 
-.guestbook-list .guestbook-entry:nth-child(odd) { transform: rotate(-0.6deg); }
-.guestbook-list .guestbook-entry:nth-child(even) { transform: rotate(0.6deg); }
-
 .guestbook-entry:hover {
-  transform: rotate(0deg) translateY(-3px);
+  transform: translateY(-3px);
   box-shadow: 0 10px 26px rgba(47, 42, 34, 0.13);
 }
 
