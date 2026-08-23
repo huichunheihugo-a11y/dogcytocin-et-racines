@@ -56,10 +56,15 @@ function looksLikeSpam(name, message) {
 
 async function handleGetComments(env) {
   if (!env.DB) return json({ comments: [] });
-  const { results } = await env.DB.prepare(
-    'SELECT id, name, message, created_at FROM comments ORDER BY id DESC LIMIT 100'
-  ).all();
-  return json({ comments: results });
+  try {
+    const { results } = await env.DB.prepare(
+      'SELECT id, name, message, created_at FROM comments ORDER BY id DESC LIMIT 100'
+    ).all();
+    return json({ comments: results });
+  } catch (err) {
+    // Base pas encore prête (ex. table absente) : on affiche une liste vide plutôt que de casser la page.
+    return json({ comments: [] });
+  }
 }
 
 async function handlePostComment(request, env) {
@@ -103,51 +108,63 @@ async function handlePostComment(request, env) {
   const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
   const ipHash = await hashIp(ip);
 
-  const check = await env.DB.prepare(
-    "SELECT COUNT(*) as cnt, MAX(created_at) as last_at FROM comments WHERE ip_hash = ?1 AND created_at > datetime('now', '-1 hours')"
-  ).bind(ipHash).first();
+  try {
+    const check = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt, MAX(created_at) as last_at FROM comments WHERE ip_hash = ?1 AND created_at > datetime('now', '-1 hours')"
+    ).bind(ipHash).first();
 
-  if (check && check.cnt >= 5) {
-    return json({
-      success: false,
-      reason: 'rate_limit',
-      message: 'Vous avez déjà laissé plusieurs messages récemment — merci de patienter un peu.',
-    }, 429);
-  }
-
-  if (check && check.last_at) {
-    const lastMs = new Date(check.last_at.replace(' ', 'T') + 'Z').getTime();
-    if (Date.now() - lastMs < 15000) {
+    if (check && check.cnt >= 5) {
       return json({
         success: false,
         reason: 'rate_limit',
-        message: 'Un peu de patience — réessayez dans quelques secondes.',
+        message: 'Vous avez déjà laissé plusieurs messages récemment — merci de patienter un peu.',
       }, 429);
     }
+
+    if (check && check.last_at) {
+      const lastMs = new Date(check.last_at.replace(' ', 'T') + 'Z').getTime();
+      if (Date.now() - lastMs < 15000) {
+        return json({
+          success: false,
+          reason: 'rate_limit',
+          message: 'Un peu de patience — réessayez dans quelques secondes.',
+        }, 429);
+      }
+    }
+
+    const createdAt = new Date().toISOString();
+    const insert = await env.DB.prepare(
+      'INSERT INTO comments (name, message, created_at, ip_hash) VALUES (?1, ?2, ?3, ?4)'
+    ).bind(n, m, createdAt, ipHash).run();
+
+    return json({
+      success: true,
+      comment: { id: insert.meta.last_row_id, name: n, message: m, created_at: createdAt },
+    });
+  } catch (err) {
+    return json({
+      success: false,
+      reason: 'unavailable',
+      message: "Le livre d'or n'est pas encore tout à fait prêt, réessayez un peu plus tard.",
+    }, 503);
   }
-
-  const createdAt = new Date().toISOString();
-  const insert = await env.DB.prepare(
-    'INSERT INTO comments (name, message, created_at, ip_hash) VALUES (?1, ?2, ?3, ?4)'
-  ).bind(n, m, createdAt, ipHash).run();
-
-  return json({
-    success: true,
-    comment: { id: insert.meta.last_row_id, name: n, message: m, created_at: createdAt },
-  });
 }
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
+    try {
+      const url = new URL(request.url);
 
-    if (url.pathname === '/api/comments') {
-      if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env));
-      if (request.method === 'POST') return withSecurityHeaders(await handlePostComment(request, env));
-      return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      if (url.pathname === '/api/comments') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env));
+        if (request.method === 'POST') return withSecurityHeaders(await handlePostComment(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const response = await env.ASSETS.fetch(request);
+      return withSecurityHeaders(response);
+    } catch (err) {
+      return withSecurityHeaders(json({ success: false, message: 'Erreur inattendue, réessayez.' }, 500));
     }
-
-    const response = await env.ASSETS.fetch(request);
-    return withSecurityHeaders(response);
   },
 };
