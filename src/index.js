@@ -20,13 +20,134 @@ const SECURITY_HEADERS = {
   'Strict-Transport-Security': 'max-age=31536000',
 };
 
+const SPAM_WORDS = [
+  'viagra', 'cialis', 'casino', 'poker', 'crypto', 'bitcoin', 'forex',
+  'xxx', 'porn', 'loan', 'credit repair', 'seo service', 'backlink',
+  'http://', 'https://', 'www.',
+];
+
+function withSecurityHeaders(response) {
+  const hardened = new Response(response.body, response);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    hardened.headers.set(key, value);
+  }
+  return hardened;
+}
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+  });
+}
+
+async function hashIp(ip) {
+  const data = new TextEncoder().encode('dogcytocin-guestbook-salt-2026:' + ip);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function looksLikeSpam(name, message) {
+  const combined = (name + ' ' + message).toLowerCase();
+  if (SPAM_WORDS.some((word) => combined.includes(word))) return true;
+  if (/\b[\w-]+\.(com|net|org|fr|info|biz|ru|xyz|top|click|shop)\b/.test(combined)) return true;
+  return false;
+}
+
+async function handleGetComments(env) {
+  if (!env.DB) return json({ comments: [] });
+  const { results } = await env.DB.prepare(
+    'SELECT id, name, message, created_at FROM comments ORDER BY id DESC LIMIT 100'
+  ).all();
+  return json({ comments: results });
+}
+
+async function handlePostComment(request, env) {
+  if (!env.DB) {
+    return json({ success: false, reason: 'unavailable', message: "Le livre d'or n'est pas encore branché, réessayez plus tard." }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, reason: 'invalid', message: 'Message illisible, réessayez.' }, 400);
+  }
+
+  const { name, message, website } = body || {};
+
+  if (website) {
+    // Piège à robots déclenché : on répond succès (sans rien enregistrer) pour ne pas alerter le bot.
+    return json({ success: true, comment: null });
+  }
+
+  const n = typeof name === 'string' ? name.trim() : '';
+  const m = typeof message === 'string' ? message.trim() : '';
+
+  if (n.length < 2 || n.length > 60 || m.length < 3 || m.length > 600) {
+    return json({
+      success: false,
+      reason: 'invalid',
+      message: 'Vérifiez votre nom et votre message (le message doit faire entre 3 et 600 caractères).',
+    }, 422);
+  }
+
+  if (looksLikeSpam(n, m)) {
+    return json({
+      success: false,
+      reason: 'spam',
+      message: "Votre message n'a pas pu être publié — évitez les liens ou mots-clés publicitaires.",
+    }, 422);
+  }
+
+  const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
+  const ipHash = await hashIp(ip);
+
+  const check = await env.DB.prepare(
+    "SELECT COUNT(*) as cnt, MAX(created_at) as last_at FROM comments WHERE ip_hash = ?1 AND created_at > datetime('now', '-1 hours')"
+  ).bind(ipHash).first();
+
+  if (check && check.cnt >= 5) {
+    return json({
+      success: false,
+      reason: 'rate_limit',
+      message: 'Vous avez déjà laissé plusieurs messages récemment — merci de patienter un peu.',
+    }, 429);
+  }
+
+  if (check && check.last_at) {
+    const lastMs = new Date(check.last_at.replace(' ', 'T') + 'Z').getTime();
+    if (Date.now() - lastMs < 15000) {
+      return json({
+        success: false,
+        reason: 'rate_limit',
+        message: 'Un peu de patience — réessayez dans quelques secondes.',
+      }, 429);
+    }
+  }
+
+  const createdAt = new Date().toISOString();
+  const insert = await env.DB.prepare(
+    'INSERT INTO comments (name, message, created_at, ip_hash) VALUES (?1, ?2, ?3, ?4)'
+  ).bind(n, m, createdAt, ipHash).run();
+
+  return json({
+    success: true,
+    comment: { id: insert.meta.last_row_id, name: n, message: m, created_at: createdAt },
+  });
+}
+
 export default {
   async fetch(request, env) {
-    const response = await env.ASSETS.fetch(request);
-    const hardened = new Response(response.body, response);
-    for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-      hardened.headers.set(key, value);
+    const url = new URL(request.url);
+
+    if (url.pathname === '/api/comments') {
+      if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env));
+      if (request.method === 'POST') return withSecurityHeaders(await handlePostComment(request, env));
+      return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
     }
-    return hardened;
+
+    const response = await env.ASSETS.fetch(request);
+    return withSecurityHeaders(response);
   },
 };

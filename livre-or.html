@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Page introuvable — Dogcytocin et Racines</title>
-<meta name="robots" content="noindex">
+<title>Livre d'or — Dogcytocin et Racines</title>
+<meta name="description" content="Laissez un mot pour Dogcytocin et Racines — encouragements, questions ou simplement un bonjour.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
-<meta property="og:title" content="Page introuvable — Dogcytocin et Racines">
+<meta property="og:title" content="Livre d'or — Dogcytocin et Racines">
+<meta property="og:description" content="Laissez un mot pour Dogcytocin et Racines — encouragements, questions ou simplement un bonjour.">
 <meta property="og:image" content="https://dogcytocin-et-racines.huichunheihugo.workers.dev/images/og-image.png">
+<meta property="og:url" content="https://dogcytocin-et-racines.huichunheihugo.workers.dev/livre-or">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 <link rel="stylesheet" href="style.css">
@@ -44,23 +46,68 @@
       <li><a href="notre-histoire.html">Notre histoire</a></li>
       <li><a href="nos-actions.html">Nos actions</a></li>
       <li><a href="nous-soutenir.html">Nous soutenir</a></li>
-      <li><a href="livre-or.html">Livre d'or</a></li>
+      <li><a href="livre-or.html" class="active">Livre d'or</a></li>
     </ul>
   </div>
 </header>
 
-<section class="hero">
-  <div class="hero-content">
-    <span class="hero-eyebrow">Erreur 404</span>
-    <h1>Cette page a pris la clé des champs</h1>
-    <p class="subtitle">Comme certains de nos chiens avant leur arrivée ici, elle ne s'est pas encore
-      trouvée. Le lien est peut-être cassé, ou la page n'existe plus.</p>
-    <div class="btn-row">
-      <a href="index.html" class="btn btn-primary">Retour à l'accueil</a>
-      <a href="nos-chiens.html" class="btn btn-secondary">Voir les chiens</a>
+<div class="page-header">
+  <div class="container">
+    <span class="kicker">Un mot pour nous</span>
+    <h1>Livre d'or</h1>
+    <div class="divider on-green"></div>
+    <p>Un encouragement, une question, ou juste un bonjour — cet espace est à vous. Chaque mot compte, et on les lit tous.</p>
+  </div>
+</div>
+
+<div class="wave-divider wave-to-cream" aria-hidden="true"></div>
+
+<section>
+  <div class="container">
+    <div style="max-width: 700px; margin: 0 auto;">
+
+      <div class="form-card guestbook-form-card fade-in">
+        <h2>Laisser un mot</h2>
+        <div class="divider on-cream"></div>
+
+        <form id="guestbook-form" style="margin-top: 24px;">
+
+          <!-- Piège à robots (anti-spam) : ce champ doit rester vide -->
+          <input type="text" name="site_web" id="gb-website" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
+
+          <div class="form-field">
+            <label for="gb-name">Votre nom</label>
+            <input type="text" id="gb-name" name="name" required maxlength="60" autocomplete="name" class="field" placeholder="Prénom, ou pseudo">
+          </div>
+
+          <div class="form-field">
+            <label for="gb-message">Votre message</label>
+            <textarea id="gb-message" name="message" rows="4" required maxlength="600" class="field" placeholder="Ce que vous avez envie de nous dire..."></textarea>
+          </div>
+
+          <p id="guestbook-error" class="form-msg-error" hidden></p>
+
+          <button type="submit" id="guestbook-submit" class="btn btn-primary">Envoyer mon message</button>
+          <p class="form-reassurance">Votre mot s'affiche tout de suite après une vérification automatique anti-spam.</p>
+        </form>
+        <p id="guestbook-success" class="form-reassurance" style="color: var(--green-deep); font-weight: 600;" hidden>Merci ! Votre mot vient d'être publié juste en dessous.</p>
+      </div>
+
+      <div class="section-intro fade-in" style="margin-top: 8px;">
+        <h2>Les mots laissés</h2>
+        <div class="divider on-cream"></div>
+        <p class="guestbook-count" id="guestbook-count" hidden></p>
+      </div>
+
+      <div class="guestbook-list" id="guestbook-list">
+        <p class="guestbook-loading" id="guestbook-loading">Chargement des messages...</p>
+      </div>
+
     </div>
   </div>
 </section>
+
+<div class="wave-divider wave-to-green" aria-hidden="true"></div>
 
 <footer class="site-footer">
   <div class="container">

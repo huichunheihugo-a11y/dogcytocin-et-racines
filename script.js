@@ -159,4 +159,123 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  const guestbookForm = document.getElementById('guestbook-form');
+
+  if (guestbookForm) {
+    const listEl = document.getElementById('guestbook-list');
+    const loadingEl = document.getElementById('guestbook-loading');
+    const countEl = document.getElementById('guestbook-count');
+    const errorEl = document.getElementById('guestbook-error');
+    const successEl = document.getElementById('guestbook-success');
+    const submitBtn = document.getElementById('guestbook-submit');
+    const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const renderEntry = (entry) => {
+      const card = document.createElement('div');
+      card.className = 'guestbook-entry fade-in visible';
+
+      const head = document.createElement('div');
+      head.className = 'guestbook-entry-head';
+
+      const name = document.createElement('span');
+      name.className = 'guestbook-entry-name';
+      name.textContent = entry.name;
+
+      const date = document.createElement('span');
+      date.className = 'guestbook-entry-date';
+      date.textContent = dateFormatter.format(new Date(entry.created_at));
+
+      head.appendChild(name);
+      head.appendChild(date);
+
+      const message = document.createElement('p');
+      message.className = 'guestbook-entry-message';
+      message.textContent = entry.message;
+
+      card.appendChild(head);
+      card.appendChild(message);
+      return card;
+    };
+
+    const showEmptyState = () => {
+      if (document.getElementById('guestbook-empty')) return;
+      const empty = document.createElement('p');
+      empty.className = 'guestbook-empty';
+      empty.id = 'guestbook-empty';
+      empty.textContent = 'Soyez le premier à laisser un mot !';
+      listEl.appendChild(empty);
+    };
+
+    const prependEntry = (entry) => {
+      const emptyMsg = document.getElementById('guestbook-empty');
+      if (emptyMsg) emptyMsg.remove();
+      listEl.prepend(renderEntry(entry));
+    };
+
+    (async () => {
+      try {
+        const response = await fetch('/api/comments');
+        const data = await response.json();
+        if (loadingEl) loadingEl.remove();
+
+        if (!data.comments || data.comments.length === 0) {
+          showEmptyState();
+          return;
+        }
+
+        countEl.hidden = false;
+        countEl.textContent = data.comments.length > 1 ? `${data.comments.length} messages` : '1 message';
+        data.comments.forEach((entry) => listEl.appendChild(renderEntry(entry)));
+      } catch (err) {
+        if (loadingEl) loadingEl.remove();
+        showEmptyState();
+      }
+    })();
+
+    guestbookForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (guestbookForm.elements.site_web.value) {
+        guestbookForm.reset();
+        return;
+      }
+
+      errorEl.hidden = true;
+      successEl.hidden = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Envoi en cours...';
+
+      const payload = {
+        name: guestbookForm.elements.name.value,
+        message: guestbookForm.elements.message.value,
+        website: guestbookForm.elements.site_web.value,
+      };
+
+      try {
+        const response = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          errorEl.textContent = (result && result.message) || "Aïe, l'envoi n'est pas passé. Réessayez un peu plus tard.";
+          errorEl.hidden = false;
+          return;
+        }
+
+        guestbookForm.reset();
+        successEl.hidden = false;
+        if (result.comment) prependEntry(result.comment);
+      } catch (err) {
+        errorEl.textContent = "Aïe, l'envoi n'est pas passé. Réessayez un peu plus tard.";
+        errorEl.hidden = false;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Envoyer mon message';
+      }
+    });
+  }
 });

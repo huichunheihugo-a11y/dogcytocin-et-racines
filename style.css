@@ -1696,3 +1696,68 @@ select.field {
   fill: none;
   stroke-linecap: round;
 }
+
+/* ===== Livre d'or ===== */
+
+.guestbook-form-card { margin-bottom: 64px; }
+
+.guestbook-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.guestbook-entry {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+}
+
+.guestbook-list .guestbook-entry:nth-child(odd) { transform: rotate(-0.6deg); }
+.guestbook-list .guestbook-entry:nth-child(even) { transform: rotate(0.6deg); }
+
+.guestbook-entry-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.guestbook-entry-name {
+  font-family: var(--font-marker);
+  font-size: 1.2rem;
+  color: var(--green-deep);
+}
+
+.guestbook-entry-date {
+  font-size: 0.78rem;
+  color: var(--green-sage);
+  white-space: nowrap;
+}
+
+.guestbook-entry-message {
+  color: #4a4436;
+  line-height: 1.6;
+}
+
+.guestbook-empty,
+.guestbook-loading {
+  text-align: center;
+  font-style: italic;
+  color: var(--green-sage);
+  padding: 24px 0;
+}
+
+.guestbook-count {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--green-sage);
+  margin-top: -8px;
+}
+
+@media (max-width: 480px) {
+  .guestbook-entry { padding: 20px; }
+}
