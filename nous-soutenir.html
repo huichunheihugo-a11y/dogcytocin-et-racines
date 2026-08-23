@@ -46,7 +46,6 @@
       <li><a href="notre-histoire.html">Notre histoire</a></li>
       <li><a href="nos-actions.html">Nos actions</a></li>
       <li><a href="nous-soutenir.html" class="active">Nous soutenir</a></li>
-      <li><a href="livre-or.html">Livre d'or</a></li>
     </ul>
   </div>
 </header>
@@ -126,6 +125,46 @@
 
     </div>
 
+    <div class="section-intro fade-in">
+      <h2>Un mot pour nous</h2>
+      <div class="divider on-cream"></div>
+      <p style="margin-top: 18px;">Pas de don à faire aujourd'hui ? Un simple mot suffit aussi — chaque message compte, et on les lit tous.</p>
+    </div>
+
+    <div style="max-width: 700px; margin: 0 auto 64px;">
+
+      <div class="form-card guestbook-form-card fade-in">
+        <form id="guestbook-form">
+
+          <!-- Piège à robots (anti-spam) : ce champ doit rester vide -->
+          <input type="text" name="site_web" id="gb-website" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
+
+          <div class="form-field">
+            <label for="gb-name">Votre nom</label>
+            <input type="text" id="gb-name" name="name" required maxlength="60" autocomplete="name" class="field" placeholder="Prénom, ou pseudo">
+          </div>
+
+          <div class="form-field">
+            <label for="gb-message">Votre message</label>
+            <textarea id="gb-message" name="message" rows="4" required maxlength="600" class="field" placeholder="Ce que vous avez envie de nous dire..."></textarea>
+          </div>
+
+          <p id="guestbook-error" class="form-msg-error" hidden></p>
+
+          <button type="submit" id="guestbook-submit" class="btn btn-primary">Envoyer mon message</button>
+          <p class="form-reassurance">Votre mot s'affiche tout de suite après une vérification automatique anti-spam.</p>
+        </form>
+        <p id="guestbook-success" class="form-reassurance" style="color: var(--green-deep); font-weight: 600;" hidden>Merci ! Votre mot vient d'être publié juste en dessous.</p>
+      </div>
+
+      <p class="guestbook-count" id="guestbook-count" hidden></p>
+
+      <div class="guestbook-list" id="guestbook-list">
+        <p class="guestbook-loading" id="guestbook-loading">Chargement des messages...</p>
+      </div>
+
+    </div>
+
     <div class="cta-box fade-in">
       <h2>Une question ?</h2>
       <div class="divider on-green"></div>
@@ -155,7 +194,6 @@
           <a href="notre-histoire.html">Notre histoire</a>
           <a href="nos-actions.html">Nos actions</a>
           <a href="nous-soutenir.html">Nous soutenir</a>
-          <a href="livre-or.html">Livre d'or</a>
         </nav>
       </div>
       <div class="footer-col">
