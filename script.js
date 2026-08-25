@@ -327,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('dogcytocin_admin_pw', pw);
         showAuthMsg('Mot de passe correct.', false);
         loadComments();
+        loadRejected();
       } catch (err) {
         showAuthMsg('Vérification impossible, réessaie.', true);
       } finally {
@@ -334,6 +335,67 @@ document.addEventListener('DOMContentLoaded', () => {
         rememberBtn.textContent = 'Valider';
       }
     });
+
+    // Bascule entre les onglets "Livre d'or" et "Messages refusés".
+    const navLinks = document.querySelectorAll('.admin-nav-link');
+    const tabs = document.querySelectorAll('.admin-tab');
+    const tabTitle = document.getElementById('admin-tab-title');
+    const tabLabels = { comments: "Livre d'or", rejected: 'Messages refusés' };
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tab = link.dataset.tab;
+        navLinks.forEach((l) => l.classList.toggle('active', l === link));
+        tabs.forEach((t) => { t.hidden = t.id !== `admin-tab-${tab}`; });
+        tabTitle.textContent = tabLabels[tab] || '';
+      });
+    });
+
+    // Bouton "Supprimer" a deux clics : le premier arme, le second confirme (evite de dependre de confirm(), bloque par certains navigateurs/extensions).
+    const createTwoStepButton = (label, onConfirm) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'admin-delete-btn';
+      btn.textContent = label;
+
+      let confirmTimer = null;
+      const reset = () => {
+        clearTimeout(confirmTimer);
+        confirmTimer = null;
+        btn.classList.remove('confirming');
+        btn.textContent = label;
+      };
+
+      btn.addEventListener('click', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          showAuthMsg('Entre le mot de passe et clique sur Valider avant de supprimer.', true);
+          return;
+        }
+
+        if (!btn.classList.contains('confirming')) {
+          btn.classList.add('confirming');
+          btn.textContent = 'Confirmer ?';
+          confirmTimer = setTimeout(reset, 4000);
+          return;
+        }
+
+        clearTimeout(confirmTimer);
+        btn.disabled = true;
+        btn.textContent = '...';
+
+        try {
+          await onConfirm(pw);
+        } catch (err) {
+          btn.disabled = false;
+          reset();
+          showAuthMsg(err.message || "L'action a échoué, réessaie.", true);
+        }
+      });
+
+      return btn;
+    };
 
     const renderAdminEntry = (entry) => {
       const row = document.createElement('div');
@@ -363,66 +425,132 @@ document.addEventListener('DOMContentLoaded', () => {
       body.appendChild(head);
       body.appendChild(message);
 
-      const deleteBtn = document.createElement('button');
-      deleteBtn.type = 'button';
-      deleteBtn.className = 'admin-delete-btn';
-      deleteBtn.textContent = 'Supprimer';
+      const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
+        const response = await fetch(`/api/comments/${entry.id}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Password': pw },
+        });
 
-      let confirmTimer = null;
+        if (response.status === 401) throw new Error('Mot de passe incorrect.');
 
-      const resetDeleteBtn = () => {
-        clearTimeout(confirmTimer);
-        confirmTimer = null;
-        deleteBtn.classList.remove('confirming');
-        deleteBtn.textContent = 'Supprimer';
-      };
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('La suppression a échoué, réessaie.');
 
-      deleteBtn.addEventListener('click', async () => {
-        const pw = storedPassword();
-        if (!pw) {
-          showAuthMsg('Entre le mot de passe et clique sur Valider avant de supprimer.', true);
-          return;
-        }
-
-        if (!deleteBtn.classList.contains('confirming')) {
-          deleteBtn.classList.add('confirming');
-          deleteBtn.textContent = 'Confirmer ?';
-          confirmTimer = setTimeout(resetDeleteBtn, 4000);
-          return;
-        }
-
-        clearTimeout(confirmTimer);
-        deleteBtn.disabled = true;
-        deleteBtn.textContent = '...';
-
-        try {
-          const response = await fetch(`/api/comments/${entry.id}`, {
-            method: 'DELETE',
-            headers: { 'X-Admin-Password': pw },
-          });
-
-          if (response.status === 401) {
-            showAuthMsg('Mot de passe incorrect.', true);
-            deleteBtn.disabled = false;
-            resetDeleteBtn();
-            return;
-          }
-
-          const result = await response.json();
-          if (!response.ok || !result.success) throw new Error('delete failed');
-
-          row.remove();
-        } catch (err) {
-          deleteBtn.disabled = false;
-          resetDeleteBtn();
-          showAuthMsg('La suppression a échoué, réessaie.', true);
-        }
+        row.remove();
       });
 
       row.appendChild(body);
       row.appendChild(deleteBtn);
       return row;
     };
+
+    const REJECTED_REASON_LABELS = {
+      spam: 'Filtré : lien ou mot-clé publicitaire',
+      invalid: 'Filtré : longueur invalide',
+    };
+
+    const renderRejectedEntry = (entry) => {
+      const row = document.createElement('div');
+      row.className = 'admin-entry';
+
+      const body = document.createElement('div');
+      body.className = 'admin-entry-body';
+
+      const head = document.createElement('div');
+      head.className = 'admin-entry-head';
+
+      const name = document.createElement('span');
+      name.className = 'admin-entry-name';
+      name.textContent = entry.name || '(sans nom)';
+
+      const date = document.createElement('span');
+      date.className = 'admin-entry-date';
+      date.textContent = dateFormatter.format(new Date(entry.created_at));
+
+      head.appendChild(name);
+      head.appendChild(date);
+
+      const reason = document.createElement('span');
+      reason.className = 'admin-entry-reason';
+      reason.textContent = REJECTED_REASON_LABELS[entry.reason] || entry.reason;
+
+      const message = document.createElement('p');
+      message.className = 'admin-entry-message';
+      message.textContent = entry.message;
+
+      body.appendChild(head);
+      body.appendChild(reason);
+      body.appendChild(message);
+
+      const actions = document.createElement('div');
+      actions.className = 'admin-entry-actions';
+
+      const approveBtn = document.createElement('button');
+      approveBtn.type = 'button';
+      approveBtn.className = 'admin-approve-btn';
+      approveBtn.textContent = 'Publier quand même';
+
+      approveBtn.addEventListener('click', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          showAuthMsg('Entre le mot de passe et clique sur Valider avant de publier.', true);
+          return;
+        }
+
+        approveBtn.disabled = true;
+        approveBtn.textContent = '...';
+
+        try {
+          const response = await fetch(`/api/admin/rejected/${entry.id}/approve`, {
+            method: 'POST',
+            headers: { 'X-Admin-Password': pw },
+          });
+
+          if (response.status === 401) {
+            showAuthMsg('Mot de passe incorrect.', true);
+            approveBtn.disabled = false;
+            approveBtn.textContent = 'Publier quand même';
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('publish failed');
+
+          row.remove();
+          if (result.comment) prependAdminComment(result.comment);
+        } catch (err) {
+          approveBtn.disabled = false;
+          approveBtn.textContent = 'Publier quand même';
+          showAuthMsg('La publication a échoué, réessaie.', true);
+        }
+      });
+
+      const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
+        const response = await fetch(`/api/admin/rejected/${entry.id}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) throw new Error('Mot de passe incorrect.');
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('La suppression a échoué, réessaie.');
+
+        row.remove();
+      });
+
+      actions.appendChild(approveBtn);
+      actions.appendChild(deleteBtn);
+      row.appendChild(body);
+      row.appendChild(actions);
+      return row;
+    };
+
+    function prependAdminComment(entry) {
+      const emptyMsg = adminList.querySelector('.guestbook-empty');
+      if (emptyMsg) emptyMsg.remove();
+      adminList.prepend(renderAdminEntry(entry));
+    }
 
     async function loadComments() {
       adminList.innerHTML = '<p class="guestbook-loading">Chargement des messages...</p>';
@@ -446,6 +574,37 @@ document.addEventListener('DOMContentLoaded', () => {
         empty.className = 'guestbook-empty';
         empty.textContent = 'Impossible de charger les messages.';
         adminList.appendChild(empty);
+      }
+    }
+
+    async function loadRejected() {
+      const rejectedList = document.getElementById('admin-rejected-list');
+      const pw = storedPassword();
+      if (!pw || !rejectedList) return;
+
+      rejectedList.innerHTML = '<p class="guestbook-loading">Chargement...</p>';
+      try {
+        const response = await fetch('/api/admin/rejected', {
+          headers: { 'X-Admin-Password': pw },
+        });
+        const data = await response.json();
+        rejectedList.innerHTML = '';
+
+        if (!data.rejected || data.rejected.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucun message refusé pour le moment.';
+          rejectedList.appendChild(empty);
+          return;
+        }
+
+        data.rejected.forEach((entry) => rejectedList.appendChild(renderRejectedEntry(entry)));
+      } catch (err) {
+        rejectedList.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les messages refusés.';
+        rejectedList.appendChild(empty);
       }
     }
   }

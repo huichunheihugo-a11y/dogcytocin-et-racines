@@ -65,6 +65,17 @@ function looksLikeSpam(name, message) {
   return false;
 }
 
+async function logRejected(env, name, message, reason, ipHash) {
+  if (!env.DB) return;
+  try {
+    await env.DB.prepare(
+      'INSERT INTO rejected_comments (name, message, reason, created_at, ip_hash) VALUES (?1, ?2, ?3, ?4, ?5)'
+    ).bind(name || '', message || '', reason, new Date().toISOString(), ipHash).run();
+  } catch (err) {
+    // Journal des refus : un bonus, pas une dependance dure -- on ne bloque jamais la reponse au visiteur pour ca.
+  }
+}
+
 async function handleGetComments(env) {
   if (!env.DB) return json({ comments: [] });
   try {
@@ -97,10 +108,14 @@ async function handlePostComment(request, env) {
     return json({ success: true, comment: null });
   }
 
+  const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
+  const ipHash = await hashIp(ip);
+
   const n = typeof name === 'string' ? name.trim() : '';
   const m = typeof message === 'string' ? message.trim() : '';
 
   if (n.length < 2 || n.length > 60 || m.length < 3 || m.length > 600) {
+    await logRejected(env, n, m, 'invalid', ipHash);
     return json({
       success: false,
       reason: 'invalid',
@@ -109,15 +124,13 @@ async function handlePostComment(request, env) {
   }
 
   if (looksLikeSpam(n, m)) {
+    await logRejected(env, n, m, 'spam', ipHash);
     return json({
       success: false,
       reason: 'spam',
       message: "Votre message n'a pas pu être publié — évitez les liens ou mots-clés publicitaires.",
     }, 422);
   }
-
-  const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
-  const ipHash = await hashIp(ip);
 
   try {
     // created_at est stocké au format ISO (toISOString) : on compare avec une borne
@@ -228,6 +241,79 @@ async function handleDeleteComment(request, env, id) {
   }
 }
 
+async function handleGetRejected(request, env) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!env.DB) return json({ rejected: [] });
+
+  try {
+    const { results } = await env.DB.prepare(
+      'SELECT id, name, message, reason, created_at FROM rejected_comments ORDER BY id DESC LIMIT 100'
+    ).all();
+    return json({ rejected: results });
+  } catch (err) {
+    return json({ rejected: [] });
+  }
+}
+
+async function handleApproveRejected(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  try {
+    const row = await env.DB.prepare(
+      'SELECT name, message FROM rejected_comments WHERE id = ?1'
+    ).bind(id).first();
+
+    if (!row) {
+      return json({ success: false, message: 'Message introuvable (déjà traité ?).' }, 404);
+    }
+
+    const createdAt = new Date().toISOString();
+    const insert = await env.DB.prepare(
+      'INSERT INTO comments (name, message, created_at, ip_hash) VALUES (?1, ?2, ?3, ?4)'
+    ).bind(row.name, row.message, createdAt, null).run();
+
+    await env.DB.prepare('DELETE FROM rejected_comments WHERE id = ?1').bind(id).run();
+
+    return json({
+      success: true,
+      comment: { id: insert.meta.last_row_id, name: row.name, message: row.message, created_at: createdAt },
+    });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la publication.' }, 500);
+  }
+}
+
+async function handleDeleteRejected(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  try {
+    await env.DB.prepare('DELETE FROM rejected_comments WHERE id = ?1').bind(id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
+  }
+}
+
 export default {
   async fetch(request, env) {
     try {
@@ -248,6 +334,23 @@ export default {
       const commentIdMatch = url.pathname.match(/^\/api\/comments\/(\d+)$/);
       if (commentIdMatch) {
         if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteComment(request, env, commentIdMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/rejected') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetRejected(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const approveMatch = url.pathname.match(/^\/api\/admin\/rejected\/(\d+)\/approve$/);
+      if (approveMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleApproveRejected(request, env, approveMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const rejectedIdMatch = url.pathname.match(/^\/api\/admin\/rejected\/(\d+)$/);
+      if (rejectedIdMatch) {
+        if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteRejected(request, env, rejectedIdMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

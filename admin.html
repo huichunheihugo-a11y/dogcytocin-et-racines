@@ -17,12 +17,13 @@
       <span>Administration</span>
     </div>
     <nav class="admin-nav-links">
-      <a href="#" class="admin-nav-link active">Livre d'or</a>
+      <a href="#" class="admin-nav-link active" data-tab="comments">Livre d'or</a>
+      <a href="#" class="admin-nav-link" data-tab="rejected">Messages refusés</a>
     </nav>
   </aside>
 
   <main class="admin-main">
-    <h1>Livre d'or</h1>
+    <h1 id="admin-tab-title">Livre d'or</h1>
 
     <div class="admin-auth">
       <label for="admin-password">Mot de passe admin</label>
@@ -33,7 +34,14 @@
       <p id="admin-auth-msg" class="admin-auth-msg" hidden></p>
     </div>
 
-    <div id="admin-list" class="admin-list"></div>
+    <div id="admin-tab-comments" class="admin-tab">
+      <div id="admin-list" class="admin-list"></div>
+    </div>
+
+    <div id="admin-tab-rejected" class="admin-tab" hidden>
+      <p class="admin-tab-intro">Messages bloqués automatiquement par le filtre anti-spam. Vérifie qu'il ne s'agit pas d'un vrai visiteur bloqué par erreur avant de supprimer.</p>
+      <div id="admin-rejected-list" class="admin-list"></div>
+    </div>
   </main>
 </div>
 

@@ -16,3 +16,14 @@ CREATE TABLE IF NOT EXISTS admin_attempts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_admin_attempts_ip ON admin_attempts (ip_hash, attempted_at);
+
+CREATE TABLE IF NOT EXISTS rejected_comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  message TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  ip_hash TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_rejected_comments_created ON rejected_comments (created_at);
