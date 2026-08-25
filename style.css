@@ -1825,8 +1825,14 @@ select.field {
   gap: 12px;
 }
 
+.admin-password-row {
+  position: relative;
+  display: flex;
+}
+
 .admin-gate-overlay input#admin-password {
-  padding: 12px 16px;
+  flex: 1;
+  padding: 12px 44px 12px 16px;
   border: 1px solid rgba(47, 69, 48, 0.25);
   border-radius: 50px;
   font-size: 1rem;
@@ -1840,6 +1846,22 @@ select.field {
   outline: none;
   border-color: var(--green-sage);
 }
+
+#admin-password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 6px 8px;
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+#admin-password-toggle:hover { opacity: 0.9; }
 
 .admin-shell {
   display: flex;

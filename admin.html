@@ -16,7 +16,10 @@
     <h2>Accès admin</h2>
     <p>Entre le mot de passe administrateur pour continuer.</p>
     <form id="admin-gate-form" autocomplete="off">
-      <input type="password" id="admin-password" placeholder="Mot de passe" autocomplete="off">
+      <div class="admin-password-row">
+        <input type="password" id="admin-password" placeholder="Mot de passe" autocomplete="off">
+        <button type="button" id="admin-password-toggle" aria-label="Afficher le mot de passe">👁</button>
+      </div>
       <button type="submit" class="btn btn-primary">Entrer</button>
     </form>
     <p id="admin-gate-error" class="gate-error" hidden></p>

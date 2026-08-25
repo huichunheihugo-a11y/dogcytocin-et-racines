@@ -296,9 +296,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const gatePasswordInput = document.getElementById('admin-password');
     const gateError = document.getElementById('admin-gate-error');
     const gateSubmitBtn = gateForm.querySelector('button[type="submit"]');
+    const gatePasswordToggle = document.getElementById('admin-password-toggle');
     const adminList = document.getElementById('admin-list');
     const actionMsg = document.getElementById('admin-action-msg');
     const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    gatePasswordToggle.addEventListener('click', () => {
+      const showing = gatePasswordInput.type === 'text';
+      gatePasswordInput.type = showing ? 'password' : 'text';
+      gatePasswordToggle.textContent = showing ? '👁' : '🙈';
+    });
 
     const storedPassword = () => sessionStorage.getItem('dogcytocin_admin_pw') || '';
 
