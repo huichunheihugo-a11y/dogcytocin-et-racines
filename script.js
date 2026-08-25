@@ -537,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
       replyTextarea.className = 'admin-reply-textarea field';
       replyTextarea.placeholder = 'Écris une réponse publique à ce message...';
       replyTextarea.maxLength = 1000;
+      replyTextarea.rows = 2;
 
       const replyActions = document.createElement('div');
       replyActions.className = 'admin-reply-actions';

@@ -2127,7 +2127,9 @@ select.field {
 }
 
 .admin-reply-textarea {
-  min-height: 80px;
+  min-height: 44px;
+  padding: 9px 12px;
+  font-size: 0.92rem;
 }
 
 .admin-reply-actions {
