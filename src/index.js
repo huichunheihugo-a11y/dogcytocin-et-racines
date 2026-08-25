@@ -26,14 +26,42 @@ const SPAM_WORDS = [
   'http://', 'https://', 'www.',
 ];
 
-// Liste volontairement courte : un filtre par mots-clés n'attrapera jamais tout
-// (fautes volontaires, contournements...) -- c'est un premier filet, pas une garantie.
-const INAPPROPRIATE_WORDS = [
-  'connard', 'connasse', 'salope', 'pute', 'putain', 'encule', 'enculé',
-  'batard', 'bâtard', 'nique', 'niquer', 'ntm', 'fdp', 'fils de pute',
-  'con de merde', 'sale merde', 'ta gueule', 'ferme ta gueule',
-  'negre', 'nègre', 'bougnoule', 'youpin', 'pd', 'tapette',
+// Un filtre par mots-clés n'attrapera jamais tout (fautes volontaires, contournements,
+// tournures detournees...) -- c'est un premier filet, pas une garantie. Chaque categorie
+// est volontairement composee de termes univoques ou d'expressions completes plutot que
+// de mots courts ambigus, pour limiter les faux positifs sur de vrais messages.
+
+// Insultes racistes / discriminatoires (origine, religion, orientation, identite de genre)
+const HATE_WORDS = [
+  'negre', 'nègre', 'bougnoule', 'youpin', 'chinetoque', 'feuj', 'bicot',
+  'sale juif', 'sale arabe', 'sale noir', 'sale blanc',
+  'pd', 'pédé', 'tapette', 'tarlouze', 'gouine', 'travelo',
 ];
+
+// Vocabulaire lie au terrorisme / extremisme violent
+const EXTREMISM_WORDS = [
+  'terroriste', 'terrorisme', 'djihad', 'jihad', 'daesh', 'isis',
+  'kamikaze', 'attentat', 'decapiter', 'décapiter', 'egorger', 'égorger',
+  'nazi', 'suprematiste', 'suprémaciste',
+];
+
+// Grossieretes courantes en francais
+const PROFANITY_WORDS = [
+  'connard', 'connasse', 'salope', 'pute', 'putain', 'encule', 'enculé',
+  'nique', 'niquer', 'nique ta mère', 'nique sa mère', 'ntm', 'fdp',
+  'fils de pute', 'con de merde', 'sale merde', 'ta gueule',
+  'ferme ta gueule', 'salopard', 'enfoiré', 'enfoire', 'trouduc',
+  'branleur', 'va te faire foutre',
+  // Note : "batard"/"bâtard" est volontairement absent de cette liste -- c'est aussi le mot
+  // francais pour un chien croise/sans race, tres frequent sur un site de refuge canin.
+];
+
+// Contenu a caractere sexuel explicite
+const SEXUAL_WORDS = [
+  'couille', 'couilles', 'burnes', 'chibre', 'sodomie', 'fellation',
+];
+
+const INAPPROPRIATE_WORDS = [...HATE_WORDS, ...EXTREMISM_WORDS, ...PROFANITY_WORDS, ...SEXUAL_WORDS];
 
 function withSecurityHeaders(response) {
   const hardened = new Response(response.body, response);
