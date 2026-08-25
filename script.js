@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rememberBtn.addEventListener('click', () => {
       sessionStorage.setItem('dogcytocin_admin_pw', passwordInput.value);
       showAuthMsg('Mot de passe enregistré pour cette session.', false);
+      loadComments();
     });
 
     const renderAdminEntry = (entry) => {
@@ -350,6 +351,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
+        if (!window.confirm('Es-tu sûr de vouloir supprimer ce message ?')) return;
+
         deleteBtn.disabled = true;
         deleteBtn.textContent = '...';
 
@@ -382,7 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return row;
     };
 
-    (async () => {
+    async function loadComments() {
+      adminList.innerHTML = '<p class="guestbook-loading">Chargement des messages...</p>';
       try {
         const response = await fetch('/api/comments');
         const data = await response.json();
@@ -404,6 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
         empty.textContent = 'Impossible de charger les messages.';
         adminList.appendChild(empty);
       }
-    })();
+    }
   }
 });
