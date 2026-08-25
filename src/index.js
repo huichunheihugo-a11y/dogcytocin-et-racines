@@ -1,3 +1,8 @@
+// Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
+// sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
+// A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
+const WORKER_VERSION = '2026-08-26.1';
+
 const CSP = [
   "default-src 'self'",
   "script-src 'self'",
@@ -411,6 +416,10 @@ export default {
   async fetch(request, env) {
     try {
       const url = new URL(request.url);
+
+      if (url.pathname === '/api/version') {
+        return withSecurityHeaders(json({ version: WORKER_VERSION }));
+      }
 
       if (url.pathname === '/api/comments') {
         if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env, url.searchParams.get('order')));
