@@ -3,8 +3,14 @@ CREATE TABLE IF NOT EXISTS comments (
   name TEXT NOT NULL,
   message TEXT NOT NULL,
   created_at TEXT NOT NULL,
-  ip_hash TEXT
+  ip_hash TEXT,
+  reply_message TEXT,
+  reply_created_at TEXT
 );
+
+-- Si la table comments existe deja sans ces deux colonnes, executer separement dans la console D1 :
+-- ALTER TABLE comments ADD COLUMN reply_message TEXT;
+-- ALTER TABLE comments ADD COLUMN reply_created_at TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_comments_ip_hash_created ON comments (ip_hash, created_at);
 

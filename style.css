@@ -1786,6 +1786,39 @@ select.field {
   line-height: 1.6;
 }
 
+.guestbook-reply {
+  position: relative;
+  margin-top: 16px;
+  margin-left: 30px;
+  padding: 14px 18px;
+  background: rgba(217, 194, 126, 0.14);
+  border-left: 3px solid var(--gold);
+  border-radius: 4px 12px 12px 4px;
+}
+
+.guestbook-reply-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--green-deep);
+  background: var(--gold);
+  padding: 3px 10px;
+  border-radius: 50px;
+  margin-bottom: 8px;
+}
+
+.guestbook-reply-message {
+  margin: 0;
+  color: #4a4436;
+  line-height: 1.55;
+}
+
+@media (max-width: 480px) {
+  .guestbook-reply { margin-left: 14px; padding: 12px 16px; }
+}
+
 .guestbook-empty,
 .guestbook-loading {
   text-align: center;
@@ -2057,6 +2090,77 @@ select.field {
 
 .admin-approve-btn:hover { background: rgba(47, 69, 48, 0.15); }
 .admin-approve-btn:disabled { opacity: 0.5; cursor: default; }
+
+.admin-reply-preview {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: rgba(217, 194, 126, 0.14);
+  border-left: 3px solid var(--gold);
+  border-radius: 4px 12px 12px 4px;
+}
+
+.admin-reply-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--green-deep);
+  background: var(--gold);
+  padding: 3px 10px;
+  border-radius: 50px;
+  margin-bottom: 6px;
+}
+
+.admin-reply-preview-message {
+  margin: 0;
+  color: #4a4436;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.admin-reply-form {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-reply-textarea {
+  min-height: 80px;
+}
+
+.admin-reply-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-reply-toggle-btn {
+  flex-shrink: 0;
+  background: rgba(217, 194, 126, 0.18);
+  border: 1px solid rgba(217, 194, 126, 0.6);
+  color: var(--green-deep);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.admin-reply-toggle-btn:hover { background: rgba(217, 194, 126, 0.3); }
+
+.admin-reply-cancel-btn {
+  background: none;
+  border: none;
+  color: var(--green-sage);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
 
 .admin-sort-controls {
   display: flex;

@@ -95,7 +95,7 @@ async function handleGetComments(env, order) {
   const direction = order === 'asc' ? 'ASC' : 'DESC';
   try {
     const { results } = await env.DB.prepare(
-      `SELECT id, name, message, created_at FROM comments ORDER BY created_at ${direction}, id ${direction} LIMIT 100`
+      `SELECT id, name, message, created_at, reply_message, reply_created_at FROM comments ORDER BY created_at ${direction}, id ${direction} LIMIT 100`
     ).all();
     return json({ comments: results });
   } catch (err) {
@@ -265,6 +265,47 @@ async function handleDeleteComment(request, env, id) {
   }
 }
 
+async function handleReplyComment(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Message illisible.' }, 400);
+  }
+
+  const reply = typeof body?.reply === 'string' ? body.reply.trim() : '';
+
+  if (reply.length > 1000) {
+    return json({ success: false, message: 'La réponse est trop longue (1000 caractères max).' }, 422);
+  }
+
+  try {
+    // Un champ vide efface la reponse existante (permet a l'admin de corriger une erreur sans endpoint dedie).
+    const replyCreatedAt = reply ? new Date().toISOString() : null;
+    await env.DB.prepare(
+      'UPDATE comments SET reply_message = ?1, reply_created_at = ?2 WHERE id = ?3'
+    ).bind(reply || null, replyCreatedAt, id).run();
+
+    return json({
+      success: true,
+      reply: reply ? { message: reply, created_at: replyCreatedAt } : null,
+    });
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de l'enregistrement de la réponse." }, 500);
+  }
+}
+
 async function handleGetRejected(request, env) {
   const authError = await checkAdminPassword(request, env);
   if (authError) return authError;
@@ -358,6 +399,12 @@ export default {
       const commentIdMatch = url.pathname.match(/^\/api\/comments\/(\d+)$/);
       if (commentIdMatch) {
         if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteComment(request, env, commentIdMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const replyMatch = url.pathname.match(/^\/api\/comments\/(\d+)\/reply$/);
+      if (replyMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleReplyComment(request, env, replyMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

@@ -204,6 +204,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       card.appendChild(top);
       card.appendChild(message);
+
+      if (entry.reply_message) {
+        const reply = document.createElement('div');
+        reply.className = 'guestbook-reply';
+
+        const badge = document.createElement('span');
+        badge.className = 'guestbook-reply-badge';
+        badge.textContent = 'Réponse de Dogcytocin';
+
+        const replyMessage = document.createElement('p');
+        replyMessage.className = 'guestbook-reply-message';
+        replyMessage.textContent = entry.reply_message;
+
+        reply.appendChild(badge);
+        reply.appendChild(replyMessage);
+        card.appendChild(reply);
+      }
+
       return card;
     };
 
@@ -487,6 +505,115 @@ document.addEventListener('DOMContentLoaded', () => {
       body.appendChild(head);
       body.appendChild(message);
 
+      let replyPreview = null;
+      const renderReplyPreview = () => {
+        if (replyPreview) {
+          replyPreview.remove();
+          replyPreview = null;
+        }
+        if (!entry.reply_message) return;
+
+        replyPreview = document.createElement('div');
+        replyPreview.className = 'admin-reply-preview';
+
+        const badge = document.createElement('span');
+        badge.className = 'admin-reply-badge';
+        badge.textContent = 'Réponse de Dogcytocin';
+
+        const text = document.createElement('p');
+        text.className = 'admin-reply-preview-message';
+        text.textContent = entry.reply_message;
+
+        replyPreview.appendChild(badge);
+        replyPreview.appendChild(text);
+        body.insertBefore(replyPreview, replyForm);
+      };
+
+      const replyForm = document.createElement('div');
+      replyForm.className = 'admin-reply-form';
+      replyForm.hidden = true;
+
+      const replyTextarea = document.createElement('textarea');
+      replyTextarea.className = 'admin-reply-textarea field';
+      replyTextarea.placeholder = 'Écris une réponse publique à ce message...';
+      replyTextarea.maxLength = 1000;
+
+      const replyActions = document.createElement('div');
+      replyActions.className = 'admin-reply-actions';
+
+      const sendReplyBtn = document.createElement('button');
+      sendReplyBtn.type = 'button';
+      sendReplyBtn.className = 'admin-approve-btn';
+      sendReplyBtn.textContent = 'Envoyer la réponse';
+
+      const cancelReplyBtn = document.createElement('button');
+      cancelReplyBtn.type = 'button';
+      cancelReplyBtn.className = 'admin-reply-cancel-btn';
+      cancelReplyBtn.textContent = 'Annuler';
+
+      replyActions.appendChild(sendReplyBtn);
+      replyActions.appendChild(cancelReplyBtn);
+      replyForm.appendChild(replyTextarea);
+      replyForm.appendChild(replyActions);
+
+      body.appendChild(replyForm);
+      renderReplyPreview();
+
+      const replyToggleBtn = document.createElement('button');
+      replyToggleBtn.type = 'button';
+      replyToggleBtn.className = 'admin-reply-toggle-btn';
+      replyToggleBtn.textContent = entry.reply_message ? 'Modifier la réponse' : 'Répondre';
+
+      replyToggleBtn.addEventListener('click', () => {
+        replyForm.hidden = !replyForm.hidden;
+        if (!replyForm.hidden) {
+          replyTextarea.value = entry.reply_message || '';
+          replyTextarea.focus();
+        }
+      });
+
+      cancelReplyBtn.addEventListener('click', () => {
+        replyForm.hidden = true;
+      });
+
+      sendReplyBtn.addEventListener('click', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          requireReauth();
+          return;
+        }
+
+        const text = replyTextarea.value.trim();
+        sendReplyBtn.disabled = true;
+        sendReplyBtn.textContent = 'Envoi...';
+
+        try {
+          const response = await fetch(`/api/comments/${entry.id}/reply`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+            body: JSON.stringify({ reply: text }),
+          });
+
+          if (response.status === 401) {
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.message || 'échec');
+
+          entry.reply_message = result.reply ? result.reply.message : null;
+          renderReplyPreview();
+          replyForm.hidden = true;
+          replyToggleBtn.textContent = entry.reply_message ? 'Modifier la réponse' : 'Répondre';
+        } catch (err) {
+          showActionMsg("L'envoi de la réponse a échoué, réessaie.", true);
+        } finally {
+          sendReplyBtn.disabled = false;
+          sendReplyBtn.textContent = 'Envoyer la réponse';
+        }
+      });
+
       const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
         const response = await fetch(`/api/comments/${entry.id}`, {
           method: 'DELETE',
@@ -501,8 +628,13 @@ document.addEventListener('DOMContentLoaded', () => {
         row.remove();
       });
 
+      const actions = document.createElement('div');
+      actions.className = 'admin-entry-actions';
+      actions.appendChild(replyToggleBtn);
+      actions.appendChild(deleteBtn);
+
       row.appendChild(body);
-      row.appendChild(deleteBtn);
+      row.appendChild(actions);
       return row;
     };
 
