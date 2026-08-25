@@ -344,6 +344,15 @@ document.addEventListener('DOMContentLoaded', () => {
       deleteBtn.className = 'admin-delete-btn';
       deleteBtn.textContent = 'Supprimer';
 
+      let confirmTimer = null;
+
+      const resetDeleteBtn = () => {
+        clearTimeout(confirmTimer);
+        confirmTimer = null;
+        deleteBtn.classList.remove('confirming');
+        deleteBtn.textContent = 'Supprimer';
+      };
+
       deleteBtn.addEventListener('click', async () => {
         const pw = storedPassword();
         if (!pw) {
@@ -351,8 +360,14 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        if (!window.confirm('Es-tu sûr de vouloir supprimer ce message ?')) return;
+        if (!deleteBtn.classList.contains('confirming')) {
+          deleteBtn.classList.add('confirming');
+          deleteBtn.textContent = 'Confirmer ?';
+          confirmTimer = setTimeout(resetDeleteBtn, 4000);
+          return;
+        }
 
+        clearTimeout(confirmTimer);
         deleteBtn.disabled = true;
         deleteBtn.textContent = '...';
 
@@ -365,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (response.status === 401) {
             showAuthMsg('Mot de passe incorrect.', true);
             deleteBtn.disabled = false;
-            deleteBtn.textContent = 'Supprimer';
+            resetDeleteBtn();
             return;
           }
 
@@ -375,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
           row.remove();
         } catch (err) {
           deleteBtn.disabled = false;
-          deleteBtn.textContent = 'Supprimer';
+          resetDeleteBtn();
           showAuthMsg('La suppression a échoué, réessaie.', true);
         }
       });

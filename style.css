@@ -1808,30 +1808,83 @@ select.field {
 
 /* ===== Administration (livre d'or) ===== */
 
-.admin-wrap {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 48px 24px 80px;
+.admin-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--cream);
 }
 
-.admin-header {
+.admin-nav {
+  flex-shrink: 0;
+  width: 220px;
+  background: var(--green-deep);
+  color: var(--cream);
+  padding: 28px 20px;
+}
+
+.admin-nav-brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   margin-bottom: 32px;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 
-.admin-logo {
-  width: 44px;
-  height: 44px;
+.admin-nav-logo {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   object-fit: cover;
   object-position: top center;
+  flex-shrink: 0;
 }
 
-.admin-header h1 {
-  font-size: 1.4rem;
-  margin: 0;
+.admin-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-nav-link {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: rgba(247, 243, 234, 0.75);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.admin-nav-link:hover { color: var(--cream); background: rgba(247, 243, 234, 0.08); }
+
+.admin-nav-link.active {
+  color: var(--green-deep);
+  background: var(--gold);
+  font-weight: 600;
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  max-width: 700px;
+  padding: 48px 32px 80px;
+}
+
+.admin-main h1 {
+  font-size: 1.5rem;
+  margin: 0 0 24px;
+}
+
+@media (max-width: 700px) {
+  .admin-shell { flex-direction: column; }
+  .admin-nav { width: 100%; padding: 18px 20px; }
+  .admin-nav-brand { margin-bottom: 14px; }
+  .admin-nav-links { flex-direction: row; }
+  .admin-main { padding: 32px 20px 60px; }
 }
 
 .admin-auth {
@@ -1922,6 +1975,14 @@ select.field {
 
 .admin-delete-btn:hover { background: rgba(178, 59, 59, 0.15); }
 .admin-delete-btn:disabled { opacity: 0.5; cursor: default; }
+
+.admin-delete-btn.confirming {
+  background: #b23b3b;
+  border-color: #b23b3b;
+  color: #fff;
+}
+
+.admin-delete-btn.confirming:hover { background: #9c3232; }
 
 @media (max-width: 480px) {
   .admin-entry { flex-direction: column; }
