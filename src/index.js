@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-26.1';
+const WORKER_VERSION = '2026-08-26.2';
 
 const CSP = [
   "default-src 'self'",
@@ -37,25 +37,27 @@ const SPAM_WORDS = [
 // de mots courts ambigus, pour limiter les faux positifs sur de vrais messages.
 
 // Insultes racistes / discriminatoires (origine, religion, orientation, identite de genre)
+// Les accents ne sont pas necessaires ici : normalizeForFilter() les retire avant comparaison,
+// donc "negre" attrape aussi "nègre" automatiquement.
 const HATE_WORDS = [
-  'negre', 'nègre', 'bougnoule', 'youpin', 'chinetoque', 'feuj', 'bicot',
+  'negre', 'bougnoule', 'youpin', 'chinetoque', 'feuj', 'bicot',
   'sale juif', 'sale arabe', 'sale noir', 'sale blanc',
-  'pd', 'pédé', 'tapette', 'tarlouze', 'gouine', 'travelo',
+  'pd', 'pede', 'tapette', 'tarlouze', 'gouine', 'travelo',
 ];
 
 // Vocabulaire lie au terrorisme / extremisme violent
 const EXTREMISM_WORDS = [
   'terroriste', 'terrorisme', 'djihad', 'jihad', 'daesh', 'isis',
-  'kamikaze', 'attentat', 'decapiter', 'décapiter', 'egorger', 'égorger',
-  'nazi', 'suprematiste', 'suprémaciste',
+  'kamikaze', 'attentat', 'decapiter', 'egorger',
+  'nazi', 'suprematiste',
 ];
 
 // Grossieretes courantes en francais
 const PROFANITY_WORDS = [
-  'connard', 'connasse', 'salope', 'pute', 'putain', 'encule', 'enculé',
-  'nique', 'niquer', 'nique ta mère', 'nique sa mère', 'ntm', 'fdp',
+  'connard', 'connasse', 'salope', 'pute', 'putain', 'encule',
+  'nique', 'niquer', 'nique ta mere', 'nique sa mere', 'ntm', 'fdp',
   'fils de pute', 'con de merde', 'sale merde', 'ta gueule',
-  'ferme ta gueule', 'salopard', 'enfoiré', 'enfoire', 'trouduc',
+  'ferme ta gueule', 'salopard', 'enfoire', 'trouduc',
   'branleur', 'va te faire foutre',
   // Note : "batard"/"bâtard" est volontairement absent de cette liste -- c'est aussi le mot
   // francais pour un chien croise/sans race, tres frequent sur un site de refuge canin.
@@ -67,6 +69,41 @@ const SEXUAL_WORDS = [
 ];
 
 const INAPPROPRIATE_WORDS = [...HATE_WORDS, ...EXTREMISM_WORDS, ...PROFANITY_WORDS, ...SEXUAL_WORDS];
+
+// Retire les accents, uniformise les substitutions type "leet speak" (0->o, 4->a...) et
+// ecrase les lettres repetees ("salopeeee" -> "salopee") pour attraper les contournements
+// volontaires du filtre, sans jamais modifier le message reellement stocke/affiche
+// (cette fonction ne sert qu'a la comparaison interne).
+const LEET_MAP = { 0: 'o', 1: 'i', 3: 'e', 4: 'a', 5: 's', 7: 't', '@': 'a', $: 's', '+': 't' };
+
+// Plage Unicode des diacritiques combinants (U+0300-U+036F), construite via code point
+// plutot qu'un caractere litteral pour eviter tout probleme d'encodage dans le fichier source.
+const DIACRITICS_PATTERN = new RegExp('[' + String.fromCharCode(0x0300) + '-' + String.fromCharCode(0x036f) + ']', 'g');
+
+function normalizeForFilter(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD').replace(DIACRITICS_PATTERN, '')
+    .replace(/[013457@$+]/g, (c) => LEET_MAP[c])
+    .replace(/(.)\1{2,}/g, '$1$1');
+}
+
+// Verifie une liste de mots/expressions contre un texte normalise, plus une variante
+// "compactee" (espaces/ponctuation retires) pour les entrees assez longues -- attrape
+// les contournements du type "s a l o p e" ou "s.a.l.o.p.e" sans risquer de faux positifs
+// sur des entrees courtes (ex: "pd") qui matcheraient trop souvent par hasard une fois compactees.
+function containsFilteredWord(text, words) {
+  const normalized = normalizeForFilter(text);
+  const normalizedWords = words.map(normalizeForFilter);
+
+  if (normalizedWords.some((word) => normalized.includes(word))) return true;
+
+  const compact = normalized.replace(/[^a-z0-9]/g, '');
+  return normalizedWords.some((word) => {
+    const compactWord = word.replace(/[^a-z0-9]/g, '');
+    return compactWord.length >= 5 && compact.includes(compactWord);
+  });
+}
 
 function withSecurityHeaders(response) {
   const hardened = new Response(response.body, response);
@@ -101,15 +138,14 @@ function timingSafeEqual(a, b) {
 }
 
 function looksLikeSpam(name, message) {
-  const combined = (name + ' ' + message).toLowerCase();
-  if (SPAM_WORDS.some((word) => combined.includes(word))) return true;
-  if (/\b[\w-]+\.(com|net|org|fr|info|biz|ru|xyz|top|click|shop)\b/.test(combined)) return true;
+  const combined = name + ' ' + message;
+  if (containsFilteredWord(combined, SPAM_WORDS)) return true;
+  if (/\b[\w-]+\.(com|net|org|fr|info|biz|ru|xyz|top|click|shop)\b/.test(normalizeForFilter(combined))) return true;
   return false;
 }
 
 function looksInappropriate(name, message) {
-  const combined = (name + ' ' + message).toLowerCase();
-  return INAPPROPRIATE_WORDS.some((word) => combined.includes(word));
+  return containsFilteredWord(name + ' ' + message, INAPPROPRIATE_WORDS);
 }
 
 async function logRejected(env, name, message, reason, ipHash) {
