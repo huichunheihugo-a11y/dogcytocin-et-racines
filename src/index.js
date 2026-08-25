@@ -26,6 +26,15 @@ const SPAM_WORDS = [
   'http://', 'https://', 'www.',
 ];
 
+// Liste volontairement courte : un filtre par mots-clés n'attrapera jamais tout
+// (fautes volontaires, contournements...) -- c'est un premier filet, pas une garantie.
+const INAPPROPRIATE_WORDS = [
+  'connard', 'connasse', 'salope', 'pute', 'putain', 'encule', 'enculé',
+  'batard', 'bâtard', 'nique', 'niquer', 'ntm', 'fdp', 'fils de pute',
+  'con de merde', 'sale merde', 'ta gueule', 'ferme ta gueule',
+  'negre', 'nègre', 'bougnoule', 'youpin', 'pd', 'tapette',
+];
+
 function withSecurityHeaders(response) {
   const hardened = new Response(response.body, response);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
@@ -63,6 +72,11 @@ function looksLikeSpam(name, message) {
   if (SPAM_WORDS.some((word) => combined.includes(word))) return true;
   if (/\b[\w-]+\.(com|net|org|fr|info|biz|ru|xyz|top|click|shop)\b/.test(combined)) return true;
   return false;
+}
+
+function looksInappropriate(name, message) {
+  const combined = (name + ' ' + message).toLowerCase();
+  return INAPPROPRIATE_WORDS.some((word) => combined.includes(word));
 }
 
 async function logRejected(env, name, message, reason, ipHash) {
@@ -129,6 +143,15 @@ async function handlePostComment(request, env) {
       success: false,
       reason: 'spam',
       message: "Votre message n'a pas pu être publié — évitez les liens ou mots-clés publicitaires.",
+    }, 422);
+  }
+
+  if (looksInappropriate(n, m)) {
+    await logRejected(env, n, m, 'inappropriate', ipHash);
+    return json({
+      success: false,
+      reason: 'inappropriate',
+      message: "Votre message n'a pas pu être publié — merci de rester respectueux.",
     }, 422);
   }
 

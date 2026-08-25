@@ -447,6 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const REJECTED_REASON_LABELS = {
       spam: 'Filtré : lien ou mot-clé publicitaire',
       invalid: 'Filtré : longueur invalide',
+      inappropriate: 'Filtré : langage inapproprié',
     };
 
     const renderRejectedEntry = (entry) => {
