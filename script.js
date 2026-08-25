@@ -336,8 +336,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return { ok: response.ok && result.success, message: result && result.message };
     }
 
-    gateForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    async function attemptLogin() {
+      if (gateSubmitBtn.disabled) return; // deja en cours, evite un double envoi si submit et click se declenchent tous les deux
       const pw = gatePasswordInput.value;
       gateSubmitBtn.disabled = true;
       gateSubmitBtn.textContent = 'Vérification...';
@@ -363,6 +363,17 @@ document.addEventListener('DOMContentLoaded', () => {
         gateSubmitBtn.disabled = false;
         gateSubmitBtn.textContent = 'Entrer';
       }
+    }
+
+    // Deux points d'entree pour la meme action : l'evenement submit du formulaire (touche Entree)
+    // et un clic direct sur le bouton (plus fiable que de compter uniquement sur submit).
+    gateForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      attemptLogin();
+    });
+    gateSubmitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      attemptLogin();
     });
 
     // Reconnexion automatique si un mot de passe valide est deja memorise pour cette session de navigateur.
