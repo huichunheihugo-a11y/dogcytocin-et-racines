@@ -1808,43 +1808,15 @@ select.field {
 
 /* ===== Administration (livre d'or) ===== */
 
-.admin-gate-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: var(--green-deep);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.admin-gate-overlay #admin-gate-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .admin-password-row {
   position: relative;
+  flex: 1;
   display: flex;
 }
 
-.admin-gate-overlay input#admin-password {
+.admin-password-row .field {
   flex: 1;
-  padding: 12px 44px 12px 16px;
-  border: 1px solid rgba(47, 69, 48, 0.25);
-  border-radius: 50px;
-  font-size: 1rem;
-  text-align: center;
-  font-family: var(--font-sans);
-  color: var(--text);
-  background: #fff;
-}
-
-.admin-gate-overlay input#admin-password:focus {
-  outline: none;
-  border-color: var(--green-sage);
+  padding-right: 44px;
 }
 
 #admin-password-toggle {

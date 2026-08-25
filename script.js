@@ -288,50 +288,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const adminShell = document.getElementById('admin-shell');
+  const adminList = document.getElementById('admin-list');
 
-  if (adminShell) {
-    const gateOverlay = document.getElementById('admin-gate-overlay');
-    const gateForm = document.getElementById('admin-gate-form');
-    const gatePasswordInput = document.getElementById('admin-password');
-    const gateError = document.getElementById('admin-gate-error');
-    const gateSubmitBtn = gateForm.querySelector('button[type="submit"]');
-    const gatePasswordToggle = document.getElementById('admin-password-toggle');
-    const adminList = document.getElementById('admin-list');
-    const actionMsg = document.getElementById('admin-action-msg');
+  if (adminList) {
+    const passwordInput = document.getElementById('admin-password');
+    const passwordToggle = document.getElementById('admin-password-toggle');
+    const rememberBtn = document.getElementById('admin-remember');
+    const authMsg = document.getElementById('admin-auth-msg');
     const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-    gatePasswordToggle.addEventListener('click', () => {
-      const showing = gatePasswordInput.type === 'text';
-      gatePasswordInput.type = showing ? 'password' : 'text';
-      gatePasswordToggle.textContent = showing ? '👁' : '🙈';
+    passwordToggle.addEventListener('click', () => {
+      const showing = passwordInput.type === 'text';
+      passwordInput.type = showing ? 'password' : 'text';
+      passwordToggle.textContent = showing ? '👁' : '🙈';
     });
 
     const storedPassword = () => sessionStorage.getItem('dogcytocin_admin_pw') || '';
+    if (storedPassword()) passwordInput.value = storedPassword();
 
     const showActionMsg = (text, isError) => {
-      actionMsg.textContent = text;
-      actionMsg.className = 'admin-auth-msg ' + (isError ? 'is-error' : 'is-ok');
-      actionMsg.hidden = false;
-    };
-
-    const showGate = (message) => {
-      adminShell.hidden = true;
-      gateOverlay.hidden = false;
-      gateError.hidden = !message;
-      if (message) gateError.textContent = message;
-    };
-
-    const showShell = () => {
-      gateOverlay.hidden = true;
-      adminShell.hidden = false;
+      authMsg.textContent = text;
+      authMsg.className = 'admin-auth-msg ' + (isError ? 'is-error' : 'is-ok');
+      authMsg.hidden = false;
     };
 
     // Si une action authentifiee echoue avec 401 en cours de route (mot de passe change, session obsolete),
-    // on renvoie directement vers la porte plutot que de laisser trainer une interface a moitie fonctionnelle.
+    // on efface le mot de passe memorise et on redemande de valider, sans rien casser d'autre a l'ecran.
     const requireReauth = () => {
       sessionStorage.removeItem('dogcytocin_admin_pw');
-      showGate('Session expirée, ressaisis le mot de passe.');
+      showActionMsg('Session expirée, ressaisis le mot de passe et clique sur Valider.', true);
     };
 
     async function verifyPassword(pw) {
@@ -344,43 +329,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function attemptLogin() {
-      if (gateSubmitBtn.disabled) return; // deja en cours, evite un double envoi si submit et click se declenchent tous les deux
-      const pw = gatePasswordInput.value;
-      gateSubmitBtn.disabled = true;
-      gateSubmitBtn.textContent = 'Vérification...';
+      if (rememberBtn.disabled) return; // deja en cours
+      const pw = passwordInput.value;
+      rememberBtn.disabled = true;
+      rememberBtn.textContent = 'Vérification...';
 
       try {
         const { ok, message } = await verifyPassword(pw);
         if (!ok) {
-          gateError.textContent = message || 'Mot de passe incorrect.';
-          gateError.hidden = false;
-          gatePasswordInput.value = '';
-          gatePasswordInput.focus();
+          showActionMsg(message || 'Mot de passe incorrect.', true);
+          sessionStorage.removeItem('dogcytocin_admin_pw');
           return;
         }
 
         sessionStorage.setItem('dogcytocin_admin_pw', pw);
-        showShell();
+        showActionMsg('Mot de passe correct.', false);
         loadComments();
         loadRejected();
       } catch (err) {
-        gateError.textContent = 'Vérification impossible, réessaie.';
-        gateError.hidden = false;
+        showActionMsg('Vérification impossible, réessaie.', true);
       } finally {
-        gateSubmitBtn.disabled = false;
-        gateSubmitBtn.textContent = 'Entrer';
+        rememberBtn.disabled = false;
+        rememberBtn.textContent = 'Valider';
       }
     }
 
-    // Deux points d'entree pour la meme action : l'evenement submit du formulaire (touche Entree)
-    // et un clic direct sur le bouton (plus fiable que de compter uniquement sur submit).
-    gateForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      attemptLogin();
-    });
-    gateSubmitBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      attemptLogin();
+    // Deux points d'entree pour la meme action : la touche Entree dans le champ, et le clic sur Valider.
+    rememberBtn.addEventListener('click', attemptLogin);
+    passwordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        attemptLogin();
+      }
     });
 
     // Reconnexion automatique si un mot de passe valide est deja memorise pour cette session de navigateur.
@@ -390,14 +370,13 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const { ok } = await verifyPassword(pw);
         if (ok) {
-          showShell();
           loadComments();
           loadRejected();
         } else {
           sessionStorage.removeItem('dogcytocin_admin_pw');
         }
       } catch (err) {
-        // Reste sur la porte si la verification echoue au chargement.
+        // Reste sur le formulaire si la verification echoue au chargement.
       }
     })();
 
