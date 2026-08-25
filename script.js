@@ -288,53 +288,100 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const adminList = document.getElementById('admin-list');
+  const adminShell = document.getElementById('admin-shell');
 
-  if (adminList) {
-    const passwordInput = document.getElementById('admin-password');
-    const rememberBtn = document.getElementById('admin-remember');
-    const authMsg = document.getElementById('admin-auth-msg');
+  if (adminShell) {
+    const gateOverlay = document.getElementById('admin-gate-overlay');
+    const gateForm = document.getElementById('admin-gate-form');
+    const gatePasswordInput = document.getElementById('admin-password');
+    const gateError = document.getElementById('admin-gate-error');
+    const gateSubmitBtn = gateForm.querySelector('button[type="submit"]');
+    const adminList = document.getElementById('admin-list');
+    const actionMsg = document.getElementById('admin-action-msg');
     const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     const storedPassword = () => sessionStorage.getItem('dogcytocin_admin_pw') || '';
-    if (storedPassword()) passwordInput.value = storedPassword();
 
-    const showAuthMsg = (text, isError) => {
-      authMsg.textContent = text;
-      authMsg.className = 'admin-auth-msg ' + (isError ? 'is-error' : 'is-ok');
-      authMsg.hidden = false;
+    const showActionMsg = (text, isError) => {
+      actionMsg.textContent = text;
+      actionMsg.className = 'admin-auth-msg ' + (isError ? 'is-error' : 'is-ok');
+      actionMsg.hidden = false;
     };
 
-    rememberBtn.addEventListener('click', async () => {
-      const pw = passwordInput.value;
-      rememberBtn.disabled = true;
-      rememberBtn.textContent = 'Vérification...';
+    const showGate = (message) => {
+      adminShell.hidden = true;
+      gateOverlay.hidden = false;
+      gateError.hidden = !message;
+      if (message) gateError.textContent = message;
+    };
+
+    const showShell = () => {
+      gateOverlay.hidden = true;
+      adminShell.hidden = false;
+    };
+
+    // Si une action authentifiee echoue avec 401 en cours de route (mot de passe change, session obsolete),
+    // on renvoie directement vers la porte plutot que de laisser trainer une interface a moitie fonctionnelle.
+    const requireReauth = () => {
+      sessionStorage.removeItem('dogcytocin_admin_pw');
+      showGate('Session expirée, ressaisis le mot de passe.');
+    };
+
+    async function verifyPassword(pw) {
+      const response = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'X-Admin-Password': pw },
+      });
+      const result = await response.json();
+      return { ok: response.ok && result.success, message: result && result.message };
+    }
+
+    gateForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pw = gatePasswordInput.value;
+      gateSubmitBtn.disabled = true;
+      gateSubmitBtn.textContent = 'Vérification...';
 
       try {
-        const response = await fetch('/api/admin/verify', {
-          method: 'POST',
-          headers: { 'X-Admin-Password': pw },
-        });
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-          showAuthMsg((result && result.message) || 'Mot de passe incorrect.', true);
-          sessionStorage.removeItem('dogcytocin_admin_pw');
-          adminList.innerHTML = '';
+        const { ok, message } = await verifyPassword(pw);
+        if (!ok) {
+          gateError.textContent = message || 'Mot de passe incorrect.';
+          gateError.hidden = false;
+          gatePasswordInput.value = '';
+          gatePasswordInput.focus();
           return;
         }
 
         sessionStorage.setItem('dogcytocin_admin_pw', pw);
-        showAuthMsg('Mot de passe correct.', false);
+        showShell();
         loadComments();
         loadRejected();
       } catch (err) {
-        showAuthMsg('Vérification impossible, réessaie.', true);
+        gateError.textContent = 'Vérification impossible, réessaie.';
+        gateError.hidden = false;
       } finally {
-        rememberBtn.disabled = false;
-        rememberBtn.textContent = 'Valider';
+        gateSubmitBtn.disabled = false;
+        gateSubmitBtn.textContent = 'Entrer';
       }
     });
+
+    // Reconnexion automatique si un mot de passe valide est deja memorise pour cette session de navigateur.
+    (async () => {
+      const pw = storedPassword();
+      if (!pw) return;
+      try {
+        const { ok } = await verifyPassword(pw);
+        if (ok) {
+          showShell();
+          loadComments();
+          loadRejected();
+        } else {
+          sessionStorage.removeItem('dogcytocin_admin_pw');
+        }
+      } catch (err) {
+        // Reste sur la porte si la verification echoue au chargement.
+      }
+    })();
 
     // Bascule entre les onglets "Livre d'or" et "Messages refusés".
     const navLinks = document.querySelectorAll('.admin-nav-link');
@@ -370,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', async () => {
         const pw = storedPassword();
         if (!pw) {
-          showAuthMsg('Entre le mot de passe et clique sur Valider avant de supprimer.', true);
+          requireReauth();
           return;
         }
 
@@ -388,9 +435,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           await onConfirm(pw);
         } catch (err) {
+          if (err.unauthorized) {
+            requireReauth();
+            return;
+          }
           btn.disabled = false;
           reset();
-          showAuthMsg(err.message || "L'action a échoué, réessaie.", true);
+          showActionMsg(err.message || "L'action a échoué, réessaie.", true);
         }
       });
 
@@ -431,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'X-Admin-Password': pw },
         });
 
-        if (response.status === 401) throw new Error('Mot de passe incorrect.');
+        if (response.status === 401) throw Object.assign(new Error('Session expirée.'), { unauthorized: true });
 
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error('La suppression a échoué, réessaie.');
@@ -494,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
       approveBtn.addEventListener('click', async () => {
         const pw = storedPassword();
         if (!pw) {
-          showAuthMsg('Entre le mot de passe et clique sur Valider avant de publier.', true);
+          requireReauth();
           return;
         }
 
@@ -508,9 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
 
           if (response.status === 401) {
-            showAuthMsg('Mot de passe incorrect.', true);
-            approveBtn.disabled = false;
-            approveBtn.textContent = 'Publier quand même';
+            requireReauth();
             return;
           }
 
@@ -522,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
           approveBtn.disabled = false;
           approveBtn.textContent = 'Publier quand même';
-          showAuthMsg('La publication a échoué, réessaie.', true);
+          showActionMsg('La publication a échoué, réessaie.', true);
         }
       });
 
@@ -532,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'X-Admin-Password': pw },
         });
 
-        if (response.status === 401) throw new Error('Mot de passe incorrect.');
+        if (response.status === 401) throw Object.assign(new Error('Session expirée.'), { unauthorized: true });
 
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error('La suppression a échoué, réessaie.');
@@ -588,6 +637,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch('/api/admin/rejected', {
           headers: { 'X-Admin-Password': pw },
         });
+
+        if (response.status === 401) {
+          requireReauth();
+          return;
+        }
+
         const data = await response.json();
         rejectedList.innerHTML = '';
 
