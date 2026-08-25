@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-26.2';
+const WORKER_VERSION = '2026-08-26.3';
 
 const CSP = [
   "default-src 'self'",
@@ -54,11 +54,10 @@ const EXTREMISM_WORDS = [
 
 // Grossieretes courantes en francais
 const PROFANITY_WORDS = [
-  'connard', 'connasse', 'salope', 'pute', 'putain', 'encule',
+  'connard', 'connasse', 'salope', 'pute', 'putain', 'encule', 'merde',
   'nique', 'niquer', 'nique ta mere', 'nique sa mere', 'ntm', 'fdp',
-  'fils de pute', 'con de merde', 'sale merde', 'ta gueule',
-  'ferme ta gueule', 'salopard', 'enfoire', 'trouduc',
-  'branleur', 'va te faire foutre',
+  'fils de pute', 'ta gueule', 'ferme ta gueule', 'salopard', 'enfoire',
+  'trouduc', 'branleur', 'va te faire foutre',
   // Note : "batard"/"bâtard" est volontairement absent de cette liste -- c'est aussi le mot
   // francais pour un chien croise/sans race, tres frequent sur un site de refuge canin.
 ];
