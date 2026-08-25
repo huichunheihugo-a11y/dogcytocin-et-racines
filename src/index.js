@@ -90,11 +90,12 @@ async function logRejected(env, name, message, reason, ipHash) {
   }
 }
 
-async function handleGetComments(env) {
+async function handleGetComments(env, order) {
   if (!env.DB) return json({ comments: [] });
+  const direction = order === 'asc' ? 'ASC' : 'DESC';
   try {
     const { results } = await env.DB.prepare(
-      'SELECT id, name, message, created_at FROM comments ORDER BY id DESC LIMIT 100'
+      `SELECT id, name, message, created_at FROM comments ORDER BY created_at ${direction}, id ${direction} LIMIT 100`
     ).all();
     return json({ comments: results });
   } catch (err) {
@@ -343,7 +344,7 @@ export default {
       const url = new URL(request.url);
 
       if (url.pathname === '/api/comments') {
-        if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env));
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env, url.searchParams.get('order')));
         if (request.method === 'POST') return withSecurityHeaders(await handlePostComment(request, env));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }

@@ -19,6 +19,7 @@
     <nav class="admin-nav-links">
       <a href="#" class="admin-nav-link active" data-tab="comments">Livre d'or</a>
       <a href="#" class="admin-nav-link" data-tab="rejected">Messages refusés</a>
+      <a href="#" class="admin-nav-link" data-tab="sort">Tri</a>
     </nav>
   </aside>
 
@@ -44,6 +45,14 @@
     <div id="admin-tab-rejected" class="admin-tab" hidden>
       <p class="admin-tab-intro">Messages bloqués automatiquement par le filtre anti-spam. Vérifie qu'il ne s'agit pas d'un vrai visiteur bloqué par erreur avant de supprimer.</p>
       <div id="admin-rejected-list" class="admin-list"></div>
+    </div>
+
+    <div id="admin-tab-sort" class="admin-tab" hidden>
+      <div class="admin-sort-controls">
+        <button type="button" class="admin-sort-btn active" data-order="desc">Plus récents d'abord</button>
+        <button type="button" class="admin-sort-btn" data-order="asc">Plus anciens d'abord</button>
+      </div>
+      <div id="admin-sort-list" class="admin-list"></div>
     </div>
   </main>
 </div>

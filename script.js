@@ -380,11 +380,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })();
 
-    // Bascule entre les onglets "Livre d'or" et "Messages refusés".
+    // Bascule entre les onglets "Livre d'or", "Messages refusés" et "Tri".
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const tabs = document.querySelectorAll('.admin-tab');
     const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: "Livre d'or", rejected: 'Messages refusés' };
+    const tabLabels = { comments: "Livre d'or", rejected: 'Messages refusés', sort: 'Tri' };
+
+    let currentSortOrder = 'desc';
+    const sortButtons = document.querySelectorAll('.admin-sort-btn');
+
+    sortButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const order = btn.dataset.order;
+        if (order === currentSortOrder) return;
+        currentSortOrder = order;
+        sortButtons.forEach((b) => b.classList.toggle('active', b === btn));
+        loadSortedComments(currentSortOrder);
+      });
+    });
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -393,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         navLinks.forEach((l) => l.classList.toggle('active', l === link));
         tabs.forEach((t) => { t.hidden = t.id !== `admin-tab-${tab}`; });
         tabTitle.textContent = tabLabels[tab] || '';
+        if (tab === 'sort') loadSortedComments(currentSortOrder);
       });
     });
 
@@ -658,6 +672,34 @@ document.addEventListener('DOMContentLoaded', () => {
         empty.className = 'guestbook-empty';
         empty.textContent = 'Impossible de charger les messages refusés.';
         rejectedList.appendChild(empty);
+      }
+    }
+
+    async function loadSortedComments(order) {
+      const sortList = document.getElementById('admin-sort-list');
+      if (!sortList) return;
+
+      sortList.innerHTML = '<p class="guestbook-loading">Chargement des messages...</p>';
+      try {
+        const response = await fetch(`/api/comments?order=${order === 'asc' ? 'asc' : 'desc'}`);
+        const data = await response.json();
+        sortList.innerHTML = '';
+
+        if (!data.comments || data.comments.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucun message pour le moment.';
+          sortList.appendChild(empty);
+          return;
+        }
+
+        data.comments.forEach((entry) => sortList.appendChild(renderAdminEntry(entry)));
+      } catch (err) {
+        sortList.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les messages.';
+        sortList.appendChild(empty);
       }
     }
   }
