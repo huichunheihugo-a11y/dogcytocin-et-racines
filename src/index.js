@@ -47,6 +47,17 @@ async function hashIp(ip) {
   return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+function timingSafeEqual(a, b) {
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+  const len = Math.max(aBytes.length, bBytes.length, 1);
+  let diff = aBytes.length ^ bBytes.length;
+  for (let i = 0; i < len; i++) {
+    diff |= (aBytes[i] || 0) ^ (bBytes[i] || 0);
+  }
+  return diff === 0;
+}
+
 function looksLikeSpam(name, message) {
   const combined = (name + ' ' + message).toLowerCase();
   if (SPAM_WORDS.some((word) => combined.includes(word))) return true;
@@ -155,19 +166,50 @@ async function handlePostComment(request, env) {
   }
 }
 
-function checkAdminPassword(request, env) {
+async function checkAdminPassword(request, env) {
   if (!env.ADMIN_PASSWORD) {
     return json({ success: false, message: "Secret ADMIN_PASSWORD non configuré côté serveur." }, 500);
   }
+
+  const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
+  const ipHash = await hashIp('admin:' + ip);
+
+  if (env.DB) {
+    try {
+      const tenMinAgoIso = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const attempts = await env.DB.prepare(
+        'SELECT COUNT(*) as cnt FROM admin_attempts WHERE ip_hash = ?1 AND attempted_at > ?2 AND success = 0'
+      ).bind(ipHash, tenMinAgoIso).first();
+
+      if (attempts && attempts.cnt >= 5) {
+        return json({ success: false, message: 'Trop de tentatives — réessaie dans 10 minutes.' }, 429);
+      }
+    } catch (err) {
+      // Table pas encore créée ou base indisponible : on ne bloque pas sur le comptage, le mot de passe reste le vrai rempart.
+    }
+  }
+
   const password = request.headers.get('X-Admin-Password') || '';
-  if (password !== env.ADMIN_PASSWORD) {
+  const ok = timingSafeEqual(password, env.ADMIN_PASSWORD);
+
+  if (env.DB) {
+    try {
+      await env.DB.prepare(
+        'INSERT INTO admin_attempts (ip_hash, attempted_at, success) VALUES (?1, ?2, ?3)'
+      ).bind(ipHash, new Date().toISOString(), ok ? 1 : 0).run();
+    } catch (err) {
+      // idem : le suivi des tentatives est un bonus, pas une dépendance dure.
+    }
+  }
+
+  if (!ok) {
     return json({ success: false, message: 'Mot de passe incorrect.' }, 401);
   }
   return null;
 }
 
 async function handleDeleteComment(request, env, id) {
-  const authError = checkAdminPassword(request, env);
+  const authError = await checkAdminPassword(request, env);
   if (authError) return authError;
 
   if (!/^\d+$/.test(id)) {
@@ -199,7 +241,7 @@ export default {
 
       if (url.pathname === '/api/admin/verify') {
         if (request.method !== 'POST') return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
-        const authError = checkAdminPassword(request, env);
+        const authError = await checkAdminPassword(request, env);
         return withSecurityHeaders(authError || json({ success: true }));
       }
 
