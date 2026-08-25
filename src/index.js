@@ -156,8 +156,12 @@ async function handlePostComment(request, env) {
 }
 
 async function handleDeleteComment(request, env, id) {
+  if (!env.ADMIN_PASSWORD) {
+    return json({ success: false, message: "Secret ADMIN_PASSWORD non configuré côté serveur." }, 500);
+  }
+
   const password = request.headers.get('X-Admin-Password') || '';
-  if (!env.ADMIN_PASSWORD || password !== env.ADMIN_PASSWORD) {
+  if (password !== env.ADMIN_PASSWORD) {
     return json({ success: false, message: 'Mot de passe incorrect.' }, 401);
   }
 
