@@ -1805,3 +1805,124 @@ select.field {
   .guestbook-entry { padding: 24px 22px 22px; }
   .guestbook-entry::before { font-size: 4.5rem; top: -14px; right: 14px; }
 }
+
+/* ===== Administration (livre d'or) ===== */
+
+.admin-wrap {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.admin-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.admin-header h1 {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.admin-auth {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+  margin-bottom: 32px;
+}
+
+.admin-auth label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--green-deep);
+  margin-bottom: 8px;
+}
+
+.admin-auth-row {
+  display: flex;
+  gap: 12px;
+}
+
+.admin-auth-row .field { flex: 1; }
+
+.admin-auth-msg {
+  margin-top: 12px;
+  font-size: 0.85rem;
+}
+
+.admin-auth-msg.is-error { color: #b23b3b; }
+.admin-auth-msg.is-ok { color: var(--green-deep); }
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-entry {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.admin-entry-body { flex: 1; min-width: 0; }
+
+.admin-entry-head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.admin-entry-name {
+  font-weight: 700;
+  color: var(--green-deep);
+}
+
+.admin-entry-date {
+  font-size: 0.78rem;
+  color: var(--green-sage);
+}
+
+.admin-entry-message {
+  color: #4a4436;
+  line-height: 1.5;
+}
+
+.admin-delete-btn {
+  flex-shrink: 0;
+  background: rgba(178, 59, 59, 0.08);
+  border: 1px solid rgba(178, 59, 59, 0.25);
+  color: #b23b3b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-delete-btn:hover { background: rgba(178, 59, 59, 0.15); }
+.admin-delete-btn:disabled { opacity: 0.5; cursor: default; }
+
+@media (max-width: 480px) {
+  .admin-entry { flex-direction: column; }
+}

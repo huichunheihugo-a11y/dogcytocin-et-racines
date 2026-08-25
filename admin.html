@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administration — Dogcytocin et Racines</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/jpeg" href="images/logo.jpg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="admin-wrap">
+  <div class="admin-header">
+    <img src="images/logo.jpg" alt="" class="admin-logo">
+    <h1>Administration — Livre d'or</h1>
+  </div>
+
+  <div class="admin-auth">
+    <label for="admin-password">Mot de passe admin</label>
+    <div class="admin-auth-row">
+      <input type="password" id="admin-password" class="field" autocomplete="off" placeholder="Mot de passe">
+      <button type="button" id="admin-remember" class="btn btn-primary">Valider</button>
+    </div>
+    <p id="admin-auth-msg" class="admin-auth-msg" hidden></p>
+  </div>
+
+  <div id="admin-list" class="admin-list">
+    <p class="guestbook-loading">Chargement des messages...</p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

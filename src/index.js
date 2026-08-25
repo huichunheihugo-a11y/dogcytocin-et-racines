@@ -155,6 +155,28 @@ async function handlePostComment(request, env) {
   }
 }
 
+async function handleDeleteComment(request, env, id) {
+  const password = request.headers.get('X-Admin-Password') || '';
+  if (!env.ADMIN_PASSWORD || password !== env.ADMIN_PASSWORD) {
+    return json({ success: false, message: 'Mot de passe incorrect.' }, 401);
+  }
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: "Base indisponible." }, 503);
+  }
+
+  try {
+    await env.DB.prepare('DELETE FROM comments WHERE id = ?1').bind(id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
+  }
+}
+
 export default {
   async fetch(request, env) {
     try {
@@ -163,6 +185,12 @@ export default {
       if (url.pathname === '/api/comments') {
         if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env));
         if (request.method === 'POST') return withSecurityHeaders(await handlePostComment(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const commentIdMatch = url.pathname.match(/^\/api\/comments\/(\d+)$/);
+      if (commentIdMatch) {
+        if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteComment(request, env, commentIdMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

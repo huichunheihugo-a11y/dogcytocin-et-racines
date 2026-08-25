@@ -287,4 +287,123 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  const adminList = document.getElementById('admin-list');
+
+  if (adminList) {
+    const passwordInput = document.getElementById('admin-password');
+    const rememberBtn = document.getElementById('admin-remember');
+    const authMsg = document.getElementById('admin-auth-msg');
+    const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const storedPassword = () => sessionStorage.getItem('dogcytocin_admin_pw') || '';
+    if (storedPassword()) passwordInput.value = storedPassword();
+
+    const showAuthMsg = (text, isError) => {
+      authMsg.textContent = text;
+      authMsg.className = 'admin-auth-msg ' + (isError ? 'is-error' : 'is-ok');
+      authMsg.hidden = false;
+    };
+
+    rememberBtn.addEventListener('click', () => {
+      sessionStorage.setItem('dogcytocin_admin_pw', passwordInput.value);
+      showAuthMsg('Mot de passe enregistré pour cette session.', false);
+    });
+
+    const renderAdminEntry = (entry) => {
+      const row = document.createElement('div');
+      row.className = 'admin-entry';
+
+      const body = document.createElement('div');
+      body.className = 'admin-entry-body';
+
+      const head = document.createElement('div');
+      head.className = 'admin-entry-head';
+
+      const name = document.createElement('span');
+      name.className = 'admin-entry-name';
+      name.textContent = entry.name;
+
+      const date = document.createElement('span');
+      date.className = 'admin-entry-date';
+      date.textContent = dateFormatter.format(new Date(entry.created_at));
+
+      head.appendChild(name);
+      head.appendChild(date);
+
+      const message = document.createElement('p');
+      message.className = 'admin-entry-message';
+      message.textContent = entry.message;
+
+      body.appendChild(head);
+      body.appendChild(message);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'admin-delete-btn';
+      deleteBtn.textContent = 'Supprimer';
+
+      deleteBtn.addEventListener('click', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          showAuthMsg('Entre le mot de passe et clique sur Valider avant de supprimer.', true);
+          return;
+        }
+
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = '...';
+
+        try {
+          const response = await fetch(`/api/comments/${entry.id}`, {
+            method: 'DELETE',
+            headers: { 'X-Admin-Password': pw },
+          });
+
+          if (response.status === 401) {
+            showAuthMsg('Mot de passe incorrect.', true);
+            deleteBtn.disabled = false;
+            deleteBtn.textContent = 'Supprimer';
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('delete failed');
+
+          row.remove();
+        } catch (err) {
+          deleteBtn.disabled = false;
+          deleteBtn.textContent = 'Supprimer';
+          showAuthMsg('La suppression a échoué, réessaie.', true);
+        }
+      });
+
+      row.appendChild(body);
+      row.appendChild(deleteBtn);
+      return row;
+    };
+
+    (async () => {
+      try {
+        const response = await fetch('/api/comments');
+        const data = await response.json();
+        adminList.innerHTML = '';
+
+        if (!data.comments || data.comments.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucun message pour le moment.';
+          adminList.appendChild(empty);
+          return;
+        }
+
+        data.comments.forEach((entry) => adminList.appendChild(renderAdminEntry(entry)));
+      } catch (err) {
+        adminList.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les messages.';
+        adminList.appendChild(empty);
+      }
+    })();
+  }
 });
