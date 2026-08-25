@@ -305,10 +305,34 @@ document.addEventListener('DOMContentLoaded', () => {
       authMsg.hidden = false;
     };
 
-    rememberBtn.addEventListener('click', () => {
-      sessionStorage.setItem('dogcytocin_admin_pw', passwordInput.value);
-      showAuthMsg('Mot de passe enregistré pour cette session.', false);
-      loadComments();
+    rememberBtn.addEventListener('click', async () => {
+      const pw = passwordInput.value;
+      rememberBtn.disabled = true;
+      rememberBtn.textContent = 'Vérification...';
+
+      try {
+        const response = await fetch('/api/admin/verify', {
+          method: 'POST',
+          headers: { 'X-Admin-Password': pw },
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          showAuthMsg((result && result.message) || 'Mot de passe incorrect.', true);
+          sessionStorage.removeItem('dogcytocin_admin_pw');
+          adminList.innerHTML = '';
+          return;
+        }
+
+        sessionStorage.setItem('dogcytocin_admin_pw', pw);
+        showAuthMsg('Mot de passe correct.', false);
+        loadComments();
+      } catch (err) {
+        showAuthMsg('Vérification impossible, réessaie.', true);
+      } finally {
+        rememberBtn.disabled = false;
+        rememberBtn.textContent = 'Valider';
+      }
     });
 
     const renderAdminEntry = (entry) => {

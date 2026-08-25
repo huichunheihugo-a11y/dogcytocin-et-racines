@@ -155,15 +155,20 @@ async function handlePostComment(request, env) {
   }
 }
 
-async function handleDeleteComment(request, env, id) {
+function checkAdminPassword(request, env) {
   if (!env.ADMIN_PASSWORD) {
     return json({ success: false, message: "Secret ADMIN_PASSWORD non configuré côté serveur." }, 500);
   }
-
   const password = request.headers.get('X-Admin-Password') || '';
   if (password !== env.ADMIN_PASSWORD) {
     return json({ success: false, message: 'Mot de passe incorrect.' }, 401);
   }
+  return null;
+}
+
+async function handleDeleteComment(request, env, id) {
+  const authError = checkAdminPassword(request, env);
+  if (authError) return authError;
 
   if (!/^\d+$/.test(id)) {
     return json({ success: false, message: 'Identifiant invalide.' }, 400);
@@ -190,6 +195,12 @@ export default {
         if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env));
         if (request.method === 'POST') return withSecurityHeaders(await handlePostComment(request, env));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/verify') {
+        if (request.method !== 'POST') return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+        const authError = checkAdminPassword(request, env);
+        return withSecurityHeaders(authError || json({ success: true }));
       }
 
       const commentIdMatch = url.pathname.match(/^\/api\/comments\/(\d+)$/);
