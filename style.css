@@ -1809,31 +1809,30 @@ select.field {
 /* ===== Administration (livre d'or) ===== */
 
 .admin-password-row {
-  position: relative;
   flex: 1;
   display: flex;
+  gap: 8px;
 }
 
 .admin-password-row .field {
   flex: 1;
-  padding-right: 44px;
 }
 
 #admin-password-toggle {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  line-height: 1;
-  padding: 6px 8px;
+  flex-shrink: 0;
+  background: rgba(47, 69, 48, 0.08);
+  border: 1px solid rgba(47, 69, 48, 0.25);
+  color: var(--green-deep);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0 16px;
+  border-radius: 10px;
   cursor: pointer;
-  opacity: 0.55;
+  transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
-#admin-password-toggle:hover { opacity: 0.9; }
+#admin-password-toggle:hover { background: rgba(47, 69, 48, 0.15); }
 
 .admin-shell {
   display: flex;
@@ -1928,6 +1927,12 @@ select.field {
   font-size: 0.9rem;
   color: var(--green-deep);
   margin-bottom: 8px;
+}
+
+.admin-auth-help {
+  font-size: 0.85rem;
+  color: var(--green-sage);
+  margin: 0 0 14px;
 }
 
 .admin-auth-row {
@@ -2056,8 +2061,15 @@ select.field {
 .admin-sort-controls {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
   margin-bottom: 24px;
+}
+
+.admin-sort-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--green-sage);
 }
 
 .admin-sort-btn {
@@ -2085,4 +2097,5 @@ select.field {
 @media (max-width: 480px) {
   .admin-entry { flex-direction: column; }
   .admin-entry-actions { flex-direction: row; }
+  .admin-auth-row { flex-direction: column; align-items: stretch; }
 }

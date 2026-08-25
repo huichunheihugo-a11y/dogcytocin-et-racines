@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     passwordToggle.addEventListener('click', () => {
       const showing = passwordInput.type === 'text';
       passwordInput.type = showing ? 'password' : 'text';
-      passwordToggle.textContent = showing ? '👁' : '🙈';
+      passwordToggle.textContent = showing ? '👁 Afficher' : '🙈 Masquer';
     });
 
     const storedPassword = () => sessionStorage.getItem('dogcytocin_admin_pw') || '';
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sessionStorage.setItem('dogcytocin_admin_pw', pw);
         showActionMsg('Mot de passe correct.', false);
-        loadComments();
+        loadComments(currentSortOrder);
         loadRejected();
       } catch (err) {
         showActionMsg('Vérification impossible, réessaie.', true);
@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const { ok } = await verifyPassword(pw);
         if (ok) {
-          loadComments();
+          loadComments(currentSortOrder);
           loadRejected();
         } else {
           sessionStorage.removeItem('dogcytocin_admin_pw');
@@ -380,12 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })();
 
-    // Bascule entre les onglets "Livre d'or", "Messages refusés" et "Tri".
-    const navLinks = document.querySelectorAll('.admin-nav-link');
-    const tabs = document.querySelectorAll('.admin-tab');
-    const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: "Livre d'or", rejected: 'Messages refusés', sort: 'Tri' };
-
+    // Ordre d'affichage des messages du "Livre d'or" (bouton actif = ordre courant).
     let currentSortOrder = 'desc';
     const sortButtons = document.querySelectorAll('.admin-sort-btn');
 
@@ -395,9 +390,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (order === currentSortOrder) return;
         currentSortOrder = order;
         sortButtons.forEach((b) => b.classList.toggle('active', b === btn));
-        loadSortedComments(currentSortOrder);
+        loadComments(currentSortOrder);
       });
     });
+
+    // Bascule entre les onglets "Livre d'or" et "Messages refusés".
+    const navLinks = document.querySelectorAll('.admin-nav-link');
+    const tabs = document.querySelectorAll('.admin-tab');
+    const tabTitle = document.getElementById('admin-tab-title');
+    const tabLabels = { comments: "Livre d'or", rejected: 'Messages refusés' };
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -406,7 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navLinks.forEach((l) => l.classList.toggle('active', l === link));
         tabs.forEach((t) => { t.hidden = t.id !== `admin-tab-${tab}`; });
         tabTitle.textContent = tabLabels[tab] || '';
-        if (tab === 'sort') loadSortedComments(currentSortOrder);
       });
     });
 
@@ -613,10 +613,10 @@ document.addEventListener('DOMContentLoaded', () => {
       adminList.prepend(renderAdminEntry(entry));
     }
 
-    async function loadComments() {
+    async function loadComments(order) {
       adminList.innerHTML = '<p class="guestbook-loading">Chargement des messages...</p>';
       try {
-        const response = await fetch('/api/comments');
+        const response = await fetch(`/api/comments?order=${order === 'asc' ? 'asc' : 'desc'}`);
         const data = await response.json();
         adminList.innerHTML = '';
 
@@ -672,34 +672,6 @@ document.addEventListener('DOMContentLoaded', () => {
         empty.className = 'guestbook-empty';
         empty.textContent = 'Impossible de charger les messages refusés.';
         rejectedList.appendChild(empty);
-      }
-    }
-
-    async function loadSortedComments(order) {
-      const sortList = document.getElementById('admin-sort-list');
-      if (!sortList) return;
-
-      sortList.innerHTML = '<p class="guestbook-loading">Chargement des messages...</p>';
-      try {
-        const response = await fetch(`/api/comments?order=${order === 'asc' ? 'asc' : 'desc'}`);
-        const data = await response.json();
-        sortList.innerHTML = '';
-
-        if (!data.comments || data.comments.length === 0) {
-          const empty = document.createElement('p');
-          empty.className = 'guestbook-empty';
-          empty.textContent = 'Aucun message pour le moment.';
-          sortList.appendChild(empty);
-          return;
-        }
-
-        data.comments.forEach((entry) => sortList.appendChild(renderAdminEntry(entry)));
-      } catch (err) {
-        sortList.innerHTML = '';
-        const empty = document.createElement('p');
-        empty.className = 'guestbook-empty';
-        empty.textContent = 'Impossible de charger les messages.';
-        sortList.appendChild(empty);
       }
     }
   }

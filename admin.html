@@ -19,7 +19,6 @@
     <nav class="admin-nav-links">
       <a href="#" class="admin-nav-link active" data-tab="comments">Livre d'or</a>
       <a href="#" class="admin-nav-link" data-tab="rejected">Messages refusés</a>
-      <a href="#" class="admin-nav-link" data-tab="sort">Tri</a>
     </nav>
   </aside>
 
@@ -27,11 +26,12 @@
     <h1 id="admin-tab-title">Livre d'or</h1>
 
     <div class="admin-auth">
-      <label for="admin-password">Mot de passe admin</label>
+      <label for="admin-password">1. Entrez le mot de passe</label>
+      <p class="admin-auth-help">C'est le mot de passe secret donné par l'équipe. Une fois validé, pas besoin de le retaper à chaque visite sur cet appareil.</p>
       <div class="admin-auth-row">
         <div class="admin-password-row">
           <input type="password" id="admin-password" class="field" autocomplete="off" placeholder="Mot de passe">
-          <button type="button" id="admin-password-toggle" aria-label="Afficher le mot de passe">👁</button>
+          <button type="button" id="admin-password-toggle" aria-label="Afficher le mot de passe">👁 Afficher</button>
         </div>
         <button type="button" id="admin-remember" class="btn btn-primary">Valider</button>
       </div>
@@ -39,20 +39,18 @@
     </div>
 
     <div id="admin-tab-comments" class="admin-tab">
+      <p class="admin-tab-intro">2. Voici tous les messages laissés par les visiteurs du site.</p>
+      <div class="admin-sort-controls">
+        <span class="admin-sort-label">Ordre d'affichage :</span>
+        <button type="button" class="admin-sort-btn active" data-order="desc">Plus récents d'abord</button>
+        <button type="button" class="admin-sort-btn" data-order="asc">Plus anciens d'abord</button>
+      </div>
       <div id="admin-list" class="admin-list"></div>
     </div>
 
     <div id="admin-tab-rejected" class="admin-tab" hidden>
-      <p class="admin-tab-intro">Messages bloqués automatiquement par le filtre anti-spam. Vérifie qu'il ne s'agit pas d'un vrai visiteur bloqué par erreur avant de supprimer.</p>
+      <p class="admin-tab-intro">Ces messages ont été bloqués automatiquement (spam, lien publicitaire ou langage inapproprié). Si un vrai visiteur a été bloqué par erreur, clique sur "Publier quand même".</p>
       <div id="admin-rejected-list" class="admin-list"></div>
-    </div>
-
-    <div id="admin-tab-sort" class="admin-tab" hidden>
-      <div class="admin-sort-controls">
-        <button type="button" class="admin-sort-btn active" data-order="desc">Plus récents d'abord</button>
-        <button type="button" class="admin-sort-btn" data-order="asc">Plus anciens d'abord</button>
-      </div>
-      <div id="admin-sort-list" class="admin-list"></div>
     </div>
   </main>
 </div>
