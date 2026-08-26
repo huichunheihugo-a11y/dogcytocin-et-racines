@@ -2247,6 +2247,121 @@ select.field {
   .admin-sort-btn { flex: 1; font-size: 0.78rem; padding: 9px 8px; }
 }
 
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px 18px;
+  box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+  text-align: center;
+}
+
+.admin-stat-number {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--green-deep);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.admin-stat-label {
+  font-size: 0.78rem;
+  color: var(--green-sage);
+  font-weight: 600;
+}
+
+.admin-stats-latest {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 22px;
+  box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--green-sage);
+}
+
+.admin-stats-latest-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--green-sage);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.admin-stats-latest-name {
+  font-weight: 700;
+  color: var(--green-deep);
+}
+
+.admin-stats-latest-date {
+  font-size: 0.85rem;
+  color: var(--green-sage);
+}
+
+.admin-stats-chart-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+}
+
+.admin-stats-chart-title {
+  font-size: 1rem;
+  margin: 0 0 20px;
+  color: var(--green-deep);
+}
+
+.admin-stats-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-stats-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-stats-bar-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--green-deep);
+}
+
+.admin-stats-bar {
+  width: 100%;
+  max-width: 34px;
+  background: var(--gold);
+  border-radius: 6px 6px 0 0;
+  transition: height 0.3s ease;
+}
+
+.admin-stats-bar-label {
+  font-size: 0.72rem;
+  color: var(--green-sage);
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+@media (max-width: 480px) {
+  .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-stat-number { font-size: 1.5rem; }
+}
+
 @media (max-width: 480px) {
   .admin-entry { flex-direction: column; }
   .admin-entry-actions { flex-direction: row; }

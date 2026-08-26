@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-26.5';
+const WORKER_VERSION = '2026-08-26.6';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -432,6 +432,62 @@ async function handleGetRejected(request, env) {
   }
 }
 
+async function handleGetStats(request, env) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  const empty = { totalComments: 0, totalBlocked: 0, thisMonth: 0, thisWeek: 0, latestComment: null, last7Days: [] };
+  if (!env.DB) return json(empty);
+
+  try {
+    // sqlite_sequence.seq = plus grand id jamais attribue a la table (AUTOINCREMENT ne reutilise
+    // jamais un id) : c'est donc le total historique reel, qui ne diminue jamais meme apres
+    // suppression -- pas besoin d'un compteur separe a maintenir a la main.
+    const [totalRow, blockedRow, latestRow] = await Promise.all([
+      env.DB.prepare("SELECT seq FROM sqlite_sequence WHERE name = 'comments'").first(),
+      env.DB.prepare("SELECT seq FROM sqlite_sequence WHERE name = 'rejected_comments'").first(),
+      env.DB.prepare('SELECT name, created_at FROM comments ORDER BY id DESC LIMIT 1').first(),
+    ]);
+
+    const now = new Date();
+    const startOfMonthIso = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+
+    const dayOfWeek = now.getUTCDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const startOfWeekIso = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - diffToMonday)).toISOString();
+
+    const [monthRow, weekRow] = await Promise.all([
+      env.DB.prepare('SELECT COUNT(*) as cnt FROM comments WHERE created_at >= ?1').bind(startOfMonthIso).first(),
+      env.DB.prepare('SELECT COUNT(*) as cnt FROM comments WHERE created_at >= ?1').bind(startOfWeekIso).first(),
+    ]);
+
+    // 7 derniers jours (aujourd'hui inclus), calendaires en UTC.
+    const dayKeys = [];
+    for (let i = 6; i >= 0; i--) {
+      dayKeys.push(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i)).toISOString().slice(0, 10));
+    }
+    const sevenDaysAgoIso = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 6)).toISOString();
+
+    const { results: dayRows } = await env.DB.prepare(
+      "SELECT substr(created_at, 1, 10) as day, COUNT(*) as cnt FROM comments WHERE created_at >= ?1 GROUP BY day"
+    ).bind(sevenDaysAgoIso).all();
+
+    const countsByDay = Object.fromEntries(dayRows.map((r) => [r.day, r.cnt]));
+    const last7Days = dayKeys.map((day) => ({ date: day, count: countsByDay[day] || 0 }));
+
+    return json({
+      totalComments: totalRow?.seq || 0,
+      totalBlocked: blockedRow?.seq || 0,
+      thisMonth: monthRow?.cnt || 0,
+      thisWeek: weekRow?.cnt || 0,
+      latestComment: latestRow ? { name: latestRow.name, created_at: latestRow.created_at } : null,
+      last7Days,
+    });
+  } catch (err) {
+    return json(empty);
+  }
+}
+
 async function handleApproveRejected(request, env, id) {
   const authError = await checkAdminPassword(request, env);
   if (authError) return authError;
@@ -524,6 +580,11 @@ export default {
 
       if (url.pathname === '/api/admin/rejected') {
         if (request.method === 'GET') return withSecurityHeaders(await handleGetRejected(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/stats') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetStats(request, env));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

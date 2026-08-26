@@ -392,6 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showActionMsg('Mot de passe correct.', false);
         loadComments(currentSortOrder);
         loadRejected();
+        loadStats();
       } catch (err) {
         showActionMsg('Vérification impossible, réessaie.', true);
       } finally {
@@ -418,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ok) {
           loadComments(currentSortOrder);
           loadRejected();
+          loadStats();
         } else {
           sessionStorage.removeItem('dogcytocin_admin_pw');
         }
@@ -444,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const tabs = document.querySelectorAll('.admin-tab');
     const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: "Livre d'or", rejected: 'Messages refusés' };
+    const tabLabels = { comments: "Livre d'or", rejected: 'Messages refusés', stats: 'Statistiques' };
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -833,6 +835,114 @@ document.addEventListener('DOMContentLoaded', () => {
         empty.className = 'guestbook-empty';
         empty.textContent = 'Impossible de charger les messages refusés.';
         rejectedList.appendChild(empty);
+      }
+    }
+
+    async function loadStats() {
+      const statsContent = document.getElementById('admin-stats-content');
+      const pw = storedPassword();
+      if (!pw || !statsContent) return;
+
+      statsContent.innerHTML = '<p class="guestbook-loading">Chargement des statistiques...</p>';
+      try {
+        const response = await fetch('/api/admin/stats', {
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) {
+          requireReauth();
+          return;
+        }
+
+        const data = await response.json();
+        statsContent.innerHTML = '';
+
+        const grid = document.createElement('div');
+        grid.className = 'admin-stats-grid';
+
+        const cards = [
+          { label: 'Total (historique complet)', value: data.totalComments },
+          { label: 'Ce mois-ci', value: data.thisMonth },
+          { label: 'Cette semaine', value: data.thisWeek },
+          { label: 'Bloqués par le filtre', value: data.totalBlocked },
+        ];
+        cards.forEach((c) => {
+          const card = document.createElement('div');
+          card.className = 'admin-stat-card';
+          const num = document.createElement('div');
+          num.className = 'admin-stat-number';
+          num.textContent = c.value;
+          const label = document.createElement('div');
+          label.className = 'admin-stat-label';
+          label.textContent = c.label;
+          card.appendChild(num);
+          card.appendChild(label);
+          grid.appendChild(card);
+        });
+        statsContent.appendChild(grid);
+
+        const latestCard = document.createElement('div');
+        latestCard.className = 'admin-stats-latest';
+        if (data.latestComment) {
+          const label = document.createElement('span');
+          label.className = 'admin-stats-latest-label';
+          label.textContent = 'Dernier commentaire';
+          const name = document.createElement('span');
+          name.className = 'admin-stats-latest-name';
+          name.textContent = data.latestComment.name;
+          const date = document.createElement('span');
+          date.className = 'admin-stats-latest-date';
+          date.textContent = dateFormatter.format(new Date(data.latestComment.created_at));
+          latestCard.appendChild(label);
+          latestCard.appendChild(name);
+          latestCard.appendChild(date);
+        } else {
+          latestCard.textContent = 'Aucun commentaire pour le moment.';
+        }
+        statsContent.appendChild(latestCard);
+
+        const chartCard = document.createElement('div');
+        chartCard.className = 'admin-stats-chart-card';
+        const chartTitle = document.createElement('h2');
+        chartTitle.className = 'admin-stats-chart-title';
+        chartTitle.textContent = 'Commentaires des 7 derniers jours';
+        chartCard.appendChild(chartTitle);
+
+        const chart = document.createElement('div');
+        chart.className = 'admin-stats-chart';
+        const maxCount = Math.max(1, ...(data.last7Days || []).map((d) => d.count));
+        const dayLabelFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' });
+
+        (data.last7Days || []).forEach((d) => {
+          const col = document.createElement('div');
+          col.className = 'admin-stats-bar-col';
+
+          const value = document.createElement('span');
+          value.className = 'admin-stats-bar-value';
+          value.textContent = d.count;
+
+          const bar = document.createElement('div');
+          bar.className = 'admin-stats-bar';
+          bar.style.height = `${Math.max(4, (d.count / maxCount) * 100)}px`;
+
+          const label = document.createElement('span');
+          label.className = 'admin-stats-bar-label';
+          label.textContent = dayLabelFormatter.format(new Date(`${d.date}T12:00:00Z`));
+
+          col.appendChild(value);
+          col.appendChild(bar);
+          col.appendChild(label);
+          chart.appendChild(col);
+        });
+
+        chartCard.appendChild(chart);
+        statsContent.appendChild(chartCard);
+      } catch (err) {
+        statsContent.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les statistiques.';
+        statsContent.appendChild(empty);
       }
     }
   }
