@@ -2015,43 +2015,45 @@ select.field {
 .admin-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .admin-entry {
   background: #fff;
-  border-radius: 14px;
-  padding: 16px 20px;
-  box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(47, 42, 34, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
+  gap: 14px;
 }
 
 .admin-entry-body { flex: 1; min-width: 0; }
 
 .admin-entry-head {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: baseline;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   flex-wrap: wrap;
 }
 
 .admin-entry-name {
   font-weight: 700;
+  font-size: 0.92rem;
   color: var(--green-deep);
 }
 
 .admin-entry-date {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: var(--green-sage);
 }
 
 .admin-entry-message {
   color: #4a4436;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .admin-delete-btn {
@@ -2060,8 +2062,8 @@ select.field {
   border: 1px solid rgba(178, 59, 59, 0.25);
   color: #b23b3b;
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 8px 16px;
+  font-size: 0.78rem;
+  padding: 6px 13px;
   border-radius: 50px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -2134,7 +2136,7 @@ select.field {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .admin-approve-btn {
@@ -2142,8 +2144,8 @@ select.field {
   border: 1px solid rgba(47, 69, 48, 0.25);
   color: var(--green-deep);
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 8px 16px;
+  font-size: 0.78rem;
+  padding: 6px 13px;
   border-radius: 50px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -2154,31 +2156,31 @@ select.field {
 .admin-approve-btn:disabled { opacity: 0.5; cursor: default; }
 
 .admin-reply-preview {
-  margin-top: 10px;
-  padding: 9px 14px;
+  margin-top: 8px;
+  padding: 7px 12px;
   background: rgba(217, 194, 126, 0.14);
   border-left: 3px solid var(--gold);
-  border-radius: 4px 10px 10px 4px;
+  border-radius: 4px 8px 8px 4px;
 }
 
 .admin-reply-badge {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   color: var(--green-deep);
   background: var(--gold);
-  padding: 3px 10px;
+  padding: 2px 9px;
   border-radius: 50px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .admin-reply-preview-message {
   margin: 0;
   color: #4a4436;
-  font-size: 0.92rem;
-  line-height: 1.5;
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
 .admin-reply-form {
@@ -2209,8 +2211,8 @@ select.field {
   border: 1px solid rgba(217, 194, 126, 0.6);
   color: var(--green-deep);
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 8px 16px;
+  font-size: 0.78rem;
+  padding: 6px 13px;
   border-radius: 50px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -2224,8 +2226,8 @@ select.field {
   border: none;
   color: var(--green-sage);
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 8px 12px;
+  font-size: 0.78rem;
+  padding: 6px 10px;
   cursor: pointer;
   text-decoration: underline;
 }
