@@ -881,9 +881,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         statsContent.appendChild(grid);
 
-        const latestCard = document.createElement('div');
-        latestCard.className = 'admin-stats-latest';
         if (data.latestComment) {
+          const latestCard = document.createElement('div');
+          latestCard.className = 'admin-stats-latest';
+
           const label = document.createElement('span');
           label.className = 'admin-stats-latest-label';
           label.textContent = 'Dernier commentaire';
@@ -893,13 +894,12 @@ document.addEventListener('DOMContentLoaded', () => {
           const date = document.createElement('span');
           date.className = 'admin-stats-latest-date';
           date.textContent = dateFormatter.format(new Date(data.latestComment.created_at));
+
           latestCard.appendChild(label);
           latestCard.appendChild(name);
           latestCard.appendChild(date);
-        } else {
-          latestCard.textContent = 'Aucun commentaire pour le moment.';
+          statsContent.appendChild(latestCard);
         }
-        statsContent.appendChild(latestCard);
 
         const chartCard = document.createElement('div');
         chartCard.className = 'admin-stats-chart-card';
