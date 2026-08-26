@@ -2084,6 +2084,39 @@ select.field {
   margin-bottom: 20px;
 }
 
+.admin-subtabs {
+  display: flex;
+  gap: 22px;
+  border-bottom: 2px solid rgba(47, 69, 48, 0.12);
+  margin-bottom: 24px;
+}
+
+.admin-subtab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  color: var(--green-sage);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 10px 2px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.admin-subtab-btn:hover { color: var(--green-deep); }
+
+.admin-subtab-btn.active {
+  color: var(--green-deep);
+  border-bottom-color: var(--gold);
+}
+
+@media (max-width: 480px) {
+  .admin-subtabs { gap: 16px; }
+  .admin-subtab-btn { font-size: 0.85rem; }
+}
+
 .admin-entry-reason {
   display: inline-block;
   font-size: 0.75rem;

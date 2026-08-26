@@ -17,14 +17,13 @@
       <span>Administration</span>
     </div>
     <nav class="admin-nav-links">
-      <a href="#" class="admin-nav-link active" data-tab="comments">Livre d'or</a>
+      <a href="#" class="admin-nav-link active" data-tab="comments">Commentaires</a>
       <a href="#" class="admin-nav-link" data-tab="rejected">Messages refusés</a>
-      <a href="#" class="admin-nav-link" data-tab="stats">Statistiques</a>
     </nav>
   </aside>
 
   <main class="admin-main">
-    <h1 id="admin-tab-title">Livre d'or</h1>
+    <h1 id="admin-tab-title">Commentaires</h1>
 
     <div class="admin-auth">
       <label for="admin-password">1. Entrez le mot de passe</label>
@@ -44,23 +43,30 @@
     </div>
 
     <div id="admin-tab-comments" class="admin-tab">
-      <p class="admin-tab-intro">2. Voici tous les messages laissés par les visiteurs du site.</p>
-      <div class="admin-sort-controls">
-        <span class="admin-sort-label">Ordre d'affichage</span>
-        <div class="admin-sort-toggle">
-          <button type="button" class="admin-sort-btn active" data-order="desc">Plus récents d'abord</button>
-          <button type="button" class="admin-sort-btn" data-order="asc">Plus anciens d'abord</button>
-        </div>
+      <div class="admin-subtabs">
+        <button type="button" class="admin-subtab-btn active" data-subtab="list">Liste des messages</button>
+        <button type="button" class="admin-subtab-btn" data-subtab="stats">Statistiques</button>
       </div>
-      <div id="admin-list" class="admin-list"></div>
+
+      <div id="admin-subtab-list" class="admin-subtab-panel">
+        <p class="admin-tab-intro">2. Voici tous les messages laissés par les visiteurs du site.</p>
+        <div class="admin-sort-controls">
+          <span class="admin-sort-label">Ordre d'affichage</span>
+          <div class="admin-sort-toggle">
+            <button type="button" class="admin-sort-btn active" data-order="desc">Plus récents d'abord</button>
+            <button type="button" class="admin-sort-btn" data-order="asc">Plus anciens d'abord</button>
+          </div>
+        </div>
+        <div id="admin-list" class="admin-list"></div>
+      </div>
+
+      <div id="admin-subtab-stats" class="admin-subtab-panel" hidden>
+        <div id="admin-stats-content"></div>
+      </div>
     </div>
 
     <div id="admin-tab-rejected" class="admin-tab" hidden>
       <div id="admin-rejected-list" class="admin-list"></div>
-    </div>
-
-    <div id="admin-tab-stats" class="admin-tab" hidden>
-      <div id="admin-stats-content"></div>
     </div>
   </main>
 </div>

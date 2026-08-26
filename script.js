@@ -442,11 +442,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Bascule entre les onglets "Livre d'or" et "Messages refusés".
+    // Bascule entre les onglets principaux "Commentaires" et "Messages refusés".
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const tabs = document.querySelectorAll('.admin-tab');
     const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: "Livre d'or", rejected: 'Messages refusés', stats: 'Statistiques' };
+    const tabLabels = { comments: 'Commentaires', rejected: 'Messages refusés' };
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -455,6 +455,19 @@ document.addEventListener('DOMContentLoaded', () => {
         navLinks.forEach((l) => l.classList.toggle('active', l === link));
         tabs.forEach((t) => { t.hidden = t.id !== `admin-tab-${tab}`; });
         tabTitle.textContent = tabLabels[tab] || '';
+      });
+    });
+
+    // Bascule entre les sous-onglets "Liste des messages" et "Statistiques" a l'interieur
+    // de l'onglet "Commentaires" -- aucun rechargement, juste un affichage/masquage local.
+    const subtabButtons = document.querySelectorAll('.admin-subtab-btn');
+    const subtabPanels = document.querySelectorAll('.admin-subtab-panel');
+
+    subtabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const subtab = btn.dataset.subtab;
+        subtabButtons.forEach((b) => b.classList.toggle('active', b === btn));
+        subtabPanels.forEach((p) => { p.hidden = p.id !== `admin-subtab-${subtab}`; });
       });
     });
 
