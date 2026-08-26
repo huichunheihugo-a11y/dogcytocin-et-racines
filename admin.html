@@ -30,7 +30,12 @@
       <div class="admin-auth-row">
         <div class="admin-password-row">
           <input type="password" id="admin-password" class="field" autocomplete="off" placeholder="Mot de passe">
-          <button type="button" id="admin-password-toggle" aria-label="Afficher le mot de passe">👁 Afficher</button>
+          <button type="button" id="admin-password-toggle" aria-label="Afficher le mot de passe">
+            <span id="admin-password-toggle-icon" class="admin-password-toggle-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
+            <span id="admin-password-toggle-label">Afficher</span>
+          </button>
         </div>
         <button type="button" id="admin-remember" class="btn btn-primary">Valider</button>
       </div>

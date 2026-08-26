@@ -332,14 +332,21 @@ document.addEventListener('DOMContentLoaded', () => {
   if (adminList) {
     const passwordInput = document.getElementById('admin-password');
     const passwordToggle = document.getElementById('admin-password-toggle');
+    const passwordToggleIcon = document.getElementById('admin-password-toggle-icon');
+    const passwordToggleLabel = document.getElementById('admin-password-toggle-label');
     const rememberBtn = document.getElementById('admin-remember');
     const authMsg = document.getElementById('admin-auth-msg');
     const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+    const EYE_OPEN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_OFF_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
     passwordToggle.addEventListener('click', () => {
       const showing = passwordInput.type === 'text';
       passwordInput.type = showing ? 'password' : 'text';
-      passwordToggle.textContent = showing ? '👁 Afficher' : '🙈 Masquer';
+      passwordToggleIcon.innerHTML = showing ? EYE_OPEN_ICON : EYE_OFF_ICON;
+      passwordToggleLabel.textContent = showing ? 'Afficher' : 'Masquer';
+      passwordToggle.setAttribute('aria-label', showing ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
     });
 
     const storedPassword = () => sessionStorage.getItem('dogcytocin_admin_pw') || '';
