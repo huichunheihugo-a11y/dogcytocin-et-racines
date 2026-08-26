@@ -1110,6 +1110,20 @@ form > .form-section-label:first-of-type {
 
 .form-field fieldset { border: none; }
 
+.form-char-count {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--green-sage);
+  margin: 6px 0 0;
+  transition: color 0.2s;
+}
+
+.form-char-count.is-near-limit,
+.form-char-count.is-over-limit {
+  color: #b23b3b;
+  font-weight: 600;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

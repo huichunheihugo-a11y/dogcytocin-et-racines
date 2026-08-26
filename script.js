@@ -169,7 +169,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorEl = document.getElementById('guestbook-error');
     const successEl = document.getElementById('guestbook-success');
     const submitBtn = document.getElementById('guestbook-submit');
+    const messageInput = document.getElementById('gb-message');
+    const messageCountEl = document.getElementById('gb-message-count');
     const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const MESSAGE_MAX_LENGTH = 300;
+
+    const updateMessageCount = () => {
+      const length = messageInput.value.length;
+      messageCountEl.textContent = `${length}/${MESSAGE_MAX_LENGTH} caractères`;
+      messageCountEl.classList.toggle('is-near-limit', length >= MESSAGE_MAX_LENGTH * 0.9 && length <= MESSAGE_MAX_LENGTH);
+      messageCountEl.classList.toggle('is-over-limit', length > MESSAGE_MAX_LENGTH);
+    };
+
+    messageInput.addEventListener('input', updateMessageCount);
+    updateMessageCount();
 
     const renderEntry = (entry) => {
       const card = document.createElement('div');
@@ -270,6 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       errorEl.hidden = true;
       successEl.hidden = true;
+
+      if (messageInput.value.length > MESSAGE_MAX_LENGTH) {
+        errorEl.textContent = `Votre message dépasse la limite de ${MESSAGE_MAX_LENGTH} caractères, merci de le raccourcir.`;
+        errorEl.hidden = false;
+        return;
+      }
+
       submitBtn.disabled = true;
       submitBtn.textContent = 'Envoi en cours...';
 
@@ -294,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         guestbookForm.reset();
+        updateMessageCount();
         successEl.hidden = false;
         if (result.comment) prependEntry(result.comment);
       } catch (err) {

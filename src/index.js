@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-26.4';
+const WORKER_VERSION = '2026-08-26.5';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -239,12 +239,12 @@ async function handlePostComment(request, env) {
   const n = typeof name === 'string' ? name.trim() : '';
   const m = typeof message === 'string' ? message.trim() : '';
 
-  if (n.length < 2 || n.length > 60 || m.length < 3 || m.length > 600) {
+  if (n.length < 2 || n.length > 60 || m.length < 3 || m.length > 300) {
     await logRejected(env, n, m, 'invalid', ipHash);
     return json({
       success: false,
       reason: 'invalid',
-      message: 'Vérifiez votre nom et votre message (le message doit faire entre 3 et 600 caractères).',
+      message: 'Vérifiez votre nom et votre message (le message doit faire entre 3 et 300 caractères).',
     }, 422);
   }
 
