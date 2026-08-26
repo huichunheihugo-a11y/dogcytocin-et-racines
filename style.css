@@ -2020,8 +2020,8 @@ select.field {
 
 .admin-entry {
   background: #fff;
-  border-radius: 16px;
-  padding: 20px 24px;
+  border-radius: 14px;
+  padding: 16px 20px;
   box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
   display: flex;
   justify-content: space-between;
@@ -2154,11 +2154,11 @@ select.field {
 .admin-approve-btn:disabled { opacity: 0.5; cursor: default; }
 
 .admin-reply-preview {
-  margin-top: 14px;
-  padding: 12px 16px;
+  margin-top: 10px;
+  padding: 9px 14px;
   background: rgba(217, 194, 126, 0.14);
   border-left: 3px solid var(--gold);
-  border-radius: 4px 12px 12px 4px;
+  border-radius: 4px 10px 10px 4px;
 }
 
 .admin-reply-badge {
@@ -2182,10 +2182,10 @@ select.field {
 }
 
 .admin-reply-form {
-  margin-top: 14px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-reply-textarea {

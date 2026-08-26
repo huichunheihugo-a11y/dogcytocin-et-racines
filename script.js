@@ -608,8 +608,11 @@ document.addEventListener('DOMContentLoaded', () => {
       replyToggleBtn.className = 'admin-reply-toggle-btn';
       replyToggleBtn.textContent = entry.reply_message ? 'Modifier la réponse' : 'Répondre';
 
+      // Le formulaire remplace l'aperçu pendant l'edition (evite d'afficher deux fois le meme
+      // texte -- l'aperçu revient des que le formulaire se referme).
       replyToggleBtn.addEventListener('click', () => {
         replyForm.hidden = !replyForm.hidden;
+        if (replyPreview) replyPreview.hidden = !replyForm.hidden;
         if (!replyForm.hidden) {
           replyTextarea.value = entry.reply_message || '';
           replyTextarea.focus();
@@ -618,6 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       cancelReplyBtn.addEventListener('click', () => {
         replyForm.hidden = true;
+        if (replyPreview) replyPreview.hidden = false;
       });
 
       sendReplyBtn.addEventListener('click', async () => {
