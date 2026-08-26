@@ -1958,7 +1958,8 @@ select.field {
 .admin-main {
   flex: 1;
   min-width: 0;
-  max-width: 700px;
+  max-width: 720px;
+  margin: 0 auto;
   padding: 48px 32px 80px;
 }
 
