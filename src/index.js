@@ -1,7 +1,12 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-26.3';
+const WORKER_VERSION = '2026-08-26.4';
+
+// Adresse qui recoit une notification a chaque nouveau message du livre d'or.
+// Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
+// (env.RESEND_API_KEY, un Cloudflare secret) ne doit jamais apparaitre dans le code.
+const NOTIFICATION_EMAIL = 'huichunheihugo@gmail.com';
 
 const CSP = [
   "default-src 'self'",
@@ -158,6 +163,43 @@ async function logRejected(env, name, message, reason, ipHash) {
   }
 }
 
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function sendCommentNotification(env, comment) {
+  if (!env.RESEND_API_KEY) return;
+
+  const dateLabel = new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  }).format(new Date(comment.created_at));
+
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        // Expediteur par defaut de Resend : fonctionne sans verifier de domaine, mais tant
+        // qu'aucun domaine n'est verifie, Resend ne livre qu'a l'adresse du compte Resend lui-meme.
+        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        to: NOTIFICATION_EMAIL,
+        subject: `Nouveau message de ${comment.name} sur le livre d'or`,
+        html: `<p><strong>${escapeHtml(comment.name)}</strong> a laissé un message le ${dateLabel} :</p><p>${escapeHtml(comment.message)}</p>`,
+      }),
+    });
+  } catch (err) {
+    // Best-effort : une notification manquee ne doit jamais empecher la publication du commentaire.
+  }
+}
+
 async function handleGetComments(env, order) {
   if (!env.DB) return json({ comments: [] });
   const direction = order === 'asc' ? 'ASC' : 'DESC';
@@ -258,10 +300,10 @@ async function handlePostComment(request, env) {
       'INSERT INTO comments (name, message, created_at, ip_hash) VALUES (?1, ?2, ?3, ?4)'
     ).bind(n, m, createdAt, ipHash).run();
 
-    return json({
-      success: true,
-      comment: { id: insert.meta.last_row_id, name: n, message: m, created_at: createdAt },
-    });
+    const newComment = { id: insert.meta.last_row_id, name: n, message: m, created_at: createdAt };
+    await sendCommentNotification(env, newComment);
+
+    return json({ success: true, comment: newComment });
   } catch (err) {
     return json({
       success: false,
