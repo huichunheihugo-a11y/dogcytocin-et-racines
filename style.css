@@ -2188,6 +2188,10 @@ select.field {
   gap: 8px;
 }
 
+/* display:flex sur .admin-reply-form l'emporte sinon sur l'attribut hidden natif
+   (regle auteur vs regle du navigateur) : sans ceci, hidden=true ne masque plus rien. */
+.admin-reply-form[hidden] { display: none; }
+
 .admin-reply-textarea {
   min-height: 44px;
   padding: 9px 12px;
