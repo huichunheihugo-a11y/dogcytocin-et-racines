@@ -2195,38 +2195,56 @@ select.field {
 
 .admin-sort-controls {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 24px;
 }
 
 .admin-sort-label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--green-sage);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.admin-sort-toggle {
+  display: inline-flex;
+  background: rgba(47, 69, 48, 0.06);
+  border-radius: 50px;
+  padding: 4px;
+  gap: 4px;
+  max-width: 100%;
 }
 
 .admin-sort-btn {
+  flex: 1 1 auto;
   background: transparent;
-  border: 2px solid rgba(47, 69, 48, 0.25);
+  border: none;
   color: var(--green-deep);
   font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 0.88rem;
-  padding: 10px 20px;
+  font-size: 0.85rem;
+  padding: 9px 18px;
   border-radius: 50px;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.admin-sort-btn:hover { border-color: var(--green-deep); background: rgba(47, 69, 48, 0.06); }
+.admin-sort-btn:hover { background: rgba(47, 69, 48, 0.08); }
 
 .admin-sort-btn.active {
   background: var(--gold);
-  border-color: var(--gold);
   color: var(--green-deep);
-  box-shadow: 0 6px 18px rgba(217, 194, 126, 0.4);
+  box-shadow: 0 3px 10px rgba(217, 194, 126, 0.4);
+}
+
+.admin-sort-btn.active:hover { background: var(--gold); }
+
+@media (max-width: 480px) {
+  .admin-sort-toggle { width: 100%; }
+  .admin-sort-btn { flex: 1; font-size: 0.78rem; padding: 9px 8px; }
 }
 
 @media (max-width: 480px) {
