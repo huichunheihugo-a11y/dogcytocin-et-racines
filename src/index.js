@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-26.7';
+const WORKER_VERSION = '2026-08-26.8';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -14,8 +14,8 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src https://fonts.gstatic.com",
   "img-src 'self' data:",
-  "connect-src 'self' https://api.web3forms.com",
-  "form-action 'self' https://api.web3forms.com",
+  "connect-src 'self'",
+  "form-action 'self'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "object-src 'none'",
@@ -200,6 +200,83 @@ async function sendCommentNotification(env, comment) {
     });
   } catch (err) {
     // Best-effort : une notification manquee ne doit jamais empecher la publication du commentaire.
+  }
+}
+
+const FOSTER_FIELD_LABELS = {
+  nom_complet: 'Nom complet',
+  telephone: 'Téléphone',
+  email: 'Email',
+  type_logement: 'Type de logement',
+  autres_animaux: 'Autres animaux',
+  details_autres_animaux: 'Détails autres animaux',
+  enfants_bas_age: 'Enfants en bas âge',
+  experience_animaux: 'Expérience avec les animaux',
+  motivation: 'Motivation',
+  duree_disponibilite: 'Durée de disponibilité',
+};
+
+const FOSTER_REQUIRED_FIELDS = [
+  'nom_complet', 'telephone', 'email', 'type_logement',
+  'autres_animaux', 'enfants_bas_age', 'experience_animaux',
+  'motivation', 'duree_disponibilite',
+];
+
+async function handleFosterApplication(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible, réessayez.' }, 400);
+  }
+
+  if (body?.botcheck) {
+    // Piège à robots déclenché : succès silencieux, rien n'est envoyé, pour ne pas alerter le bot.
+    return json({ success: true });
+  }
+
+  for (const key of FOSTER_REQUIRED_FIELDS) {
+    if (typeof body?.[key] !== 'string' || !body[key].trim()) {
+      return json({ success: false, message: 'Merci de remplir tous les champs obligatoires.' }, 422);
+    }
+  }
+
+  if (!env.RESEND_API_KEY) {
+    return json({ success: false, message: "L'envoi n'est pas encore configuré, réessayez plus tard ou écrivez-nous directement." }, 503);
+  }
+
+  const rows = Object.entries(FOSTER_FIELD_LABELS)
+    .filter(([key]) => typeof body[key] === 'string' && body[key].trim())
+    .map(([key, label]) => {
+      const value = escapeHtml(body[key].trim()).replace(/\n/g, '<br>');
+      return `<tr><td style="padding:4px 14px 4px 0;font-weight:600;white-space:nowrap;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:4px 0;">${value}</td></tr>`;
+    })
+    .join('');
+
+  try {
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        to: NOTIFICATION_EMAIL,
+        // Permet de repondre directement au candidat depuis la boite mail, sans copier son adresse.
+        reply_to: body.email.trim(),
+        subject: `Nouvelle candidature famille d'accueil — ${body.nom_complet.trim()}`,
+        html: `<table cellpadding="0" cellspacing="0">${rows}</table>`,
+      }),
+    });
+
+    if (!resendResponse.ok) {
+      return json({ success: false, message: "L'envoi a échoué, réessayez ou écrivez-nous directement." }, 502);
+    }
+
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: "L'envoi a échoué, réessayez ou écrivez-nous directement." }, 502);
   }
 }
 
@@ -555,6 +632,11 @@ export default {
 
       if (url.pathname === '/api/version') {
         return withSecurityHeaders(json({ version: WORKER_VERSION }));
+      }
+
+      if (url.pathname === '/api/foster-application') {
+        if (request.method === 'POST') return withSecurityHeaders(await handleFosterApplication(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 
       if (url.pathname === '/api/comments') {

@@ -78,13 +78,9 @@
       </div>
 
       <div class="form-card fade-in">
-        <form id="foster-form" name="famille-accueil" method="POST" action="https://api.web3forms.com/submit">
+        <form id="foster-form" name="famille-accueil" method="POST" action="/api/foster-application">
 
-          <input type="hidden" name="access_key" value="0d7814ad-8b0e-4e14-83b2-249103c0e05a">
-          <input type="hidden" name="subject" value="Nouvelle candidature famille d'accueil">
-          <input type="hidden" name="from_name" value="Dogcytocin et Racines — Site web">
-
-          <!-- Piège à robots (anti-spam) : Web3Forms rejette silencieusement toute soumission où cette case est cochée -->
+          <!-- Piège à robots (anti-spam) : le serveur ignore silencieusement toute soumission où cette case est cochée -->
           <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
 
           <span class="form-section-label">Vos coordonnées</span>
