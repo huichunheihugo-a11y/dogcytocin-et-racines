@@ -1997,7 +1997,20 @@ select.field {
   .admin-shell { flex-direction: column; }
   .admin-nav { width: 100%; padding: 18px 20px; }
   .admin-nav-brand { margin-bottom: 14px; }
-  .admin-nav-links { flex-direction: row; }
+
+  /* Barre d'onglets defilable horizontalement : avec 4 onglets (dont "Blog" et "Messages
+     refuses"), un simple flex row sans wrap deborde du cadre et rend certains onglets
+     inatteignables sur petit ecran -- le scroll horizontal garde tout accessible. */
+  .admin-nav-links {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -20px;
+    padding: 0 20px;
+  }
+  .admin-nav-link { flex-shrink: 0; white-space: nowrap; }
+
   .admin-main { flex: 1; margin: 0; padding: 32px 20px 60px; }
 }
 
