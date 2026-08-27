@@ -829,11 +829,71 @@ document.addEventListener('DOMContentLoaded', () => {
       motivation.appendChild(motivationLabel);
       motivation.appendChild(motivationValue);
 
+      const notesBlock = document.createElement('div');
+      notesBlock.className = 'admin-foster-notes';
+
+      const notesLabel = document.createElement('label');
+      notesLabel.className = 'admin-foster-text-label';
+      notesLabel.textContent = "Note interne (visible seulement par l'équipe)";
+
+      const notesTextarea = document.createElement('textarea');
+      notesTextarea.className = 'admin-foster-notes-textarea field';
+      notesTextarea.placeholder = 'Ex. Appelé le 12/09, très motivé...';
+      notesTextarea.rows = 2;
+      notesTextarea.maxLength = 2000;
+      notesTextarea.value = entry.notes || '';
+
+      const saveNotesBtn = document.createElement('button');
+      saveNotesBtn.type = 'button';
+      saveNotesBtn.className = 'admin-foster-notes-save';
+      saveNotesBtn.textContent = 'Enregistrer la note';
+
+      saveNotesBtn.addEventListener('click', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          requireReauth();
+          return;
+        }
+
+        saveNotesBtn.disabled = true;
+        saveNotesBtn.textContent = 'Enregistrement...';
+
+        try {
+          const response = await fetch(`/api/admin/foster-applications/${entry.id}/notes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+            body: JSON.stringify({ notes: notesTextarea.value }),
+          });
+
+          if (response.status === 401) {
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('échec');
+
+          entry.notes = notesTextarea.value.trim();
+          saveNotesBtn.textContent = 'Enregistré ✓';
+          setTimeout(() => { saveNotesBtn.textContent = 'Enregistrer la note'; }, 2000);
+        } catch (err) {
+          showActionMsg("L'enregistrement de la note a échoué, réessaie.", true);
+          saveNotesBtn.textContent = 'Enregistrer la note';
+        } finally {
+          saveNotesBtn.disabled = false;
+        }
+      });
+
+      notesBlock.appendChild(notesLabel);
+      notesBlock.appendChild(notesTextarea);
+      notesBlock.appendChild(saveNotesBtn);
+
       body.appendChild(head);
       body.appendChild(contact);
       body.appendChild(chipsWrap);
       body.appendChild(experience);
       body.appendChild(motivation);
+      body.appendChild(notesBlock);
 
       const actions = document.createElement('div');
       actions.className = 'admin-entry-actions';

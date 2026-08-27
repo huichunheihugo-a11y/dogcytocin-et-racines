@@ -2194,6 +2194,35 @@ select.field {
 
 .admin-foster-status:disabled { opacity: 0.6; cursor: default; }
 
+.admin-foster-notes {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(47, 69, 48, 0.15);
+}
+
+.admin-foster-notes-textarea {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.admin-foster-notes-save {
+  background: rgba(47, 69, 48, 0.08);
+  border: 1px solid rgba(47, 69, 48, 0.25);
+  color: var(--green-deep);
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 6px 14px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-foster-notes-save:hover { background: rgba(47, 69, 48, 0.15); }
+.admin-foster-notes-save:disabled { opacity: 0.6; cursor: default; }
+
 .admin-delete-btn {
   flex-shrink: 0;
   background: rgba(178, 59, 59, 0.08);

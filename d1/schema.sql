@@ -47,7 +47,11 @@ CREATE TABLE IF NOT EXISTS foster_applications (
   motivation TEXT NOT NULL,
   duree_disponibilite TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'nouvelle',
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  notes TEXT
 );
+
+-- Si la table foster_applications existe deja sans cette colonne, executer separement dans la
+-- console D1 : ALTER TABLE foster_applications ADD COLUMN notes TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_foster_applications_created ON foster_applications (created_at);
