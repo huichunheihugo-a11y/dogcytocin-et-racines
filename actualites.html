@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Page introuvable — Dogcytocin et Racines</title>
-<meta name="robots" content="noindex">
+<title>Actualités — Dogcytocin et Racines</title>
+<meta name="description" content="Les dernières nouvelles du refuge Dogcytocin et Racines : chantiers, sauvetages, adoptions et vie quotidienne.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
-<meta property="og:title" content="Page introuvable — Dogcytocin et Racines">
+<meta property="og:title" content="Actualités — Dogcytocin et Racines">
+<meta property="og:description" content="Les dernières nouvelles du refuge Dogcytocin et Racines : chantiers, sauvetages, adoptions et vie quotidienne.">
 <meta property="og:image" content="https://dogcytocin-et-racines.huichunheihugo.workers.dev/images/og-image.png">
+<meta property="og:url" content="https://dogcytocin-et-racines.huichunheihugo.workers.dev/actualites">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="grain-light">
 
 <div id="password-gate">
   <div class="gate-box">
@@ -43,24 +45,35 @@
       <li><a href="nos-chiens.html">Nos chiens</a></li>
       <li><a href="notre-histoire.html">Notre histoire</a></li>
       <li><a href="nos-actions.html">Nos actions</a></li>
-      <li><a href="actualites.html">Actualités</a></li>
+      <li><a href="actualites.html" class="active">Actualités</a></li>
       <li><a href="nous-soutenir.html">Nous soutenir</a></li>
     </ul>
   </div>
 </header>
 
-<section class="hero">
-  <div class="hero-content">
-    <span class="hero-eyebrow">Erreur 404</span>
-    <h1>Cette page a pris la clé des champs</h1>
-    <p class="subtitle">Comme certains de nos chiens avant leur arrivée ici, elle ne s'est pas encore
-      trouvée. Le lien est peut-être cassé, ou la page n'existe plus.</p>
-    <div class="btn-row">
-      <a href="index.html" class="btn btn-primary">Retour à l'accueil</a>
-      <a href="nos-chiens.html" class="btn btn-secondary">Voir les chiens</a>
+<div class="page-header">
+  <div class="container">
+    <span class="kicker">Les dernières nouvelles</span>
+    <h1>Actualités</h1>
+    <div class="divider on-green"></div>
+    <p>Chantiers, sauvetages, arrivées et petites victoires du quotidien — les nouvelles du refuge, au fil de l'eau.</p>
+  </div>
+</div>
+
+<div class="wave-divider wave-to-cream" aria-hidden="true"></div>
+
+<section>
+  <div class="container">
+    <div id="blog-feed-loading" class="guestbook-loading">Chargement des articles...</div>
+    <div id="blog-feed-list" class="blog-list"></div>
+    <div id="blog-feed-empty" class="dogs-empty" hidden>
+      <svg class="dogs-empty-icon" viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' aria-hidden="true"><path d='M12 21C12 21 4 14.5 4 8.8C4 5.6 6.4 3 9.5 3C11 3 12 3.8 12 3.8C12 3.8 13 3 14.5 3C17.6 3 20 5.6 20 8.8C20 14.5 12 21 12 21Z'/></svg>
+      <p>Pas encore d'actualités publiées — revenez bientôt !</p>
     </div>
   </div>
 </section>
+
+<div class="wave-divider wave-to-green" aria-hidden="true"></div>
 
 <footer class="site-footer">
   <div class="container">

@@ -327,6 +327,68 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const blogFeedList = document.getElementById('blog-feed-list');
+
+  if (blogFeedList) {
+    const blogFeedLoading = document.getElementById('blog-feed-loading');
+    const blogFeedEmpty = document.getElementById('blog-feed-empty');
+    const blogDateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const renderBlogPost = (post) => {
+      const article = document.createElement('article');
+      article.className = 'blog-post fade-in visible';
+
+      if (post.image_url) {
+        const media = document.createElement('div');
+        media.className = 'blog-post-media';
+        const img = document.createElement('img');
+        img.src = post.image_url;
+        img.alt = '';
+        media.appendChild(img);
+        article.appendChild(media);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'blog-post-body';
+
+      const date = document.createElement('p');
+      date.className = 'blog-post-date';
+      date.textContent = blogDateFormatter.format(new Date(post.created_at));
+
+      const title = document.createElement('h2');
+      title.textContent = post.title;
+
+      const content = document.createElement('p');
+      content.className = 'blog-post-content';
+      content.textContent = post.content;
+
+      body.appendChild(date);
+      body.appendChild(title);
+      body.appendChild(content);
+      article.appendChild(body);
+
+      return article;
+    };
+
+    (async () => {
+      try {
+        const response = await fetch('/api/blog-posts');
+        const data = await response.json();
+        if (blogFeedLoading) blogFeedLoading.remove();
+
+        if (!data.posts || data.posts.length === 0) {
+          if (blogFeedEmpty) blogFeedEmpty.hidden = false;
+          return;
+        }
+
+        data.posts.forEach((post) => blogFeedList.appendChild(renderBlogPost(post)));
+      } catch (err) {
+        if (blogFeedLoading) blogFeedLoading.remove();
+        if (blogFeedEmpty) blogFeedEmpty.hidden = false;
+      }
+    })();
+  }
+
   const adminList = document.getElementById('admin-list');
 
   if (adminList) {
@@ -385,6 +447,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fosterList) fosterList.innerHTML = '';
       const fosterBadgeEl = document.getElementById('admin-foster-badge');
       if (fosterBadgeEl) fosterBadgeEl.hidden = true;
+      const blogListEl = document.getElementById('admin-blog-list');
+      if (blogListEl) blogListEl.innerHTML = '';
+      resetBlogForm();
     };
 
     // Si une action authentifiee echoue avec 401 en cours de route (mot de passe change, session obsolete),
@@ -434,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadRejected();
         loadStats();
         loadFosterApplications();
+        loadBlogPosts();
       } catch (err) {
         showActionMsg('Vérification impossible, réessaie.', true);
       } finally {
@@ -463,6 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
           loadRejected();
           loadStats();
           loadFosterApplications();
+          loadBlogPosts();
         } else {
           sessionStorage.removeItem('dogcytocin_admin_pw');
           passwordInput.value = '';
@@ -518,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const tabs = document.querySelectorAll('.admin-tab');
     const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", rejected: 'Messages refusés' };
+    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", blog: 'Blog', rejected: 'Messages refusés' };
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -1280,6 +1347,313 @@ document.addEventListener('DOMContentLoaded', () => {
         empty.textContent = 'Impossible de charger les candidatures.';
         fosterList.appendChild(empty);
       }
+    }
+
+    // Formulaire de creation/modification d'article de blog : la photo est une simple URL externe
+    // (pas d'upload de fichier -- R2 necessiterait un abonnement payant cote Cloudflare). Le meme
+    // formulaire sert aussi a modifier un article existant (bouton "Modifier" de la liste ci-dessous) --
+    // editingBlogPostId distingue les deux modes.
+    const blogForm = document.getElementById('admin-blog-form');
+
+    const BLOG_INTRO_CREATE = 'Rédige un nouvel article pour le blog du site.';
+    const BLOG_INTRO_EDIT = "Modifie l'article ci-dessous, puis enregistre.";
+
+    let editingBlogPostId = null;
+
+    // Reinitialise le formulaire en mode "creation" -- appele apres une publication reussie,
+    // au clic sur "Annuler la modification", et a la deconnexion (rien ne doit rester affiche
+    // d'une edition en cours une fois la session terminee).
+    const resetBlogForm = () => {
+      if (!blogForm) return;
+      blogForm.reset();
+      editingBlogPostId = null;
+      const previewImg = document.getElementById('admin-blog-preview-img');
+      const preview = document.getElementById('admin-blog-preview');
+      const imageError = document.getElementById('admin-blog-image-error');
+      const msg = document.getElementById('admin-blog-msg');
+      const intro = document.getElementById('admin-blog-intro');
+      const submit = document.getElementById('admin-blog-submit');
+      const cancelEdit = document.getElementById('admin-blog-cancel-edit');
+      if (previewImg) previewImg.src = '';
+      if (preview) preview.hidden = true;
+      if (imageError) imageError.hidden = true;
+      if (msg) msg.hidden = true;
+      if (intro) intro.textContent = BLOG_INTRO_CREATE;
+      if (submit) submit.textContent = "Publier l'article";
+      if (cancelEdit) cancelEdit.hidden = true;
+    };
+
+    // Bascule le formulaire en mode "modification" pour un article existant : pre-remplit les
+    // champs et l'apercu (photo existante comprise). Definie a ce niveau (comme resetBlogForm)
+    // pour rester accessible depuis renderBlogEntry ci-dessous.
+    const startEditingBlogPost = (entry) => {
+      if (!blogForm) return;
+      editingBlogPostId = entry.id;
+
+      const titleInput = document.getElementById('admin-blog-title');
+      const contentInput = document.getElementById('admin-blog-content');
+      const imageUrlInput = document.getElementById('admin-blog-image-url');
+      const previewImg = document.getElementById('admin-blog-preview-img');
+      const preview = document.getElementById('admin-blog-preview');
+      const imageError = document.getElementById('admin-blog-image-error');
+      const msg = document.getElementById('admin-blog-msg');
+      const intro = document.getElementById('admin-blog-intro');
+      const submit = document.getElementById('admin-blog-submit');
+      const cancelEdit = document.getElementById('admin-blog-cancel-edit');
+
+      titleInput.value = entry.title;
+      contentInput.value = entry.content;
+      imageUrlInput.value = entry.image_url || '';
+
+      if (entry.image_url) {
+        previewImg.src = entry.image_url;
+        preview.hidden = false;
+      } else {
+        previewImg.src = '';
+        preview.hidden = true;
+      }
+
+      imageError.hidden = true;
+      msg.hidden = true;
+      intro.textContent = BLOG_INTRO_EDIT;
+      submit.textContent = 'Enregistrer les modifications';
+      cancelEdit.hidden = false;
+      blogForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    const BLOG_STATUS_DATE_FORMATTER = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const blogList = document.getElementById('admin-blog-list');
+
+    // Remplace/insere l'entree correspondante dans la liste admin, pour refleter immediatement
+    // une creation/modification sans recharger toute la liste depuis le serveur.
+    const upsertBlogListEntry = (post, { prepend } = {}) => {
+      if (!blogList) return;
+      const emptyMsg = blogList.querySelector('.guestbook-empty');
+      if (emptyMsg) emptyMsg.remove();
+
+      const existingRow = blogList.querySelector(`[data-id="${post.id}"]`);
+      const newRow = renderBlogEntry(post);
+      if (existingRow) {
+        existingRow.replaceWith(newRow);
+      } else if (prepend) {
+        blogList.prepend(newRow);
+      } else {
+        blogList.appendChild(newRow);
+      }
+    };
+
+    function renderBlogEntry(entry) {
+      const row = document.createElement('div');
+      row.className = 'admin-entry admin-blog-entry';
+      row.dataset.id = entry.id;
+
+      if (entry.image_url) {
+        const thumb = document.createElement('img');
+        thumb.className = 'admin-blog-thumb';
+        thumb.src = entry.image_url;
+        thumb.alt = '';
+        row.appendChild(thumb);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'admin-entry-body';
+
+      const head = document.createElement('div');
+      head.className = 'admin-entry-head';
+
+      const title = document.createElement('span');
+      title.className = 'admin-entry-name';
+      title.textContent = entry.title;
+
+      const date = document.createElement('span');
+      date.className = 'admin-entry-date';
+      date.textContent = BLOG_STATUS_DATE_FORMATTER.format(new Date(entry.created_at));
+
+      head.appendChild(title);
+      head.appendChild(date);
+      body.appendChild(head);
+
+      const actions = document.createElement('div');
+      actions.className = 'admin-entry-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'admin-approve-btn';
+      editBtn.textContent = 'Modifier';
+      editBtn.addEventListener('click', () => startEditingBlogPost(entry));
+
+      const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
+        const response = await fetch(`/api/admin/blog-posts/${entry.id}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) throw Object.assign(new Error('Session expirée.'), { unauthorized: true });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error("La suppression a échoué, réessaie.");
+
+        row.remove();
+        if (editingBlogPostId === entry.id) resetBlogForm();
+        if (!blogList.children.length) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucun article publié pour le moment.';
+          blogList.appendChild(empty);
+        }
+      });
+
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      row.appendChild(body);
+      row.appendChild(actions);
+      return row;
+    }
+
+    async function loadBlogPosts() {
+      if (!storedPassword() || !blogList) return;
+
+      blogList.innerHTML = '<p class="guestbook-loading">Chargement des articles...</p>';
+      try {
+        const response = await fetch('/api/blog-posts');
+        const data = await response.json();
+        blogList.innerHTML = '';
+
+        if (!data.posts || data.posts.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucun article publié pour le moment.';
+          blogList.appendChild(empty);
+          return;
+        }
+
+        data.posts.forEach((entry) => blogList.appendChild(renderBlogEntry(entry)));
+      } catch (err) {
+        blogList.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les articles.';
+        blogList.appendChild(empty);
+      }
+    }
+
+    if (blogForm) {
+      const blogTitleInput = document.getElementById('admin-blog-title');
+      const blogContentInput = document.getElementById('admin-blog-content');
+      const blogImageUrlInput = document.getElementById('admin-blog-image-url');
+      const blogPreview = document.getElementById('admin-blog-preview');
+      const blogPreviewImg = document.getElementById('admin-blog-preview-img');
+      const blogImageError = document.getElementById('admin-blog-image-error');
+      const blogMsg = document.getElementById('admin-blog-msg');
+      const blogSubmit = document.getElementById('admin-blog-submit');
+      const blogIntro = document.getElementById('admin-blog-intro');
+      const blogCancelEdit = document.getElementById('admin-blog-cancel-edit');
+
+      const showBlogImageError = (text) => {
+        blogImageError.textContent = text;
+        blogImageError.hidden = false;
+      };
+
+      const showBlogMsg = (text, isError) => {
+        blogMsg.textContent = text;
+        blogMsg.className = 'admin-auth-msg ' + (isError ? 'is-error' : 'is-ok');
+        blogMsg.hidden = false;
+      };
+
+      // Apercu en direct des que l'admin colle une URL -- <img onerror> masque la preview toute
+      // seule si l'URL ne charge pas (image supprimee, lien casse, etc.).
+      blogImageUrlInput.addEventListener('input', () => {
+        blogImageError.hidden = true;
+        const value = blogImageUrlInput.value.trim();
+        if (!value) {
+          blogPreview.hidden = true;
+          blogPreviewImg.src = '';
+          return;
+        }
+        blogPreviewImg.src = value;
+      });
+
+      blogPreviewImg.addEventListener('load', () => {
+        if (blogPreviewImg.src) blogPreview.hidden = false;
+      });
+
+      blogPreviewImg.addEventListener('error', () => {
+        blogPreview.hidden = true;
+      });
+
+      blogCancelEdit.addEventListener('click', resetBlogForm);
+
+      blogForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const pw = storedPassword();
+        if (!pw) {
+          requireReauth();
+          return;
+        }
+
+        blogMsg.hidden = true;
+        blogImageError.hidden = true;
+
+        const title = blogTitleInput.value.trim();
+        const content = blogContentInput.value.trim();
+        const imageUrl = blogImageUrlInput.value.trim();
+
+        if (!title) {
+          showBlogMsg('Le titre est obligatoire.', true);
+          blogTitleInput.focus();
+          return;
+        }
+
+        if (!content) {
+          showBlogMsg('Le contenu est obligatoire.', true);
+          blogContentInput.focus();
+          return;
+        }
+
+        if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+          showBlogImageError("L'URL de l'image doit commencer par http:// ou https://.");
+          blogImageUrlInput.focus();
+          return;
+        }
+
+        const isEditing = editingBlogPostId !== null;
+        const url = isEditing ? `/api/admin/blog-posts/${editingBlogPostId}` : '/api/admin/blog-posts';
+
+        blogSubmit.disabled = true;
+        blogSubmit.textContent = isEditing ? 'Enregistrement...' : 'Publication...';
+
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'X-Admin-Password': pw, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, content, image_url: imageUrl }),
+          });
+
+          if (response.status === 401) {
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            showBlogMsg(result.message || (isEditing ? "L'enregistrement a échoué, réessaie." : "La publication a échoué, réessaie."), true);
+            return;
+          }
+
+          if (result.post) upsertBlogListEntry(result.post, { prepend: !isEditing });
+          resetBlogForm();
+          showBlogMsg(isEditing ? 'Article mis à jour !' : 'Article publié !', false);
+        } catch (err) {
+          showBlogMsg(isEditing ? "L'enregistrement a échoué, réessaie." : "La publication a échoué, réessaie.", true);
+        } finally {
+          blogSubmit.disabled = false;
+          // editingBlogPostId est deja retombe a null si resetBlogForm() a tourne (succes) --
+          // sinon on est toujours dans le meme mode qu'au debut de cette soumission (echec).
+          blogSubmit.textContent = editingBlogPostId !== null ? 'Enregistrer les modifications' : "Publier l'article";
+        }
+      });
     }
   }
 });

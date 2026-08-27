@@ -55,3 +55,13 @@ CREATE TABLE IF NOT EXISTS foster_applications (
 -- console D1 : ALTER TABLE foster_applications ADD COLUMN notes TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_foster_applications_created ON foster_applications (created_at);
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  image_url TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_blog_posts_created ON blog_posts (created_at);

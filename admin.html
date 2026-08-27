@@ -19,6 +19,7 @@
     <nav class="admin-nav-links">
       <a href="#" class="admin-nav-link active" data-tab="comments">Commentaires</a>
       <a href="#" class="admin-nav-link" data-tab="foster">Familles d'accueil <span id="admin-foster-badge" class="admin-nav-badge" hidden>0</span></a>
+      <a href="#" class="admin-nav-link" data-tab="blog">Blog</a>
       <a href="#" class="admin-nav-link" data-tab="rejected">Messages refusés</a>
     </nav>
   </aside>
@@ -82,6 +83,44 @@
         <button type="button" class="admin-status-filter-btn" data-status-filter="refusee">Refusées</button>
       </div>
       <div id="admin-foster-list" class="admin-list"></div>
+    </div>
+
+    <div id="admin-tab-blog" class="admin-tab" hidden>
+      <p id="admin-blog-intro" class="admin-tab-intro">Rédige un nouvel article pour le blog du site.</p>
+
+      <form id="admin-blog-form" class="admin-blog-form" novalidate>
+        <div class="admin-field-group">
+          <label for="admin-blog-title">Titre</label>
+          <input type="text" id="admin-blog-title" name="title" class="field" maxlength="200" required>
+        </div>
+
+        <div class="admin-field-group">
+          <label for="admin-blog-content">Contenu</label>
+          <textarea id="admin-blog-content" name="content" class="field admin-blog-content-textarea" rows="10" maxlength="20000" required></textarea>
+        </div>
+
+        <div class="admin-field-group">
+          <label for="admin-blog-image-url">Photo — URL (facultatif)</label>
+          <input type="url" id="admin-blog-image-url" name="image_url" class="field" placeholder="https://...">
+          <span class="admin-blog-image-hint">Collez l'URL d'une image déjà hébergée en ligne (ex : imgbb.com, un lien Facebook...).</span>
+
+          <div id="admin-blog-preview" class="admin-blog-preview" hidden>
+            <img id="admin-blog-preview-img" class="admin-blog-preview-img" alt="Aperçu de l'image">
+          </div>
+
+          <p id="admin-blog-image-error" class="admin-auth-msg is-error" hidden></p>
+        </div>
+
+        <p id="admin-blog-msg" class="admin-auth-msg" hidden></p>
+
+        <div class="admin-blog-form-actions">
+          <button type="submit" id="admin-blog-submit" class="btn btn-primary">Publier l'article</button>
+          <button type="button" id="admin-blog-cancel-edit" class="btn btn-outline" hidden>Annuler la modification</button>
+        </div>
+      </form>
+
+      <h2 class="admin-blog-list-title">Articles publiés</h2>
+      <div id="admin-blog-list" class="admin-list"></div>
     </div>
 
     <div id="admin-tab-rejected" class="admin-tab" hidden>

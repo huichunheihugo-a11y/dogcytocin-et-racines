@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-27.1';
+const WORKER_VERSION = '2026-08-27.4';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -795,6 +795,175 @@ async function handleDeleteRejected(request, env, id) {
   }
 }
 
+// Pas de stockage de fichiers (R2 nécessite un abonnement payant côté Cloudflare) : l'admin
+// colle l'URL d'une image déjà hébergée ailleurs (ex: imgbb.com), on se contente de la valider
+// et de la stocker telle quelle dans D1.
+const BLOG_IMAGE_URL_RE = /^https?:\/\/.+/i;
+
+function validateBlogImageUrl(raw) {
+  const value = typeof raw === 'string' ? raw.trim() : '';
+  if (!value) return { ok: true, value: null };
+  if (value.length > 2000 || !BLOG_IMAGE_URL_RE.test(value)) {
+    return { ok: false };
+  }
+  return { ok: true, value };
+}
+
+async function handleCreateBlogPost(request, env) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible, réessayez.' }, 400);
+  }
+
+  const title = typeof body.title === 'string' ? body.title.trim() : '';
+  const content = typeof body.content === 'string' ? body.content.trim() : '';
+
+  if (!title || title.length > 200) {
+    return json({ success: false, message: 'Le titre est obligatoire (200 caractères max).' }, 422);
+  }
+  if (!content) {
+    return json({ success: false, message: 'Le contenu est obligatoire.' }, 422);
+  }
+  if (content.length > 20000) {
+    return json({ success: false, message: 'Le contenu dépasse 20 000 caractères, raccourcissez-le.' }, 422);
+  }
+
+  const imageUrlResult = validateBlogImageUrl(body.image_url);
+  if (!imageUrlResult.ok) {
+    return json({ success: false, message: "L'URL de l'image doit commencer par http:// ou https://." }, 422);
+  }
+  const imageUrl = imageUrlResult.value;
+
+  try {
+    const createdAt = new Date().toISOString();
+    const insert = await env.DB.prepare(
+      'INSERT INTO blog_posts (title, content, image_url, created_at) VALUES (?1, ?2, ?3, ?4)'
+    ).bind(title, content, imageUrl, createdAt).run();
+
+    return json({
+      success: true,
+      post: { id: insert.meta.last_row_id, title, content, image_url: imageUrl, created_at: createdAt },
+    });
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de l'enregistrement de l'article." }, 500);
+  }
+}
+
+function toPublicBlogPost(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    image_url: row.image_url || null,
+    created_at: row.created_at,
+  };
+}
+
+// Liste publique : un article publié est un contenu public par nature (comme les commentaires),
+// reutilisee telle quelle par la page "Actualites" du site ET par le panel admin (qui se contente
+// de ne rien en afficher tant qu'aucune session admin n'est memorisee, cote client).
+async function handleListBlogPosts(env) {
+  if (!env.DB) return json({ posts: [] });
+
+  try {
+    const { results } = await env.DB.prepare(
+      'SELECT id, title, content, image_url, created_at FROM blog_posts ORDER BY id DESC LIMIT 200'
+    ).all();
+    return json({ posts: results.map(toPublicBlogPost) });
+  } catch (err) {
+    return json({ posts: [] });
+  }
+}
+
+async function handleUpdateBlogPost(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible, réessayez.' }, 400);
+  }
+
+  const title = typeof body.title === 'string' ? body.title.trim() : '';
+  const content = typeof body.content === 'string' ? body.content.trim() : '';
+
+  if (!title || title.length > 200) {
+    return json({ success: false, message: 'Le titre est obligatoire (200 caractères max).' }, 422);
+  }
+  if (!content) {
+    return json({ success: false, message: 'Le contenu est obligatoire.' }, 422);
+  }
+  if (content.length > 20000) {
+    return json({ success: false, message: 'Le contenu dépasse 20 000 caractères, raccourcissez-le.' }, 422);
+  }
+
+  const imageUrlResult = validateBlogImageUrl(body.image_url);
+  if (!imageUrlResult.ok) {
+    return json({ success: false, message: "L'URL de l'image doit commencer par http:// ou https://." }, 422);
+  }
+  const imageUrl = imageUrlResult.value;
+
+  let existing;
+  try {
+    existing = await env.DB.prepare('SELECT id FROM blog_posts WHERE id = ?1').bind(id).first();
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de la lecture de l'article." }, 500);
+  }
+  if (!existing) {
+    return json({ success: false, message: 'Article introuvable (déjà supprimé ?).' }, 404);
+  }
+
+  try {
+    await env.DB.prepare('UPDATE blog_posts SET title = ?1, content = ?2, image_url = ?3 WHERE id = ?4')
+      .bind(title, content, imageUrl, id).run();
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de l'enregistrement de l'article." }, 500);
+  }
+
+  const row = await env.DB.prepare(
+    'SELECT id, title, content, image_url, created_at FROM blog_posts WHERE id = ?1'
+  ).bind(id).first();
+
+  return json({ success: true, post: toPublicBlogPost(row) });
+}
+
+async function handleDeleteBlogPost(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  try {
+    await env.DB.prepare('DELETE FROM blog_posts WHERE id = ?1').bind(id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
+  }
+}
+
 export default {
   async fetch(request, env) {
     try {
@@ -869,6 +1038,23 @@ export default {
       const fosterNotesMatch = url.pathname.match(/^\/api\/admin\/foster-applications\/(\d+)\/notes$/);
       if (fosterNotesMatch) {
         if (request.method === 'POST') return withSecurityHeaders(await handleUpdateFosterNotes(request, env, fosterNotesMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/blog-posts') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleListBlogPosts(env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/blog-posts') {
+        if (request.method === 'POST') return withSecurityHeaders(await handleCreateBlogPost(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const blogPostIdMatch = url.pathname.match(/^\/api\/admin\/blog-posts\/(\d+)$/);
+      if (blogPostIdMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleUpdateBlogPost(request, env, blogPostIdMatch[1]));
+        if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteBlogPost(request, env, blogPostIdMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 
