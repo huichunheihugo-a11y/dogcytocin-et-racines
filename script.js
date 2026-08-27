@@ -429,11 +429,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const showConnectedState = () => {
       authForm.hidden = true;
       authConnected.hidden = false;
+      const blogLocked = document.getElementById('admin-blog-locked-msg');
+      const blogAuthed = document.getElementById('admin-blog-authed');
+      if (blogLocked) blogLocked.hidden = true;
+      if (blogAuthed) blogAuthed.hidden = false;
     };
 
     const showLoginForm = () => {
       authForm.hidden = false;
       authConnected.hidden = true;
+      const blogLocked = document.getElementById('admin-blog-locked-msg');
+      const blogAuthed = document.getElementById('admin-blog-authed');
+      if (blogLocked) blogLocked.hidden = false;
+      if (blogAuthed) blogAuthed.hidden = true;
     };
 
     // Vide les listes et les stats affichees, pour ne rien laisser visible d'une session terminee.
