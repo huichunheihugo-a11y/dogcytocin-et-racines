@@ -383,6 +383,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (statsContent) statsContent.innerHTML = '';
       const fosterList = document.getElementById('admin-foster-list');
       if (fosterList) fosterList.innerHTML = '';
+      const fosterBadgeEl = document.getElementById('admin-foster-badge');
+      if (fosterBadgeEl) fosterBadgeEl.hidden = true;
     };
 
     // Si une action authentifiee echoue avec 401 en cours de route (mot de passe change, session obsolete),
@@ -482,6 +484,33 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSortOrder = order;
         sortButtons.forEach((b) => b.classList.toggle('active', b === btn));
         loadComments(currentSortOrder);
+      });
+    });
+
+    // Filtre par statut des candidatures famille d'accueil -- purement cote client (les
+    // candidatures sont deja toutes chargees), pas besoin de refaire une requete au clic.
+    let currentFosterFilter = 'all';
+    const fosterFilterButtons = document.querySelectorAll('.admin-status-filter-btn');
+
+    const applyFosterFilterToRow = (row) => {
+      row.hidden = currentFosterFilter !== 'all' && row.dataset.status !== currentFosterFilter;
+    };
+
+    const fosterBadge = document.getElementById('admin-foster-badge');
+    const updateFosterBadge = () => {
+      if (!fosterBadge) return;
+      const fosterList = document.getElementById('admin-foster-list');
+      const count = fosterList ? fosterList.querySelectorAll('.admin-entry[data-status="nouvelle"]').length : 0;
+      fosterBadge.textContent = String(count);
+      fosterBadge.hidden = count === 0;
+    };
+
+    fosterFilterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!storedPassword()) return;
+        currentFosterFilter = btn.dataset.statusFilter;
+        fosterFilterButtons.forEach((b) => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('#admin-foster-list .admin-entry').forEach(applyFosterFilterToRow);
       });
     });
 
@@ -739,6 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderFosterEntry = (entry) => {
       const row = document.createElement('div');
       row.className = 'admin-entry';
+      row.dataset.status = entry.status;
 
       const body = document.createElement('div');
       body.className = 'admin-entry-body';
@@ -849,6 +879,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
           entry.status = newStatus;
           statusSelect.dataset.status = newStatus;
+          row.dataset.status = newStatus;
+          applyFosterFilterToRow(row);
+          updateFosterBadge();
         } catch (err) {
           statusSelect.value = previousStatus;
           showActionMsg("La mise à jour du statut a échoué, réessaie.", true);
@@ -1170,10 +1203,16 @@ document.addEventListener('DOMContentLoaded', () => {
           empty.className = 'guestbook-empty';
           empty.textContent = 'Aucune candidature pour le moment.';
           fosterList.appendChild(empty);
+          updateFosterBadge();
           return;
         }
 
-        data.applications.forEach((entry) => fosterList.appendChild(renderFosterEntry(entry)));
+        data.applications.forEach((entry) => {
+          const row = renderFosterEntry(entry);
+          applyFosterFilterToRow(row);
+          fosterList.appendChild(row);
+        });
+        updateFosterBadge();
       } catch (err) {
         fosterList.innerHTML = '';
         const empty = document.createElement('p');

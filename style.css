@@ -1962,6 +1962,25 @@ select.field {
   font-weight: 600;
 }
 
+.admin-nav-badge {
+  display: inline-block;
+  margin-left: 6px;
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 50px;
+  background: var(--gold);
+  color: var(--green-deep);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.admin-nav-link.active .admin-nav-badge {
+  background: var(--green-deep);
+  color: var(--gold);
+}
+
 .admin-main {
   flex: 0 1 720px;
   min-width: 0;
@@ -2395,6 +2414,35 @@ select.field {
 }
 
 .admin-sort-btn.active:hover { background: var(--gold); }
+
+.admin-status-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.admin-status-filter-btn {
+  background: transparent;
+  border: 1.5px solid rgba(47, 69, 48, 0.2);
+  color: var(--green-deep);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 7px 15px;
+  border-radius: 50px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.admin-status-filter-btn:hover { border-color: var(--green-deep); background: rgba(47, 69, 48, 0.06); }
+
+.admin-status-filter-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--green-deep);
+}
 
 @media (max-width: 480px) {
   .admin-sort-toggle { width: 100%; }
