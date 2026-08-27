@@ -2094,6 +2094,87 @@ select.field {
   line-height: 1.4;
 }
 
+.admin-foster-contact {
+  color: var(--green-sage);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.admin-foster-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.admin-foster-chip {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--green-deep);
+  background: rgba(47, 69, 48, 0.06);
+  padding: 3px 10px;
+  border-radius: 50px;
+}
+
+.admin-foster-text { margin-bottom: 6px; }
+.admin-foster-text:last-child { margin-bottom: 0; }
+
+.admin-foster-text-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--green-sage);
+  margin-bottom: 2px;
+}
+
+.admin-foster-text p {
+  color: #4a4436;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.admin-foster-status {
+  flex-shrink: 0;
+  width: auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 30px 6px 13px;
+  border-radius: 50px;
+  border: 1px solid rgba(47, 69, 48, 0.25);
+  background-color: rgba(47, 69, 48, 0.06);
+  color: var(--green-deep);
+  cursor: pointer;
+}
+
+.admin-foster-status[data-status="nouvelle"] {
+  background-color: rgba(217, 194, 126, 0.25);
+  border-color: rgba(217, 194, 126, 0.7);
+  color: #7a6420;
+}
+
+.admin-foster-status[data-status="en_cours"] {
+  background-color: rgba(61, 90, 61, 0.1);
+  border-color: rgba(61, 90, 61, 0.3);
+  color: var(--green-sage);
+}
+
+.admin-foster-status[data-status="acceptee"] {
+  background-color: rgba(47, 69, 48, 0.12);
+  border-color: rgba(47, 69, 48, 0.35);
+  color: var(--green-deep);
+}
+
+.admin-foster-status[data-status="refusee"] {
+  background-color: rgba(178, 59, 59, 0.08);
+  border-color: rgba(178, 59, 59, 0.3);
+  color: #b23b3b;
+}
+
+.admin-foster-status:disabled { opacity: 0.6; cursor: default; }
+
 .admin-delete-btn {
   flex-shrink: 0;
   background: rgba(178, 59, 59, 0.08);

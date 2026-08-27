@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-26.8';
+const WORKER_VERSION = '2026-08-26.9';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -243,6 +243,33 @@ async function handleFosterApplication(request, env) {
 
   if (!env.RESEND_API_KEY) {
     return json({ success: false, message: "L'envoi n'est pas encore configuré, réessayez plus tard ou écrivez-nous directement." }, 503);
+  }
+
+  if (env.DB) {
+    try {
+      // Enregistrement best-effort : le panel admin (suivi + statut) est un plus, mais l'envoi de
+      // l'email ci-dessous reste le vrai critere de succes pour la personne qui candidate.
+      await env.DB.prepare(
+        `INSERT INTO foster_applications
+         (nom_complet, telephone, email, type_logement, autres_animaux, details_autres_animaux,
+          enfants_bas_age, experience_animaux, motivation, duree_disponibilite, status, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 'nouvelle', ?11)`
+      ).bind(
+        body.nom_complet.trim(),
+        body.telephone.trim(),
+        body.email.trim(),
+        body.type_logement.trim(),
+        body.autres_animaux.trim(),
+        typeof body.details_autres_animaux === 'string' ? body.details_autres_animaux.trim() || null : null,
+        body.enfants_bas_age.trim(),
+        body.experience_animaux.trim(),
+        body.motivation.trim(),
+        body.duree_disponibilite.trim(),
+        new Date().toISOString()
+      ).run();
+    } catch (err) {
+      // Table pas encore creee ou base indisponible : ne bloque jamais l'envoi de l'email.
+    }
   }
 
   const rows = Object.entries(FOSTER_FIELD_LABELS)
@@ -568,6 +595,59 @@ async function handleGetStats(request, env) {
   }
 }
 
+const FOSTER_STATUSES = ['nouvelle', 'en_cours', 'acceptee', 'refusee'];
+
+async function handleGetFosterApplications(request, env) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!env.DB) return json({ applications: [] });
+
+  try {
+    const { results } = await env.DB.prepare(
+      `SELECT id, nom_complet, telephone, email, type_logement, autres_animaux, details_autres_animaux,
+              enfants_bas_age, experience_animaux, motivation, duree_disponibilite, status, created_at
+       FROM foster_applications ORDER BY id DESC LIMIT 200`
+    ).all();
+    return json({ applications: results });
+  } catch (err) {
+    // Table pas encore creee : on affiche une liste vide plutot que de casser la page.
+    return json({ applications: [] });
+  }
+}
+
+async function handleUpdateFosterStatus(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible.' }, 400);
+  }
+
+  if (!FOSTER_STATUSES.includes(body?.status)) {
+    return json({ success: false, message: 'Statut invalide.' }, 400);
+  }
+
+  try {
+    await env.DB.prepare('UPDATE foster_applications SET status = ?1 WHERE id = ?2')
+      .bind(body.status, id).run();
+    return json({ success: true, status: body.status });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la mise à jour.' }, 500);
+  }
+}
+
 async function handleApproveRejected(request, env, id) {
   const authError = await checkAdminPassword(request, env);
   if (authError) return authError;
@@ -682,6 +762,17 @@ export default {
       const rejectedIdMatch = url.pathname.match(/^\/api\/admin\/rejected\/(\d+)$/);
       if (rejectedIdMatch) {
         if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteRejected(request, env, rejectedIdMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/foster-applications') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetFosterApplications(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const fosterStatusMatch = url.pathname.match(/^\/api\/admin\/foster-applications\/(\d+)\/status$/);
+      if (fosterStatusMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleUpdateFosterStatus(request, env, fosterStatusMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

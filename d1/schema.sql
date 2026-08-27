@@ -33,3 +33,21 @@ CREATE TABLE IF NOT EXISTS rejected_comments (
 );
 
 CREATE INDEX IF NOT EXISTS idx_rejected_comments_created ON rejected_comments (created_at);
+
+CREATE TABLE IF NOT EXISTS foster_applications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nom_complet TEXT NOT NULL,
+  telephone TEXT NOT NULL,
+  email TEXT NOT NULL,
+  type_logement TEXT NOT NULL,
+  autres_animaux TEXT NOT NULL,
+  details_autres_animaux TEXT,
+  enfants_bas_age TEXT NOT NULL,
+  experience_animaux TEXT NOT NULL,
+  motivation TEXT NOT NULL,
+  duree_disponibilite TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'nouvelle',
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_foster_applications_created ON foster_applications (created_at);

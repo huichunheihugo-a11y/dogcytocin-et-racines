@@ -381,6 +381,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (rejectedList) rejectedList.innerHTML = '';
       const statsContent = document.getElementById('admin-stats-content');
       if (statsContent) statsContent.innerHTML = '';
+      const fosterList = document.getElementById('admin-foster-list');
+      if (fosterList) fosterList.innerHTML = '';
     };
 
     // Si une action authentifiee echoue avec 401 en cours de route (mot de passe change, session obsolete),
@@ -429,6 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadComments(currentSortOrder);
         loadRejected();
         loadStats();
+        loadFosterApplications();
       } catch (err) {
         showActionMsg('Vérification impossible, réessaie.', true);
       } finally {
@@ -457,6 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
           loadComments(currentSortOrder);
           loadRejected();
           loadStats();
+          loadFosterApplications();
         } else {
           sessionStorage.removeItem('dogcytocin_admin_pw');
           passwordInput.value = '';
@@ -485,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const tabs = document.querySelectorAll('.admin-tab');
     const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: 'Commentaires', rejected: 'Messages refusés' };
+    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", rejected: 'Messages refusés' };
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -719,6 +723,141 @@ document.addEventListener('DOMContentLoaded', () => {
       actions.className = 'admin-entry-actions';
       actions.appendChild(replyToggleBtn);
       actions.appendChild(deleteBtn);
+
+      row.appendChild(body);
+      row.appendChild(actions);
+      return row;
+    };
+
+    const FOSTER_STATUS_LABELS = {
+      nouvelle: 'Nouvelle',
+      en_cours: 'En cours',
+      acceptee: 'Acceptée',
+      refusee: 'Refusée',
+    };
+
+    const renderFosterEntry = (entry) => {
+      const row = document.createElement('div');
+      row.className = 'admin-entry';
+
+      const body = document.createElement('div');
+      body.className = 'admin-entry-body';
+
+      const head = document.createElement('div');
+      head.className = 'admin-entry-head';
+
+      const name = document.createElement('span');
+      name.className = 'admin-entry-name';
+      name.textContent = entry.nom_complet;
+
+      const date = document.createElement('span');
+      date.className = 'admin-entry-date';
+      date.textContent = dateFormatter.format(new Date(entry.created_at));
+
+      head.appendChild(name);
+      head.appendChild(date);
+
+      const contact = document.createElement('p');
+      contact.className = 'admin-foster-contact';
+      contact.textContent = `${entry.telephone} · ${entry.email}`;
+
+      const chipsWrap = document.createElement('div');
+      chipsWrap.className = 'admin-foster-chips';
+
+      const chipTexts = [
+        entry.type_logement,
+        entry.autres_animaux === 'Oui' && entry.details_autres_animaux
+          ? `Animaux : ${entry.autres_animaux} (${entry.details_autres_animaux})`
+          : `Animaux : ${entry.autres_animaux}`,
+        `Enfants en bas âge : ${entry.enfants_bas_age}`,
+        `Disponibilité : ${entry.duree_disponibilite}`,
+      ];
+      chipTexts.forEach((text) => {
+        const chip = document.createElement('span');
+        chip.className = 'admin-foster-chip';
+        chip.textContent = text;
+        chipsWrap.appendChild(chip);
+      });
+
+      const experience = document.createElement('div');
+      experience.className = 'admin-foster-text';
+      const experienceLabel = document.createElement('span');
+      experienceLabel.className = 'admin-foster-text-label';
+      experienceLabel.textContent = 'Expérience';
+      const experienceValue = document.createElement('p');
+      experienceValue.textContent = entry.experience_animaux;
+      experience.appendChild(experienceLabel);
+      experience.appendChild(experienceValue);
+
+      const motivation = document.createElement('div');
+      motivation.className = 'admin-foster-text';
+      const motivationLabel = document.createElement('span');
+      motivationLabel.className = 'admin-foster-text-label';
+      motivationLabel.textContent = 'Motivation';
+      const motivationValue = document.createElement('p');
+      motivationValue.textContent = entry.motivation;
+      motivation.appendChild(motivationLabel);
+      motivation.appendChild(motivationValue);
+
+      body.appendChild(head);
+      body.appendChild(contact);
+      body.appendChild(chipsWrap);
+      body.appendChild(experience);
+      body.appendChild(motivation);
+
+      const actions = document.createElement('div');
+      actions.className = 'admin-entry-actions';
+
+      const statusSelect = document.createElement('select');
+      statusSelect.className = 'admin-foster-status field';
+      Object.entries(FOSTER_STATUS_LABELS).forEach(([value, label]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        if (value === entry.status) option.selected = true;
+        statusSelect.appendChild(option);
+      });
+      statusSelect.dataset.status = entry.status;
+
+      statusSelect.addEventListener('change', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          statusSelect.value = entry.status;
+          requireReauth();
+          return;
+        }
+
+        const newStatus = statusSelect.value;
+        const previousStatus = entry.status;
+        statusSelect.disabled = true;
+
+        try {
+          const response = await fetch(`/api/admin/foster-applications/${entry.id}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+            body: JSON.stringify({ status: newStatus }),
+          });
+
+          if (response.status === 401) {
+            statusSelect.value = previousStatus;
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('échec');
+
+          entry.status = newStatus;
+          statusSelect.dataset.status = newStatus;
+        } catch (err) {
+          statusSelect.value = previousStatus;
+          showActionMsg("La mise à jour du statut a échoué, réessaie.", true);
+        } finally {
+          statusSelect.disabled = false;
+        }
+      });
+
+      actions.appendChild(statusSelect);
 
       row.appendChild(body);
       row.appendChild(actions);
@@ -1004,6 +1143,43 @@ document.addEventListener('DOMContentLoaded', () => {
         empty.className = 'guestbook-empty';
         empty.textContent = 'Impossible de charger les statistiques.';
         statsContent.appendChild(empty);
+      }
+    }
+
+    async function loadFosterApplications() {
+      const fosterList = document.getElementById('admin-foster-list');
+      const pw = storedPassword();
+      if (!pw || !fosterList) return;
+
+      fosterList.innerHTML = '<p class="guestbook-loading">Chargement...</p>';
+      try {
+        const response = await fetch('/api/admin/foster-applications', {
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) {
+          requireReauth();
+          return;
+        }
+
+        const data = await response.json();
+        fosterList.innerHTML = '';
+
+        if (!data.applications || data.applications.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucune candidature pour le moment.';
+          fosterList.appendChild(empty);
+          return;
+        }
+
+        data.applications.forEach((entry) => fosterList.appendChild(renderFosterEntry(entry)));
+      } catch (err) {
+        fosterList.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les candidatures.';
+        fosterList.appendChild(empty);
       }
     }
   }
