@@ -472,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sortButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
+        if (!storedPassword()) return;
         const order = btn.dataset.order;
         if (order === currentSortOrder) return;
         currentSortOrder = order;
@@ -832,6 +833,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadComments(order) {
+      // Le GET /api/comments est public (les messages sont deja visibles sur le site), mais le
+      // panel admin lui-meme ne doit rien afficher -- ni la liste ni les boutons Supprimer/Repondre
+      // -- tant qu'aucune session admin valide n'est memorisee.
+      if (!storedPassword()) return;
+
       adminList.innerHTML = '<p class="guestbook-loading">Chargement des messages...</p>';
       try {
         const response = await fetch(`/api/comments?order=${order === 'asc' ? 'asc' : 'desc'}`);
