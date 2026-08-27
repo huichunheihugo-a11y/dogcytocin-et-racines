@@ -336,6 +336,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordToggleLabel = document.getElementById('admin-password-toggle-label');
     const rememberBtn = document.getElementById('admin-remember');
     const authMsg = document.getElementById('admin-auth-msg');
+    const authForm = document.getElementById('admin-auth-form');
+    const authConnected = document.getElementById('admin-auth-connected');
+    const logoutBtn = document.getElementById('admin-logout');
     const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     const EYE_OPEN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -358,12 +361,45 @@ document.addEventListener('DOMContentLoaded', () => {
       authMsg.hidden = false;
     };
 
+    // Bascule l'affichage entre "connecte" (badge + deconnexion) et le formulaire de mot de passe --
+    // pour que ce qui est visible a l'ecran corresponde toujours a l'etat reel de la session, plutot
+    // que de laisser un champ mot de passe vide a cote d'une liste de messages deja chargee.
+    const showConnectedState = () => {
+      authForm.hidden = true;
+      authConnected.hidden = false;
+    };
+
+    const showLoginForm = () => {
+      authForm.hidden = false;
+      authConnected.hidden = true;
+    };
+
+    // Vide les listes et les stats affichees, pour ne rien laisser visible d'une session terminee.
+    const clearAdminContent = () => {
+      adminList.innerHTML = '';
+      const rejectedList = document.getElementById('admin-rejected-list');
+      if (rejectedList) rejectedList.innerHTML = '';
+      const statsContent = document.getElementById('admin-stats-content');
+      if (statsContent) statsContent.innerHTML = '';
+    };
+
     // Si une action authentifiee echoue avec 401 en cours de route (mot de passe change, session obsolete),
     // on efface le mot de passe memorise et on redemande de valider, sans rien casser d'autre a l'ecran.
     const requireReauth = () => {
       sessionStorage.removeItem('dogcytocin_admin_pw');
+      passwordInput.value = '';
+      showLoginForm();
+      clearAdminContent();
       showActionMsg('Session expirée, ressaisis le mot de passe et clique sur Valider.', true);
     };
+
+    logoutBtn.addEventListener('click', () => {
+      sessionStorage.removeItem('dogcytocin_admin_pw');
+      passwordInput.value = '';
+      showLoginForm();
+      clearAdminContent();
+      authMsg.hidden = true;
+    });
 
     async function verifyPassword(pw) {
       const response = await fetch('/api/admin/verify', {
@@ -389,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         sessionStorage.setItem('dogcytocin_admin_pw', pw);
-        showActionMsg('Mot de passe correct.', false);
+        showConnectedState();
         loadComments(currentSortOrder);
         loadRejected();
         loadStats();
@@ -417,11 +453,13 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const { ok } = await verifyPassword(pw);
         if (ok) {
+          showConnectedState();
           loadComments(currentSortOrder);
           loadRejected();
           loadStats();
         } else {
           sessionStorage.removeItem('dogcytocin_admin_pw');
+          passwordInput.value = '';
         }
       } catch (err) {
         // Reste sur le formulaire si la verification echoue au chargement.

@@ -26,20 +26,27 @@
     <h1 id="admin-tab-title">Commentaires</h1>
 
     <div class="admin-auth">
-      <label for="admin-password">1. Entrez le mot de passe</label>
-      <div class="admin-auth-row">
-        <div class="admin-password-row">
-          <input type="password" id="admin-password" class="field" autocomplete="off" placeholder="Mot de passe">
-          <button type="button" id="admin-password-toggle" aria-label="Afficher le mot de passe">
-            <span id="admin-password-toggle-icon" class="admin-password-toggle-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
-            </span>
-            <span id="admin-password-toggle-label">Afficher</span>
-          </button>
+      <div id="admin-auth-form">
+        <label for="admin-password">1. Entrez le mot de passe</label>
+        <div class="admin-auth-row">
+          <div class="admin-password-row">
+            <input type="password" id="admin-password" class="field" autocomplete="off" placeholder="Mot de passe">
+            <button type="button" id="admin-password-toggle" aria-label="Afficher le mot de passe">
+              <span id="admin-password-toggle-icon" class="admin-password-toggle-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              </span>
+              <span id="admin-password-toggle-label">Afficher</span>
+            </button>
+          </div>
+          <button type="button" id="admin-remember" class="btn btn-primary">Valider</button>
         </div>
-        <button type="button" id="admin-remember" class="btn btn-primary">Valider</button>
+        <p id="admin-auth-msg" class="admin-auth-msg" hidden></p>
       </div>
-      <p id="admin-auth-msg" class="admin-auth-msg" hidden></p>
+
+      <div id="admin-auth-connected" class="admin-auth-connected" hidden>
+        <span class="admin-auth-connected-badge">✓ Connecté</span>
+        <button type="button" id="admin-logout" class="admin-logout-btn">Se déconnecter</button>
+      </div>
     </div>
 
     <div id="admin-tab-comments" class="admin-tab">
