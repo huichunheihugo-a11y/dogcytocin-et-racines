@@ -20,6 +20,13 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Garantit que l'attribut hidden masque toujours l'element, meme si une regle plus bas
+   dans ce fichier lui donne un display explicite (flex/grid/...) qui l'emporterait sinon
+   sur la regle par defaut du navigateur -- deux bugs distincts causes par ce piege ont
+   deja ete corriges au cas par cas (.admin-reply-form, .admin-auth-connected) avant qu'on
+   ne se rende compte qu'une regle globale evitait d'avoir a y repenser a chaque nouveau composant. */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -2220,10 +2227,6 @@ select.field {
   flex-direction: column;
   gap: 8px;
 }
-
-/* display:flex sur .admin-reply-form l'emporte sinon sur l'attribut hidden natif
-   (regle auteur vs regle du navigateur) : sans ceci, hidden=true ne masque plus rien. */
-.admin-reply-form[hidden] { display: none; }
 
 .admin-reply-textarea {
   min-height: 44px;
