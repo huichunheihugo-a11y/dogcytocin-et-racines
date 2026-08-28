@@ -19,6 +19,7 @@
     <nav class="admin-nav-links">
       <a href="#" class="admin-nav-link active" data-tab="comments">Commentaires</a>
       <a href="#" class="admin-nav-link" data-tab="foster">Familles d'accueil <span id="admin-foster-badge" class="admin-nav-badge" hidden>0</span></a>
+      <a href="#" class="admin-nav-link" data-tab="dogs">Nos chiens</a>
       <a href="#" class="admin-nav-link" data-tab="blog">Blog</a>
       <a href="#" class="admin-nav-link" data-tab="rejected">Messages refusés</a>
     </nav>
@@ -83,6 +84,68 @@
         <button type="button" class="admin-status-filter-btn" data-status-filter="refusee">Refusées</button>
       </div>
       <div id="admin-foster-list" class="admin-list"></div>
+    </div>
+
+    <div id="admin-tab-dogs" class="admin-tab" hidden>
+      <p id="admin-dogs-locked-msg" class="admin-tab-intro">Connecte-toi avec le mot de passe pour gérer les fiches chiens.</p>
+
+      <div id="admin-dogs-authed" hidden>
+      <p id="admin-dogs-intro" class="admin-tab-intro">Ajoute une nouvelle fiche chien pour la page "Nos chiens".</p>
+
+      <form id="admin-dog-form" class="admin-dog-form" novalidate>
+        <div class="admin-field-group">
+          <label for="admin-dog-name">Nom</label>
+          <input type="text" id="admin-dog-name" name="name" class="field" maxlength="100" required>
+        </div>
+
+        <div class="admin-dog-form-row">
+          <div class="admin-field-group">
+            <label for="admin-dog-age">Âge</label>
+            <input type="text" id="admin-dog-age" name="age" class="field" maxlength="50" placeholder="Ex. 3 ans" required>
+          </div>
+
+          <div class="admin-field-group">
+            <label for="admin-dog-size">Taille</label>
+            <input type="text" id="admin-dog-size" name="size" class="field" maxlength="50" placeholder="Ex. Moyenne" required>
+          </div>
+        </div>
+
+        <div class="admin-field-group">
+          <label for="admin-dog-description">Description</label>
+          <textarea id="admin-dog-description" name="description" class="field admin-dog-description-textarea" rows="4" maxlength="1000" required></textarea>
+        </div>
+
+        <div class="admin-field-group">
+          <label for="admin-dog-status">Statut</label>
+          <select id="admin-dog-status" name="status" class="field" required>
+            <option value="adoption">À l'adoption</option>
+            <option value="bientot">Bientôt à l'adoption</option>
+          </select>
+        </div>
+
+        <div class="admin-field-group">
+          <label for="admin-dog-image-url">Photo — URL (facultatif)</label>
+          <input type="url" id="admin-dog-image-url" name="image_url" class="field" placeholder="https://...">
+          <span class="admin-blog-image-hint">Collez l'URL d'une image déjà hébergée en ligne. Sans photo, une silhouette générique s'affiche.</span>
+
+          <div id="admin-dog-preview" class="admin-blog-preview" hidden>
+            <img id="admin-dog-preview-img" class="admin-blog-preview-img" alt="Aperçu de l'image">
+          </div>
+
+          <p id="admin-dog-image-error" class="admin-auth-msg is-error" hidden></p>
+        </div>
+
+        <p id="admin-dog-msg" class="admin-auth-msg" hidden></p>
+
+        <div class="admin-blog-form-actions">
+          <button type="submit" id="admin-dog-submit" class="btn btn-primary">Publier la fiche</button>
+          <button type="button" id="admin-dog-cancel-edit" class="btn btn-outline" hidden>Annuler la modification</button>
+        </div>
+      </form>
+
+      <h2 class="admin-blog-list-title">Fiches publiées</h2>
+      <div id="admin-dog-list" class="admin-list"></div>
+      </div>
     </div>
 
     <div id="admin-tab-blog" class="admin-tab" hidden>

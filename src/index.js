@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-27.5';
+const WORKER_VERSION = '2026-08-27.6';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -797,13 +797,13 @@ async function handleDeleteRejected(request, env, id) {
 
 // Pas de stockage de fichiers (R2 nécessite un abonnement payant côté Cloudflare) : l'admin
 // colle l'URL d'une image déjà hébergée ailleurs (ex: imgbb.com), on se contente de la valider
-// et de la stocker telle quelle dans D1.
-const BLOG_IMAGE_URL_RE = /^https?:\/\/.+/i;
+// et de la stocker telle quelle dans D1. Reutilisee par le blog ET les fiches chiens.
+const IMAGE_URL_RE = /^https?:\/\/.+/i;
 
-function validateBlogImageUrl(raw) {
+function validateImageUrl(raw) {
   const value = typeof raw === 'string' ? raw.trim() : '';
   if (!value) return { ok: true, value: null };
-  if (value.length > 2000 || !BLOG_IMAGE_URL_RE.test(value)) {
+  if (value.length > 2000 || !IMAGE_URL_RE.test(value)) {
     return { ok: false };
   }
   return { ok: true, value };
@@ -837,7 +837,7 @@ async function handleCreateBlogPost(request, env) {
     return json({ success: false, message: 'Le contenu dépasse 20 000 caractères, raccourcissez-le.' }, 422);
   }
 
-  const imageUrlResult = validateBlogImageUrl(body.image_url);
+  const imageUrlResult = validateImageUrl(body.image_url);
   if (!imageUrlResult.ok) {
     return json({ success: false, message: "L'URL de l'image doit commencer par http:// ou https://." }, 422);
   }
@@ -915,7 +915,7 @@ async function handleUpdateBlogPost(request, env, id) {
     return json({ success: false, message: 'Le contenu dépasse 20 000 caractères, raccourcissez-le.' }, 422);
   }
 
-  const imageUrlResult = validateBlogImageUrl(body.image_url);
+  const imageUrlResult = validateImageUrl(body.image_url);
   if (!imageUrlResult.ok) {
     return json({ success: false, message: "L'URL de l'image doit commencer par http:// ou https://." }, 422);
   }
@@ -958,6 +958,184 @@ async function handleDeleteBlogPost(request, env, id) {
 
   try {
     await env.DB.prepare('DELETE FROM blog_posts WHERE id = ?1').bind(id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
+  }
+}
+
+// Statuts affiches sur les fiches chiens de la page publique (tampon dore "A l'adoption"
+// vs badge vert "Bientot") -- ces valeurs sont aussi celles utilisees par le filtre client
+// (data-status) et doivent donc rester synchronisees avec nos-chiens.html / script.js.
+const DOG_STATUSES = ['adoption', 'bientot'];
+
+function toPublicDog(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    age: row.age,
+    size: row.size,
+    description: row.description,
+    status: row.status,
+    image_url: row.image_url || null,
+    created_at: row.created_at,
+  };
+}
+
+async function handleListDogs(env) {
+  if (!env.DB) return json({ dogs: [] });
+
+  try {
+    const { results } = await env.DB.prepare(
+      'SELECT id, name, age, size, description, status, image_url, created_at FROM dogs ORDER BY id DESC LIMIT 200'
+    ).all();
+    return json({ dogs: results.map(toPublicDog) });
+  } catch (err) {
+    return json({ dogs: [] });
+  }
+}
+
+async function handleCreateDog(request, env) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible, réessayez.' }, 400);
+  }
+
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  const age = typeof body.age === 'string' ? body.age.trim() : '';
+  const size = typeof body.size === 'string' ? body.size.trim() : '';
+  const description = typeof body.description === 'string' ? body.description.trim() : '';
+  const status = typeof body.status === 'string' ? body.status.trim() : '';
+
+  if (!name || name.length > 100) {
+    return json({ success: false, message: 'Le nom est obligatoire (100 caractères max).' }, 422);
+  }
+  if (!age || age.length > 50) {
+    return json({ success: false, message: "L'âge est obligatoire (50 caractères max)." }, 422);
+  }
+  if (!size || size.length > 50) {
+    return json({ success: false, message: 'La taille est obligatoire (50 caractères max).' }, 422);
+  }
+  if (!description || description.length > 1000) {
+    return json({ success: false, message: 'La description est obligatoire (1000 caractères max).' }, 422);
+  }
+  if (!DOG_STATUSES.includes(status)) {
+    return json({ success: false, message: 'Statut invalide.' }, 422);
+  }
+
+  const imageUrlResult = validateImageUrl(body.image_url);
+  if (!imageUrlResult.ok) {
+    return json({ success: false, message: "L'URL de l'image doit commencer par http:// ou https://." }, 422);
+  }
+  const imageUrl = imageUrlResult.value;
+
+  try {
+    const createdAt = new Date().toISOString();
+    const insert = await env.DB.prepare(
+      'INSERT INTO dogs (name, age, size, description, status, image_url, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)'
+    ).bind(name, age, size, description, status, imageUrl, createdAt).run();
+
+    return json({
+      success: true,
+      dog: { id: insert.meta.last_row_id, name, age, size, description, status, image_url: imageUrl, created_at: createdAt },
+    });
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de l'enregistrement de la fiche." }, 500);
+  }
+}
+
+async function handleUpdateDog(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible, réessayez.' }, 400);
+  }
+
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  const age = typeof body.age === 'string' ? body.age.trim() : '';
+  const size = typeof body.size === 'string' ? body.size.trim() : '';
+  const description = typeof body.description === 'string' ? body.description.trim() : '';
+  const status = typeof body.status === 'string' ? body.status.trim() : '';
+
+  if (!name || name.length > 100) {
+    return json({ success: false, message: 'Le nom est obligatoire (100 caractères max).' }, 422);
+  }
+  if (!age || age.length > 50) {
+    return json({ success: false, message: "L'âge est obligatoire (50 caractères max)." }, 422);
+  }
+  if (!size || size.length > 50) {
+    return json({ success: false, message: 'La taille est obligatoire (50 caractères max).' }, 422);
+  }
+  if (!description || description.length > 1000) {
+    return json({ success: false, message: 'La description est obligatoire (1000 caractères max).' }, 422);
+  }
+  if (!DOG_STATUSES.includes(status)) {
+    return json({ success: false, message: 'Statut invalide.' }, 422);
+  }
+
+  const imageUrlResult = validateImageUrl(body.image_url);
+  if (!imageUrlResult.ok) {
+    return json({ success: false, message: "L'URL de l'image doit commencer par http:// ou https://." }, 422);
+  }
+  const imageUrl = imageUrlResult.value;
+
+  let existing;
+  try {
+    existing = await env.DB.prepare('SELECT id FROM dogs WHERE id = ?1').bind(id).first();
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de la lecture de la fiche." }, 500);
+  }
+  if (!existing) {
+    return json({ success: false, message: 'Fiche introuvable (déjà supprimée ?).' }, 404);
+  }
+
+  try {
+    await env.DB.prepare('UPDATE dogs SET name = ?1, age = ?2, size = ?3, description = ?4, status = ?5, image_url = ?6 WHERE id = ?7')
+      .bind(name, age, size, description, status, imageUrl, id).run();
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de l'enregistrement de la fiche." }, 500);
+  }
+
+  const row = await env.DB.prepare(
+    'SELECT id, name, age, size, description, status, image_url, created_at FROM dogs WHERE id = ?1'
+  ).bind(id).first();
+
+  return json({ success: true, dog: toPublicDog(row) });
+}
+
+async function handleDeleteDog(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  try {
+    await env.DB.prepare('DELETE FROM dogs WHERE id = ?1').bind(id).run();
     return json({ success: true });
   } catch (err) {
     return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
@@ -1055,6 +1233,23 @@ export default {
       if (blogPostIdMatch) {
         if (request.method === 'POST') return withSecurityHeaders(await handleUpdateBlogPost(request, env, blogPostIdMatch[1]));
         if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteBlogPost(request, env, blogPostIdMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/dogs') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleListDogs(env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/dogs') {
+        if (request.method === 'POST') return withSecurityHeaders(await handleCreateDog(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const dogIdMatch = url.pathname.match(/^\/api\/admin\/dogs\/(\d+)$/);
+      if (dogIdMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleUpdateDog(request, env, dogIdMatch[1]));
+        if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteDog(request, env, dogIdMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

@@ -2681,6 +2681,46 @@ select.field {
   .admin-blog-form-actions { flex-direction: column; align-items: stretch; }
 }
 
+.admin-dog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 640px;
+}
+
+.admin-dog-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.admin-dog-description-textarea { resize: vertical; min-height: 90px; }
+
+.admin-dog-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: linear-gradient(160deg, #eef1e8, #e3e8da);
+}
+
+.admin-dog-status-label {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 10px;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.admin-dog-status-label.is-adoption { background: rgba(217, 194, 126, 0.22); color: #8a6d1f; }
+.admin-dog-status-label.is-bientot { background: rgba(61, 90, 61, 0.14); color: var(--green-deep); }
+
+@media (max-width: 480px) {
+  .admin-dog-form-row { grid-template-columns: 1fr; }
+}
+
 /* ===== Page Actualites (blog public) ===== */
 
 .blog-list {

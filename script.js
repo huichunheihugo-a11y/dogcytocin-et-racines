@@ -106,28 +106,96 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const filterPills = document.querySelectorAll('.filter-pill');
-  const dogCards = document.querySelectorAll('.dog-card');
-  const dogsEmpty = document.getElementById('dogs-empty');
+  const dogsGrid = document.getElementById('dogs-grid');
 
-  if (filterPills.length && dogCards.length) {
-    filterPills.forEach((pill) => {
-      pill.addEventListener('click', () => {
-        filterPills.forEach((p) => p.classList.remove('active'));
-        pill.classList.add('active');
+  if (dogsGrid) {
+    const dogsLoading = document.getElementById('dogs-loading');
+    const dogsEmpty = document.getElementById('dogs-empty');
+    const filterPills = document.querySelectorAll('.filter-pill');
+    const DOG_STATUS_STAMP = {
+      adoption: '<span class="dog-stamp">À<br>l\'adoption</span>',
+      bientot: '<span class="dog-badge"><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke-width=\'1.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'12\' cy=\'12\' r=\'9\'/><path d=\'M12 7v5l3.5 2\'/></svg> Bientôt</span>',
+    };
 
-        const filter = pill.dataset.filter;
-        let visibleCount = 0;
+    const renderDogCard = (dog) => {
+      const article = document.createElement('article');
+      article.className = 'dog-card fade-in visible';
+      article.dataset.status = dog.status;
 
-        dogCards.forEach((card) => {
-          const show = filter === 'all' || card.dataset.status === filter;
-          card.hidden = !show;
-          if (show) visibleCount++;
+      const photo = document.createElement('div');
+      photo.className = 'dog-photo';
+
+      const placeholder = document.createElement('div');
+      placeholder.className = 'dog-photo-placeholder';
+      const img = document.createElement('img');
+      img.src = dog.image_url || 'images/chien-silhouette.jpg';
+      img.alt = '';
+      img.className = 'dog-silhouette';
+      placeholder.appendChild(img);
+      photo.appendChild(placeholder);
+      photo.insertAdjacentHTML('beforeend', DOG_STATUS_STAMP[dog.status] || '');
+
+      const info = document.createElement('div');
+      info.className = 'dog-info';
+      const name = document.createElement('h3');
+      name.textContent = dog.name;
+      const meta = document.createElement('p');
+      meta.className = 'dog-meta';
+      meta.textContent = `${dog.age} · ${dog.size}`;
+      const quote = document.createElement('p');
+      quote.className = 'dog-quote';
+      quote.textContent = dog.description;
+      info.appendChild(name);
+      info.appendChild(meta);
+      info.appendChild(quote);
+
+      article.appendChild(photo);
+      article.appendChild(info);
+      return article;
+    };
+
+    // Le filtrage cherche les cartes a chaque clic (plutot qu'une seule fois au chargement) car
+    // elles sont ajoutees de facon asynchrone apres la reponse de /api/dogs.
+    const wireDogFilters = () => {
+      if (!filterPills.length) return;
+      filterPills.forEach((pill) => {
+        pill.addEventListener('click', () => {
+          filterPills.forEach((p) => p.classList.remove('active'));
+          pill.classList.add('active');
+
+          const filter = pill.dataset.filter;
+          const dogCards = dogsGrid.querySelectorAll('.dog-card');
+          let visibleCount = 0;
+
+          dogCards.forEach((card) => {
+            const show = filter === 'all' || card.dataset.status === filter;
+            card.hidden = !show;
+            if (show) visibleCount++;
+          });
+
+          if (dogsEmpty) dogsEmpty.hidden = visibleCount !== 0;
         });
-
-        if (dogsEmpty) dogsEmpty.hidden = visibleCount !== 0;
       });
-    });
+    };
+
+    (async () => {
+      try {
+        const response = await fetch('/api/dogs');
+        const data = await response.json();
+        if (dogsLoading) dogsLoading.remove();
+
+        if (!data.dogs || data.dogs.length === 0) {
+          if (dogsEmpty) dogsEmpty.hidden = false;
+          return;
+        }
+
+        data.dogs.forEach((dog) => dogsGrid.appendChild(renderDogCard(dog)));
+        wireDogFilters();
+      } catch (err) {
+        if (dogsLoading) dogsLoading.remove();
+        if (dogsEmpty) dogsEmpty.hidden = false;
+      }
+    })();
   }
 
   const shareBtn = document.getElementById('share-btn');
@@ -433,6 +501,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const blogAuthed = document.getElementById('admin-blog-authed');
       if (blogLocked) blogLocked.hidden = true;
       if (blogAuthed) blogAuthed.hidden = false;
+      const dogsLocked = document.getElementById('admin-dogs-locked-msg');
+      const dogsAuthed = document.getElementById('admin-dogs-authed');
+      if (dogsLocked) dogsLocked.hidden = true;
+      if (dogsAuthed) dogsAuthed.hidden = false;
     };
 
     const showLoginForm = () => {
@@ -442,6 +514,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const blogAuthed = document.getElementById('admin-blog-authed');
       if (blogLocked) blogLocked.hidden = false;
       if (blogAuthed) blogAuthed.hidden = true;
+      const dogsLocked = document.getElementById('admin-dogs-locked-msg');
+      const dogsAuthed = document.getElementById('admin-dogs-authed');
+      if (dogsLocked) dogsLocked.hidden = false;
+      if (dogsAuthed) dogsAuthed.hidden = true;
     };
 
     // Vide les listes et les stats affichees, pour ne rien laisser visible d'une session terminee.
@@ -458,6 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const blogListEl = document.getElementById('admin-blog-list');
       if (blogListEl) blogListEl.innerHTML = '';
       resetBlogForm();
+      const dogListEl = document.getElementById('admin-dog-list');
+      if (dogListEl) dogListEl.innerHTML = '';
+      resetDogForm();
     };
 
     // Si une action authentifiee echoue avec 401 en cours de route (mot de passe change, session obsolete),
@@ -508,6 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadStats();
         loadFosterApplications();
         loadBlogPosts();
+        loadDogs();
       } catch (err) {
         showActionMsg('Vérification impossible, réessaie.', true);
       } finally {
@@ -538,6 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
           loadStats();
           loadFosterApplications();
           loadBlogPosts();
+          loadDogs();
         } else {
           sessionStorage.removeItem('dogcytocin_admin_pw');
           passwordInput.value = '';
@@ -593,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const tabs = document.querySelectorAll('.admin-tab');
     const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", blog: 'Blog', rejected: 'Messages refusés' };
+    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", dogs: 'Nos chiens', blog: 'Blog', rejected: 'Messages refusés' };
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -1660,6 +1741,329 @@ document.addEventListener('DOMContentLoaded', () => {
           // editingBlogPostId est deja retombe a null si resetBlogForm() a tourne (succes) --
           // sinon on est toujours dans le meme mode qu'au debut de cette soumission (echec).
           blogSubmit.textContent = editingBlogPostId !== null ? 'Enregistrer les modifications' : "Publier l'article";
+        }
+      });
+    }
+
+    // Formulaire de creation/modification de fiche chien pour la page publique "Nos chiens".
+    // Meme logique que le blog (photo en URL, pas d'upload) -- editingDogId distingue creation/edition.
+    const dogForm = document.getElementById('admin-dog-form');
+
+    const DOG_INTRO_CREATE = 'Ajoute une nouvelle fiche chien pour la page "Nos chiens".';
+    const DOG_INTRO_EDIT = "Modifie la fiche ci-dessous, puis enregistre.";
+    const DOG_STATUS_LABELS = { adoption: "À l'adoption", bientot: 'Bientôt à l\'adoption' };
+
+    let editingDogId = null;
+
+    const resetDogForm = () => {
+      if (!dogForm) return;
+      dogForm.reset();
+      editingDogId = null;
+      const previewImg = document.getElementById('admin-dog-preview-img');
+      const preview = document.getElementById('admin-dog-preview');
+      const imageError = document.getElementById('admin-dog-image-error');
+      const msg = document.getElementById('admin-dog-msg');
+      const intro = document.getElementById('admin-dogs-intro');
+      const submit = document.getElementById('admin-dog-submit');
+      const cancelEdit = document.getElementById('admin-dog-cancel-edit');
+      if (previewImg) previewImg.src = '';
+      if (preview) preview.hidden = true;
+      if (imageError) imageError.hidden = true;
+      if (msg) msg.hidden = true;
+      if (intro) intro.textContent = DOG_INTRO_CREATE;
+      if (submit) submit.textContent = 'Publier la fiche';
+      if (cancelEdit) cancelEdit.hidden = true;
+    };
+
+    // Bascule le formulaire en mode "modification" pour une fiche existante -- definie a ce
+    // niveau (comme resetDogForm) pour rester accessible depuis renderDogEntry ci-dessous.
+    const startEditingDog = (entry) => {
+      if (!dogForm) return;
+      editingDogId = entry.id;
+
+      const nameInput = document.getElementById('admin-dog-name');
+      const ageInput = document.getElementById('admin-dog-age');
+      const sizeInput = document.getElementById('admin-dog-size');
+      const descriptionInput = document.getElementById('admin-dog-description');
+      const statusSelect = document.getElementById('admin-dog-status');
+      const imageUrlInput = document.getElementById('admin-dog-image-url');
+      const previewImg = document.getElementById('admin-dog-preview-img');
+      const preview = document.getElementById('admin-dog-preview');
+      const imageError = document.getElementById('admin-dog-image-error');
+      const msg = document.getElementById('admin-dog-msg');
+      const intro = document.getElementById('admin-dogs-intro');
+      const submit = document.getElementById('admin-dog-submit');
+      const cancelEdit = document.getElementById('admin-dog-cancel-edit');
+
+      nameInput.value = entry.name;
+      ageInput.value = entry.age;
+      sizeInput.value = entry.size;
+      descriptionInput.value = entry.description;
+      statusSelect.value = entry.status;
+      imageUrlInput.value = entry.image_url || '';
+
+      if (entry.image_url) {
+        previewImg.src = entry.image_url;
+        preview.hidden = false;
+      } else {
+        previewImg.src = '';
+        preview.hidden = true;
+      }
+
+      imageError.hidden = true;
+      msg.hidden = true;
+      intro.textContent = DOG_INTRO_EDIT;
+      submit.textContent = 'Enregistrer les modifications';
+      cancelEdit.hidden = false;
+      dogForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    const dogList = document.getElementById('admin-dog-list');
+
+    // Remplace/insere l'entree correspondante dans la liste admin, pour refleter immediatement
+    // une creation/modification sans recharger toute la liste depuis le serveur.
+    const upsertDogListEntry = (dog, { prepend } = {}) => {
+      if (!dogList) return;
+      const emptyMsg = dogList.querySelector('.guestbook-empty');
+      if (emptyMsg) emptyMsg.remove();
+
+      const existingRow = dogList.querySelector(`[data-id="${dog.id}"]`);
+      const newRow = renderDogEntry(dog);
+      if (existingRow) {
+        existingRow.replaceWith(newRow);
+      } else if (prepend) {
+        dogList.prepend(newRow);
+      } else {
+        dogList.appendChild(newRow);
+      }
+    };
+
+    function renderDogEntry(entry) {
+      const row = document.createElement('div');
+      row.className = 'admin-entry admin-blog-entry';
+      row.dataset.id = entry.id;
+
+      const thumb = document.createElement('img');
+      thumb.className = 'admin-dog-thumb';
+      thumb.src = entry.image_url || 'images/chien-silhouette.jpg';
+      thumb.alt = '';
+      row.appendChild(thumb);
+
+      const body = document.createElement('div');
+      body.className = 'admin-entry-body';
+
+      const head = document.createElement('div');
+      head.className = 'admin-entry-head';
+
+      const name = document.createElement('span');
+      name.className = 'admin-entry-name';
+      name.textContent = entry.name;
+
+      const statusLabel = document.createElement('span');
+      statusLabel.className = 'admin-dog-status-label ' + (entry.status === 'adoption' ? 'is-adoption' : 'is-bientot');
+      statusLabel.textContent = DOG_STATUS_LABELS[entry.status] || entry.status;
+
+      head.appendChild(name);
+      head.appendChild(statusLabel);
+      body.appendChild(head);
+
+      const meta = document.createElement('span');
+      meta.className = 'admin-entry-date';
+      meta.textContent = `${entry.age} · ${entry.size}`;
+      body.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'admin-entry-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'admin-approve-btn';
+      editBtn.textContent = 'Modifier';
+      editBtn.addEventListener('click', () => startEditingDog(entry));
+
+      const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
+        const response = await fetch(`/api/admin/dogs/${entry.id}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) throw Object.assign(new Error('Session expirée.'), { unauthorized: true });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error("La suppression a échoué, réessaie.");
+
+        row.remove();
+        if (editingDogId === entry.id) resetDogForm();
+        if (!dogList.children.length) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucune fiche publiée pour le moment.';
+          dogList.appendChild(empty);
+        }
+      });
+
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      row.appendChild(body);
+      row.appendChild(actions);
+      return row;
+    }
+
+    async function loadDogs() {
+      if (!storedPassword() || !dogList) return;
+
+      dogList.innerHTML = '<p class="guestbook-loading">Chargement des fiches...</p>';
+      try {
+        const response = await fetch('/api/dogs');
+        const data = await response.json();
+        dogList.innerHTML = '';
+
+        if (!data.dogs || data.dogs.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucune fiche publiée pour le moment.';
+          dogList.appendChild(empty);
+          return;
+        }
+
+        data.dogs.forEach((entry) => dogList.appendChild(renderDogEntry(entry)));
+      } catch (err) {
+        dogList.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les fiches.';
+        dogList.appendChild(empty);
+      }
+    }
+
+    if (dogForm) {
+      const dogNameInput = document.getElementById('admin-dog-name');
+      const dogAgeInput = document.getElementById('admin-dog-age');
+      const dogSizeInput = document.getElementById('admin-dog-size');
+      const dogDescriptionInput = document.getElementById('admin-dog-description');
+      const dogStatusSelect = document.getElementById('admin-dog-status');
+      const dogImageUrlInput = document.getElementById('admin-dog-image-url');
+      const dogPreview = document.getElementById('admin-dog-preview');
+      const dogPreviewImg = document.getElementById('admin-dog-preview-img');
+      const dogImageError = document.getElementById('admin-dog-image-error');
+      const dogMsg = document.getElementById('admin-dog-msg');
+      const dogSubmit = document.getElementById('admin-dog-submit');
+      const dogCancelEdit = document.getElementById('admin-dog-cancel-edit');
+
+      const showDogImageError = (text) => {
+        dogImageError.textContent = text;
+        dogImageError.hidden = false;
+      };
+
+      const showDogMsg = (text, isError) => {
+        dogMsg.textContent = text;
+        dogMsg.className = 'admin-auth-msg ' + (isError ? 'is-error' : 'is-ok');
+        dogMsg.hidden = false;
+      };
+
+      dogImageUrlInput.addEventListener('input', () => {
+        dogImageError.hidden = true;
+        const value = dogImageUrlInput.value.trim();
+        if (!value) {
+          dogPreview.hidden = true;
+          dogPreviewImg.src = '';
+          return;
+        }
+        dogPreviewImg.src = value;
+      });
+
+      dogPreviewImg.addEventListener('load', () => {
+        if (dogPreviewImg.src) dogPreview.hidden = false;
+      });
+
+      dogPreviewImg.addEventListener('error', () => {
+        dogPreview.hidden = true;
+      });
+
+      dogCancelEdit.addEventListener('click', resetDogForm);
+
+      dogForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const pw = storedPassword();
+        if (!pw) {
+          requireReauth();
+          return;
+        }
+
+        dogMsg.hidden = true;
+        dogImageError.hidden = true;
+
+        const name = dogNameInput.value.trim();
+        const age = dogAgeInput.value.trim();
+        const size = dogSizeInput.value.trim();
+        const description = dogDescriptionInput.value.trim();
+        const status = dogStatusSelect.value;
+        const imageUrl = dogImageUrlInput.value.trim();
+
+        if (!name) {
+          showDogMsg('Le nom est obligatoire.', true);
+          dogNameInput.focus();
+          return;
+        }
+
+        if (!age) {
+          showDogMsg("L'âge est obligatoire.", true);
+          dogAgeInput.focus();
+          return;
+        }
+
+        if (!size) {
+          showDogMsg('La taille est obligatoire.', true);
+          dogSizeInput.focus();
+          return;
+        }
+
+        if (!description) {
+          showDogMsg('La description est obligatoire.', true);
+          dogDescriptionInput.focus();
+          return;
+        }
+
+        if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+          showDogImageError("L'URL de l'image doit commencer par http:// ou https://.");
+          dogImageUrlInput.focus();
+          return;
+        }
+
+        const isEditing = editingDogId !== null;
+        const url = isEditing ? `/api/admin/dogs/${editingDogId}` : '/api/admin/dogs';
+
+        dogSubmit.disabled = true;
+        dogSubmit.textContent = isEditing ? 'Enregistrement...' : 'Publication...';
+
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'X-Admin-Password': pw, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, age, size, description, status, image_url: imageUrl }),
+          });
+
+          if (response.status === 401) {
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            showDogMsg(result.message || (isEditing ? "L'enregistrement a échoué, réessaie." : "La publication a échoué, réessaie."), true);
+            return;
+          }
+
+          if (result.dog) upsertDogListEntry(result.dog, { prepend: !isEditing });
+          resetDogForm();
+          showDogMsg(isEditing ? 'Fiche mise à jour !' : 'Fiche publiée !', false);
+        } catch (err) {
+          showDogMsg(isEditing ? "L'enregistrement a échoué, réessaie." : "La publication a échoué, réessaie.", true);
+        } finally {
+          dogSubmit.disabled = false;
+          dogSubmit.textContent = editingDogId !== null ? 'Enregistrer les modifications' : 'Publier la fiche';
         }
       });
     }

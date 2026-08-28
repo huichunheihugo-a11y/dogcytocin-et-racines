@@ -65,3 +65,16 @@ CREATE TABLE IF NOT EXISTS blog_posts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_blog_posts_created ON blog_posts (created_at);
+
+CREATE TABLE IF NOT EXISTS dogs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  age TEXT NOT NULL,
+  size TEXT NOT NULL,
+  description TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'adoption',
+  image_url TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_dogs_created ON dogs (created_at);

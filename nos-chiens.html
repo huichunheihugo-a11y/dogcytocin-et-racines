@@ -70,57 +70,8 @@
       <button class="filter-pill" data-filter="bientot" type="button">Bientôt à l'adoption</button>
     </div>
 
-    <div class="dogs-grid">
-
-      <article class="dog-card fade-in" data-status="adoption">
-        <div class="dog-photo">
-          <div class="dog-photo-placeholder"><img src="images/chien-silhouette.jpg" alt="" class="dog-silhouette"></div>
-          <span class="dog-stamp">À<br>l'adoption</span>
-        </div>
-        <div class="dog-info">
-          <h3>Nom</h3>
-          <p class="dog-meta">Âge · Taille</p>
-          <p class="dog-quote">Description</p>
-        </div>
-      </article>
-
-      <article class="dog-card fade-in" data-status="adoption">
-        <div class="dog-photo">
-          <div class="dog-photo-placeholder"><img src="images/chien-silhouette.jpg" alt="" class="dog-silhouette"></div>
-          <span class="dog-stamp">À<br>l'adoption</span>
-        </div>
-        <div class="dog-info">
-          <h3>Nom</h3>
-          <p class="dog-meta">Âge · Taille</p>
-          <p class="dog-quote">Description</p>
-        </div>
-      </article>
-
-      <article class="dog-card fade-in" data-status="adoption">
-        <div class="dog-photo">
-          <div class="dog-photo-placeholder"><img src="images/chien-silhouette.jpg" alt="" class="dog-silhouette"></div>
-          <span class="dog-stamp">À<br>l'adoption</span>
-        </div>
-        <div class="dog-info">
-          <h3>Nom</h3>
-          <p class="dog-meta">Âge · Taille</p>
-          <p class="dog-quote">Description</p>
-        </div>
-      </article>
-
-      <article class="dog-card fade-in" data-status="bientot">
-        <div class="dog-photo">
-          <div class="dog-photo-placeholder"><img src="images/chien-silhouette.jpg" alt="" class="dog-silhouette"></div>
-          <span class="dog-badge"><svg viewBox='0 0 24 24' fill='none' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='9'/><path d='M12 7v5l3.5 2'/></svg> Bientôt</span>
-        </div>
-        <div class="dog-info">
-          <h3>Nom</h3>
-          <p class="dog-meta">Âge · Taille</p>
-          <p class="dog-quote">Description</p>
-        </div>
-      </article>
-
-    </div>
+    <div id="dogs-loading" class="guestbook-loading">Chargement des fiches...</div>
+    <div class="dogs-grid" id="dogs-grid"></div>
 
     <div id="dogs-empty" class="dogs-empty" hidden>
       <svg class="dogs-empty-icon" viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' aria-hidden="true"><path d='M12 21C12 21 4 14.5 4 8.8C4 5.6 6.4 3 9.5 3C11 3 12 3.8 12 3.8C12 3.8 13 3 14.5 3C17.6 3 20 5.6 20 8.8C20 14.5 12 21 12 21Z'/></svg>
