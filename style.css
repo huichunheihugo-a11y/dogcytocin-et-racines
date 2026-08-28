@@ -1397,10 +1397,10 @@ select.field {
 
 .dog-stamp {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 72px;
-  height: 72px;
+  bottom: 14px;
+  right: 14px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   border: 2px solid rgba(217, 194, 126, 0.9);
   display: flex;
@@ -1411,12 +1411,16 @@ select.field {
   color: var(--gold);
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 0.62rem;
-  letter-spacing: 0.5px;
+  font-size: 0.52rem;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
-  line-height: 1.2;
-  background: rgba(255, 253, 247, 0.4);
-  backdrop-filter: blur(3px);
+  line-height: 1.15;
+  /* Delibererement plus transparent qu'un simple badge : sur une vraie photo (contrairement au
+     placeholder), il peut arriver que le tampon chevauche le sujet -- il doit rester lisible
+     sans jamais masquer completement ce qu'il y a dessous. Coin bas-droit + petite taille pour
+     minimiser le risque de chevaucher la tete du chien. */
+  background: rgba(255, 253, 247, 0.32);
+  backdrop-filter: blur(2px);
   box-shadow: 0 3px 10px rgba(47, 42, 34, 0.18);
 }
 
@@ -1430,8 +1434,8 @@ select.field {
 
 .dog-badge {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  bottom: 14px;
+  right: 14px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
