@@ -1336,7 +1336,8 @@ select.field {
     box-shadow: 0 10px 28px rgba(47, 42, 34, 0.14);
   }
 
-  .dog-card:hover .dog-silhouette { transform: scale(1.06); }
+  .dog-card:hover .dog-silhouette,
+  .dog-card:hover .dog-photo-img { transform: scale(1.06); }
 }
 
 .dog-photo {
@@ -1379,6 +1380,18 @@ select.field {
   object-fit: contain;
   mix-blend-mode: multiply;
   opacity: 0.32;
+  transition: transform 0.4s ease;
+}
+
+/* Vraie photo de chien (URL renseignee dans l'admin) : contrairement a .dog-silhouette --
+   pensee pour l'illustration de substitution en filigrane -- une photo reelle doit s'afficher
+   pleine opacite, sans effet de fondu. */
+.dog-photo-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.4s ease;
 }
 

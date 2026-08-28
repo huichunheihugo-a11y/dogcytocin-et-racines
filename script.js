@@ -128,9 +128,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const placeholder = document.createElement('div');
       placeholder.className = 'dog-photo-placeholder';
       const img = document.createElement('img');
-      img.src = dog.image_url || 'images/chien-silhouette.jpg';
       img.alt = '';
-      img.className = 'dog-silhouette';
+      // .dog-silhouette est pensee pour l'illustration de substitution en filigrane (opacite
+      // reduite, effet multiply) -- une vraie photo doit s'afficher pleine opacite (.dog-photo-img).
+      if (dog.image_url) {
+        img.src = dog.image_url;
+        img.className = 'dog-photo-img';
+      } else {
+        img.src = 'images/chien-silhouette.jpg';
+        img.className = 'dog-silhouette';
+      }
       placeholder.appendChild(img);
       photo.appendChild(placeholder);
       photo.insertAdjacentHTML('beforeend', DOG_STATUS_STAMP[dog.status] || '');
