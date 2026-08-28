@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-27.6';
+const WORKER_VERSION = '2026-08-27.7';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -800,13 +800,55 @@ async function handleDeleteRejected(request, env, id) {
 // et de la stocker telle quelle dans D1. Reutilisee par le blog ET les fiches chiens.
 const IMAGE_URL_RE = /^https?:\/\/.+/i;
 
+// Certains services generent des liens de miniature basse resolution avec la taille encodee
+// dans l'URL elle-meme (parametre de requete ou nom de fichier) -- on la remonte automatiquement
+// a l'enregistrement, pour eviter des photos floues une fois agrandies dans les cartes du site
+// (chiens ET blog), sans que l'admin ait besoin d'y penser ou de retrouver la source originale.
+const IMAGE_UPGRADE_TARGET_SIZE = 1200;
+
+function upgradeImageUrl(url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+
+  // Miniatures Bing Images (th.bing.com/th/id/...?w=285&h=180...) : la taille est un
+  // parametre de requete classique, on la remonte directement.
+  if (parsed.hostname === 'th.bing.com') {
+    let changed = false;
+    for (const param of ['w', 'h']) {
+      const current = Number(parsed.searchParams.get(param));
+      if (current && current < IMAGE_UPGRADE_TARGET_SIZE) {
+        parsed.searchParams.set(param, String(IMAGE_UPGRADE_TARGET_SIZE));
+        changed = true;
+      }
+    }
+    return changed ? parsed.toString() : url;
+  }
+
+  // Miniatures Wikimedia/Wikipedia (.../thumb/x/xx/Fichier.jpg/320px-Fichier.jpg) : la taille
+  // est encodee dans le nom du fichier final, sous forme de prefixe "NNNpx-".
+  if (parsed.hostname.endsWith('wikimedia.org') && parsed.pathname.includes('/thumb/')) {
+    const upgraded = parsed.pathname.replace(/\/(\d+)px-([^/]+)$/, (match, size, filename) => (
+      Number(size) < IMAGE_UPGRADE_TARGET_SIZE ? `/${IMAGE_UPGRADE_TARGET_SIZE}px-${filename}` : match
+    ));
+    if (upgraded === parsed.pathname) return url;
+    parsed.pathname = upgraded;
+    return parsed.toString();
+  }
+
+  return url;
+}
+
 function validateImageUrl(raw) {
   const value = typeof raw === 'string' ? raw.trim() : '';
   if (!value) return { ok: true, value: null };
   if (value.length > 2000 || !IMAGE_URL_RE.test(value)) {
     return { ok: false };
   }
-  return { ok: true, value };
+  return { ok: true, value: upgradeImageUrl(value) };
 }
 
 async function handleCreateBlogPost(request, env) {
