@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-27.7';
+const WORKER_VERSION = '2026-08-27.8';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -738,6 +738,25 @@ async function handleUpdateFosterNotes(request, env, id) {
   }
 }
 
+async function handleDeleteFosterApplication(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  try {
+    await env.DB.prepare('DELETE FROM foster_applications WHERE id = ?1').bind(id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
+  }
+}
+
 async function handleApproveRejected(request, env, id) {
   const authError = await checkAdminPassword(request, env);
   if (authError) return authError;
@@ -1258,6 +1277,12 @@ export default {
       const fosterNotesMatch = url.pathname.match(/^\/api\/admin\/foster-applications\/(\d+)\/notes$/);
       if (fosterNotesMatch) {
         if (request.method === 'POST') return withSecurityHeaders(await handleUpdateFosterNotes(request, env, fosterNotesMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const fosterIdMatch = url.pathname.match(/^\/api\/admin\/foster-applications\/(\d+)$/);
+      if (fosterIdMatch) {
+        if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteFosterApplication(request, env, fosterIdMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

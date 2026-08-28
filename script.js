@@ -1115,6 +1115,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
       actions.appendChild(statusSelect);
 
+      const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
+        const response = await fetch(`/api/admin/foster-applications/${entry.id}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) throw Object.assign(new Error('Session expirée.'), { unauthorized: true });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('La suppression a échoué, réessaie.');
+
+        row.remove();
+        updateFosterBadge();
+        const fosterList = document.getElementById('admin-foster-list');
+        if (fosterList && !fosterList.children.length) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucune candidature pour le moment.';
+          fosterList.appendChild(empty);
+        }
+      });
+
+      actions.appendChild(deleteBtn);
+
       row.appendChild(body);
       row.appendChild(actions);
       return row;
