@@ -706,6 +706,79 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    // Compresse une photo choisie depuis la galerie du telephone/ordinateur avant l'envoi : on
+    // redimensionne et on reencode systematiquement en JPEG (perd la transparence eventuelle d'un
+    // PNG, acceptable pour des photos) pour rester tres en dessous de la limite serveur, elle-meme
+    // sous la limite de 2 Mo/ligne de D1. Renvoie {base64, mime} ; rejette avec un message clair.
+    const IMAGE_UPLOAD_MAX_DIMENSION = 1600;
+    const IMAGE_UPLOAD_TARGET_BYTES = 1_000_000;
+    const IMAGE_UPLOAD_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+    function compressImageFile(file) {
+      if (!IMAGE_UPLOAD_ALLOWED_TYPES.includes(file.type)) {
+        return Promise.reject(new Error('Format non accepté — seuls les fichiers JPG, PNG ou WEBP sont autorisés.'));
+      }
+
+      return new Promise((resolve, reject) => {
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+
+          const scale = Math.min(1, IMAGE_UPLOAD_MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.naturalWidth * scale);
+          canvas.height = Math.round(img.naturalHeight * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          const qualities = [0.85, 0.7, 0.55, 0.4];
+          const tryQuality = (i) => {
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                reject(new Error("Impossible de traiter cette image, réessaie avec une autre photo."));
+                return;
+              }
+              if (blob.size > IMAGE_UPLOAD_TARGET_BYTES && i < qualities.length - 1) {
+                tryQuality(i + 1);
+                return;
+              }
+              const reader = new FileReader();
+              reader.onload = () => resolve({ base64: reader.result.split(',')[1], mime: 'image/jpeg' });
+              reader.onerror = () => reject(new Error("Impossible de lire cette image, réessaie."));
+              reader.readAsDataURL(blob);
+            }, 'image/jpeg', qualities[i]);
+          };
+          tryQuality(0);
+        };
+
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("Ce fichier n'est pas une image valide."));
+        };
+
+        img.src = objectUrl;
+      });
+    }
+
+    async function uploadMediaFile(file, pw) {
+      const { base64, mime } = await compressImageFile(file);
+
+      const response = await fetch('/api/admin/media', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+        body: JSON.stringify({ data: base64, mime }),
+      });
+
+      if (response.status === 401) throw Object.assign(new Error('Session expirée.'), { unauthorized: true });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || "L'envoi de la photo a échoué, réessaie.");
+
+      return result.url;
+    }
+
     // Bouton "Supprimer" a deux clics : le premier arme, le second confirme (evite de dependre de confirm(), bloque par certains navigateurs/extensions).
     const createTwoStepButton = (label, onConfirm) => {
       const btn = document.createElement('button');
@@ -1494,6 +1567,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const intro = document.getElementById('admin-blog-intro');
       const submit = document.getElementById('admin-blog-submit');
       const cancelEdit = document.getElementById('admin-blog-cancel-edit');
+      const uploadStatus = document.getElementById('admin-blog-image-upload-status');
       if (previewImg) previewImg.src = '';
       if (preview) preview.hidden = true;
       if (imageError) imageError.hidden = true;
@@ -1501,6 +1575,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (intro) intro.textContent = BLOG_INTRO_CREATE;
       if (submit) submit.textContent = "Publier l'article";
       if (cancelEdit) cancelEdit.hidden = true;
+      if (uploadStatus) uploadStatus.hidden = true;
     };
 
     // Bascule le formulaire en mode "modification" pour un article existant : pre-remplit les
@@ -1704,6 +1779,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
       blogCancelEdit.addEventListener('click', resetBlogForm);
 
+      const blogImageUploadBtn = document.getElementById('admin-blog-image-upload-btn');
+      const blogImageFileInput = document.getElementById('admin-blog-image-file');
+      const blogImageUploadStatus = document.getElementById('admin-blog-image-upload-status');
+
+      blogImageUploadBtn.addEventListener('click', () => blogImageFileInput.click());
+
+      blogImageFileInput.addEventListener('change', async () => {
+        const file = blogImageFileInput.files && blogImageFileInput.files[0];
+        if (!file) return;
+
+        const pw = storedPassword();
+        if (!pw) {
+          requireReauth();
+          return;
+        }
+
+        blogImageError.hidden = true;
+        blogImageUploadBtn.disabled = true;
+        blogImageUploadStatus.hidden = false;
+        blogImageUploadStatus.className = 'admin-image-upload-status';
+        blogImageUploadStatus.textContent = 'Envoi de la photo...';
+
+        try {
+          const url = await uploadMediaFile(file, pw);
+          blogImageUrlInput.value = url;
+          blogImageUrlInput.dispatchEvent(new Event('input'));
+          blogImageUploadStatus.textContent = 'Photo envoyée ✓';
+        } catch (err) {
+          if (err.unauthorized) {
+            requireReauth();
+            return;
+          }
+          blogImageUploadStatus.className = 'admin-image-upload-status is-error';
+          blogImageUploadStatus.textContent = err.message || "L'envoi a échoué, réessaie.";
+        } finally {
+          blogImageUploadBtn.disabled = false;
+          blogImageFileInput.value = '';
+        }
+      });
+
       blogForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -1797,6 +1912,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const intro = document.getElementById('admin-dogs-intro');
       const submit = document.getElementById('admin-dog-submit');
       const cancelEdit = document.getElementById('admin-dog-cancel-edit');
+      const uploadStatus = document.getElementById('admin-dog-image-upload-status');
       if (previewImg) previewImg.src = '';
       if (preview) preview.hidden = true;
       if (imageError) imageError.hidden = true;
@@ -1804,6 +1920,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (intro) intro.textContent = DOG_INTRO_CREATE;
       if (submit) submit.textContent = 'Publier la fiche';
       if (cancelEdit) cancelEdit.hidden = true;
+      if (uploadStatus) uploadStatus.hidden = true;
     };
 
     // Bascule le formulaire en mode "modification" pour une fiche existante -- definie a ce
@@ -2013,6 +2130,46 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       dogCancelEdit.addEventListener('click', resetDogForm);
+
+      const dogImageUploadBtn = document.getElementById('admin-dog-image-upload-btn');
+      const dogImageFileInput = document.getElementById('admin-dog-image-file');
+      const dogImageUploadStatus = document.getElementById('admin-dog-image-upload-status');
+
+      dogImageUploadBtn.addEventListener('click', () => dogImageFileInput.click());
+
+      dogImageFileInput.addEventListener('change', async () => {
+        const file = dogImageFileInput.files && dogImageFileInput.files[0];
+        if (!file) return;
+
+        const pw = storedPassword();
+        if (!pw) {
+          requireReauth();
+          return;
+        }
+
+        dogImageError.hidden = true;
+        dogImageUploadBtn.disabled = true;
+        dogImageUploadStatus.hidden = false;
+        dogImageUploadStatus.className = 'admin-image-upload-status';
+        dogImageUploadStatus.textContent = 'Envoi de la photo...';
+
+        try {
+          const url = await uploadMediaFile(file, pw);
+          dogImageUrlInput.value = url;
+          dogImageUrlInput.dispatchEvent(new Event('input'));
+          dogImageUploadStatus.textContent = 'Photo envoyée ✓';
+        } catch (err) {
+          if (err.unauthorized) {
+            requireReauth();
+            return;
+          }
+          dogImageUploadStatus.className = 'admin-image-upload-status is-error';
+          dogImageUploadStatus.textContent = err.message || "L'envoi a échoué, réessaie.";
+        } finally {
+          dogImageUploadBtn.disabled = false;
+          dogImageFileInput.value = '';
+        }
+      });
 
       dogForm.addEventListener('submit', async (e) => {
         e.preventDefault();

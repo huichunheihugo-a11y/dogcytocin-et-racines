@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-27.8';
+const WORKER_VERSION = '2026-08-27.9';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -818,6 +818,9 @@ async function handleDeleteRejected(request, env, id) {
 // colle l'URL d'une image déjà hébergée ailleurs (ex: imgbb.com), on se contente de la valider
 // et de la stocker telle quelle dans D1. Reutilisee par le blog ET les fiches chiens.
 const IMAGE_URL_RE = /^https?:\/\/.+/i;
+// Photo envoyee depuis la galerie du telephone (voir handleUploadMedia plus bas) plutot qu'une
+// URL externe -- meme champ image_url, juste une valeur interne au lieu d'un lien http(s).
+const MEDIA_URL_RE = /^\/media\/\d+$/;
 
 // Certains services generent des liens de miniature basse resolution avec la taille encodee
 // dans l'URL elle-meme (parametre de requete ou nom de fichier) -- on la remonte automatiquement
@@ -864,10 +867,76 @@ function upgradeImageUrl(url) {
 function validateImageUrl(raw) {
   const value = typeof raw === 'string' ? raw.trim() : '';
   if (!value) return { ok: true, value: null };
-  if (value.length > 2000 || !IMAGE_URL_RE.test(value)) {
-    return { ok: false };
-  }
+  if (value.length > 2000) return { ok: false };
+  if (MEDIA_URL_RE.test(value)) return { ok: true, value };
+  if (!IMAGE_URL_RE.test(value)) return { ok: false };
   return { ok: true, value: upgradeImageUrl(value) };
+}
+
+const MEDIA_MIME_TYPES = { 'image/jpeg': true, 'image/png': true, 'image/webp': true };
+// Marge sous la limite de 2 Mo/ligne de D1 -- laisse de la place pour le reste de la ligne et
+// pour le gonflement d'environ 33% du base64 par rapport aux octets bruts. Le navigateur
+// redimensionne/compresse deja la photo avant l'envoi (voir script.js), cette limite ne sert
+// qu'a se proteger d'un appel direct a l'API qui ignorerait cette etape.
+const MEDIA_MAX_BASE64_LENGTH = 1_400_000;
+
+// Upload depuis la galerie du telephone : alternative a une URL externe pour la photo d'un
+// article de blog ou d'une fiche chien (meme champ image_url cote formulaire, cf validateImageUrl).
+async function handleUploadMedia(request, env) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible, réessayez.' }, 400);
+  }
+
+  const mime = typeof body.mime === 'string' ? body.mime : '';
+  const data = typeof body.data === 'string' ? body.data : '';
+
+  if (!MEDIA_MIME_TYPES[mime]) {
+    return json({ success: false, message: 'Format invalide : seuls les fichiers JPG, PNG et WEBP sont acceptés.' }, 422);
+  }
+  if (!data || data.length > MEDIA_MAX_BASE64_LENGTH || !/^[A-Za-z0-9+/]+=*$/.test(data)) {
+    return json({ success: false, message: "L'image est trop volumineuse ou illisible, réessayez avec une photo plus légère." }, 422);
+  }
+
+  try {
+    const createdAt = new Date().toISOString();
+    const insert = await env.DB.prepare(
+      'INSERT INTO media (data, mime, created_at) VALUES (?1, ?2, ?3)'
+    ).bind(data, mime, createdAt).run();
+
+    return json({ success: true, url: `/media/${insert.meta.last_row_id}` });
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de l'enregistrement de la photo." }, 500);
+  }
+}
+
+async function handleGetMedia(env, id) {
+  if (!/^\d+$/.test(id) || !env.DB) return new Response('Introuvable', { status: 404 });
+
+  try {
+    const row = await env.DB.prepare('SELECT data, mime FROM media WHERE id = ?1').bind(id).first();
+    if (!row) return new Response('Introuvable', { status: 404 });
+
+    const binary = Uint8Array.from(atob(row.data), (c) => c.charCodeAt(0));
+    return new Response(binary, {
+      headers: {
+        'Content-Type': row.mime,
+        // Identifiant numerique jamais reutilise ni modifie : le contenu a cette URL ne change jamais.
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    });
+  } catch (err) {
+    return new Response('Introuvable', { status: 404 });
+  }
 }
 
 async function handleCreateBlogPost(request, env) {
@@ -1317,6 +1386,17 @@ export default {
       if (dogIdMatch) {
         if (request.method === 'POST') return withSecurityHeaders(await handleUpdateDog(request, env, dogIdMatch[1]));
         if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteDog(request, env, dogIdMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/media') {
+        if (request.method === 'POST') return withSecurityHeaders(await handleUploadMedia(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const mediaIdMatch = url.pathname.match(/^\/media\/(\d+)$/);
+      if (mediaIdMatch) {
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetMedia(env, mediaIdMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

@@ -124,9 +124,18 @@
         </div>
 
         <div class="admin-field-group">
-          <label for="admin-dog-image-url">Photo — URL (facultatif)</label>
+          <label for="admin-dog-image-url">Photo (facultatif)</label>
+
+          <div class="admin-image-upload-row">
+            <button type="button" id="admin-dog-image-upload-btn" class="btn btn-outline admin-image-upload-btn">
+              <svg viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z'/><circle cx='12' cy='13' r='3.5'/></svg>
+              Choisir une photo
+            </button>
+            <input type="file" id="admin-dog-image-file" accept="image/jpeg,image/png,image/webp" hidden>
+            <span id="admin-dog-image-upload-status" class="admin-image-upload-status" hidden></span>
+          </div>
+          <span class="admin-blog-image-hint">Depuis la galerie du téléphone ou de l'ordinateur — ou collez une URL d'image déjà en ligne ci-dessous.</span>
           <input type="url" id="admin-dog-image-url" name="image_url" class="field" placeholder="https://...">
-          <span class="admin-blog-image-hint">Collez l'URL d'une image déjà hébergée en ligne. Sans photo, une silhouette générique s'affiche.</span>
 
           <div id="admin-dog-preview" class="admin-blog-preview" hidden>
             <img id="admin-dog-preview-img" class="admin-blog-preview-img" alt="Aperçu de l'image">
@@ -166,9 +175,18 @@
         </div>
 
         <div class="admin-field-group">
-          <label for="admin-blog-image-url">Photo — URL (facultatif)</label>
+          <label for="admin-blog-image-url">Photo (facultatif)</label>
+
+          <div class="admin-image-upload-row">
+            <button type="button" id="admin-blog-image-upload-btn" class="btn btn-outline admin-image-upload-btn">
+              <svg viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z'/><circle cx='12' cy='13' r='3.5'/></svg>
+              Choisir une photo
+            </button>
+            <input type="file" id="admin-blog-image-file" accept="image/jpeg,image/png,image/webp" hidden>
+            <span id="admin-blog-image-upload-status" class="admin-image-upload-status" hidden></span>
+          </div>
+          <span class="admin-blog-image-hint">Depuis la galerie du téléphone ou de l'ordinateur — ou collez une URL d'image déjà en ligne ci-dessous.</span>
           <input type="url" id="admin-blog-image-url" name="image_url" class="field" placeholder="https://...">
-          <span class="admin-blog-image-hint">Collez l'URL d'une image déjà hébergée en ligne (ex : imgbb.com, un lien Facebook...).</span>
 
           <div id="admin-blog-preview" class="admin-blog-preview" hidden>
             <img id="admin-blog-preview-img" class="admin-blog-preview-img" alt="Aperçu de l'image">

@@ -78,3 +78,13 @@ CREATE TABLE IF NOT EXISTS dogs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_dogs_created ON dogs (created_at);
+
+-- Photos envoyees depuis la galerie du telephone (plutot qu'une URL externe) : stockees ici en
+-- base64, servies via /media/:id. Compressees cote navigateur avant l'envoi pour rester bien
+-- sous la limite de 2 Mo par ligne de D1.
+CREATE TABLE IF NOT EXISTS media (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  data TEXT NOT NULL,
+  mime TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
