@@ -2693,6 +2693,17 @@ select.field {
   gap: 8px;
   padding: 10px 18px;
   font-size: 0.85rem;
+  /* Ne pas reutiliser .btn-outline ici : ses couleurs (texte/bordure crème) sont pensees pour
+     un fond vert fonce (hero, CTA) -- sur le fond clair du panel admin, ca rendait le bouton
+     quasi invisible (texte crème sur fond crème). Couleurs propres, adaptees a un fond clair. */
+  background: transparent;
+  color: var(--green-deep);
+  border-color: rgba(var(--green-deep-rgb), 0.35);
+}
+
+.admin-image-upload-btn:hover {
+  background: rgba(var(--green-deep-rgb), 0.06);
+  border-color: var(--green-deep);
 }
 
 .admin-image-upload-btn svg {
