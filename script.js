@@ -710,56 +710,72 @@ document.addEventListener('DOMContentLoaded', () => {
     // redimensionne et on reencode systematiquement en JPEG (perd la transparence eventuelle d'un
     // PNG, acceptable pour des photos) pour rester tres en dessous de la limite serveur, elle-meme
     // sous la limite de 2 Mo/ligne de D1. Renvoie {base64, mime} ; rejette avec un message clair.
+    //
+    // Pas de verification du type MIME en amont : les photos prises par un iPhone sont souvent au
+    // format HEIC, et Safari/Chrome mobile rapportent parfois un type incoherent ou vide pour une
+    // photo choisie dans la galerie -- rejeter sur la seule base de file.type provoquait de faux
+    // refus. On tente directement le decodage, avec deux methodes pour maximiser la compatibilite.
     const IMAGE_UPLOAD_MAX_DIMENSION = 1600;
     const IMAGE_UPLOAD_TARGET_BYTES = 1_000_000;
-    const IMAGE_UPLOAD_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-    function compressImageFile(file) {
-      if (!IMAGE_UPLOAD_ALLOWED_TYPES.includes(file.type)) {
-        return Promise.reject(new Error('Format non accepté — seuls les fichiers JPG, PNG ou WEBP sont autorisés.'));
+    // Decode le fichier en une image dessinable. createImageBitmap() gere plus de formats/cas
+    // limites sur mobile (notamment certains HEIC) ; on retombe sur <img>+URL.createObjectURL()
+    // si indisponible ou en echec, pour couvrir les navigateurs plus anciens.
+    async function decodeImageFile(file) {
+      if (typeof createImageBitmap === 'function') {
+        try {
+          return await createImageBitmap(file);
+        } catch (err) {
+          // Continue avec la methode de secours ci-dessous.
+        }
       }
 
       return new Promise((resolve, reject) => {
         const objectUrl = URL.createObjectURL(file);
         const img = new Image();
-
-        img.onload = () => {
-          URL.revokeObjectURL(objectUrl);
-
-          const scale = Math.min(1, IMAGE_UPLOAD_MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight));
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.round(img.naturalWidth * scale);
-          canvas.height = Math.round(img.naturalHeight * scale);
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          const qualities = [0.85, 0.7, 0.55, 0.4];
-          const tryQuality = (i) => {
-            canvas.toBlob((blob) => {
-              if (!blob) {
-                reject(new Error("Impossible de traiter cette image, réessaie avec une autre photo."));
-                return;
-              }
-              if (blob.size > IMAGE_UPLOAD_TARGET_BYTES && i < qualities.length - 1) {
-                tryQuality(i + 1);
-                return;
-              }
-              const reader = new FileReader();
-              reader.onload = () => resolve({ base64: reader.result.split(',')[1], mime: 'image/jpeg' });
-              reader.onerror = () => reject(new Error("Impossible de lire cette image, réessaie."));
-              reader.readAsDataURL(blob);
-            }, 'image/jpeg', qualities[i]);
-          };
-          tryQuality(0);
-        };
-
-        img.onerror = () => {
-          URL.revokeObjectURL(objectUrl);
-          reject(new Error("Ce fichier n'est pas une image valide."));
-        };
-
+        img.onload = () => { URL.revokeObjectURL(objectUrl); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('decode-failed')); };
         img.src = objectUrl;
       });
+    }
+
+    function compressImageFile(file) {
+      return decodeImageFile(file)
+        .then((source) => {
+          const sourceWidth = source.naturalWidth || source.width;
+          const sourceHeight = source.naturalHeight || source.height;
+          const scale = Math.min(1, IMAGE_UPLOAD_MAX_DIMENSION / Math.max(sourceWidth, sourceHeight));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(sourceWidth * scale);
+          canvas.height = Math.round(sourceHeight * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+          if (source.close) source.close();
+
+          return new Promise((resolve, reject) => {
+            const qualities = [0.85, 0.7, 0.55, 0.4];
+            const tryQuality = (i) => {
+              canvas.toBlob((blob) => {
+                if (!blob) {
+                  reject(new Error("Impossible de traiter cette image, réessaie avec une autre photo."));
+                  return;
+                }
+                if (blob.size > IMAGE_UPLOAD_TARGET_BYTES && i < qualities.length - 1) {
+                  tryQuality(i + 1);
+                  return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => resolve({ base64: reader.result.split(',')[1], mime: 'image/jpeg' });
+                reader.onerror = () => reject(new Error("Impossible de lire cette image, réessaie."));
+                reader.readAsDataURL(blob);
+              }, 'image/jpeg', qualities[i]);
+            };
+            tryQuality(0);
+          });
+        })
+        .catch(() => {
+          throw new Error("Cette photo n'a pas pu être lue — si elle vient d'un iPhone au format HEIC, essaie de la convertir en JPEG avant l'envoi (ou choisis une autre photo).");
+        });
     }
 
     async function uploadMediaFile(file, pw) {

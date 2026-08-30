@@ -2671,6 +2671,22 @@ select.field {
   flex-wrap: wrap;
 }
 
+/* Cache visuellement le <input type="file"> sans display:none : sur certains navigateurs
+   mobiles, un .click() programmatique sur un input display:none n'ouvre pas de facon fiable
+   le selecteur de photos natif -- il doit rester "present" pour le systeme, juste invisible. */
+.admin-file-input-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  pointer-events: none;
+}
+
 .admin-image-upload-btn {
   display: inline-flex;
   align-items: center;
