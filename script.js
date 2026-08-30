@@ -1584,6 +1584,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const submit = document.getElementById('admin-blog-submit');
       const cancelEdit = document.getElementById('admin-blog-cancel-edit');
       const uploadStatus = document.getElementById('admin-blog-image-upload-status');
+      const urlInput = document.getElementById('admin-blog-image-url');
       if (previewImg) previewImg.src = '';
       if (preview) preview.hidden = true;
       if (imageError) imageError.hidden = true;
@@ -1592,6 +1593,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (submit) submit.textContent = "Publier l'article";
       if (cancelEdit) cancelEdit.hidden = true;
       if (uploadStatus) uploadStatus.hidden = true;
+      if (urlInput) urlInput.hidden = true;
     };
 
     // Bascule le formulaire en mode "modification" pour un article existant : pre-remplit les
@@ -1615,6 +1617,9 @@ document.addEventListener('DOMContentLoaded', () => {
       titleInput.value = entry.title;
       contentInput.value = entry.content;
       imageUrlInput.value = entry.image_url || '';
+      // Affiche le champ URL des qu'une valeur existe deja (venant d'un envoi galerie ou d'un
+      // lien colle), pour que l'admin voie ce qui est actuellement enregistre.
+      imageUrlInput.hidden = !entry.image_url;
 
       if (entry.image_url) {
         previewImg.src = entry.image_url;
@@ -1798,8 +1803,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const blogImageUploadBtn = document.getElementById('admin-blog-image-upload-btn');
       const blogImageFileInput = document.getElementById('admin-blog-image-file');
       const blogImageUploadStatus = document.getElementById('admin-blog-image-upload-status');
+      const blogImageUrlToggleBtn = document.getElementById('admin-blog-image-url-toggle-btn');
 
       blogImageUploadBtn.addEventListener('click', () => blogImageFileInput.click());
+
+      blogImageUrlToggleBtn.addEventListener('click', () => {
+        blogImageUrlInput.hidden = !blogImageUrlInput.hidden;
+        if (!blogImageUrlInput.hidden) blogImageUrlInput.focus();
+      });
 
       blogImageFileInput.addEventListener('change', async () => {
         const file = blogImageFileInput.files && blogImageFileInput.files[0];
@@ -1929,6 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const submit = document.getElementById('admin-dog-submit');
       const cancelEdit = document.getElementById('admin-dog-cancel-edit');
       const uploadStatus = document.getElementById('admin-dog-image-upload-status');
+      const urlInput = document.getElementById('admin-dog-image-url');
       if (previewImg) previewImg.src = '';
       if (preview) preview.hidden = true;
       if (imageError) imageError.hidden = true;
@@ -1937,6 +1949,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (submit) submit.textContent = 'Publier la fiche';
       if (cancelEdit) cancelEdit.hidden = true;
       if (uploadStatus) uploadStatus.hidden = true;
+      if (urlInput) urlInput.hidden = true;
     };
 
     // Bascule le formulaire en mode "modification" pour une fiche existante -- definie a ce
@@ -1965,6 +1978,9 @@ document.addEventListener('DOMContentLoaded', () => {
       descriptionInput.value = entry.description;
       statusSelect.value = entry.status;
       imageUrlInput.value = entry.image_url || '';
+      // Affiche le champ URL des qu'une valeur existe deja (venant d'un envoi galerie ou d'un
+      // lien colle), pour que l'admin voie ce qui est actuellement enregistre.
+      imageUrlInput.hidden = !entry.image_url;
 
       if (entry.image_url) {
         previewImg.src = entry.image_url;
@@ -2150,8 +2166,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const dogImageUploadBtn = document.getElementById('admin-dog-image-upload-btn');
       const dogImageFileInput = document.getElementById('admin-dog-image-file');
       const dogImageUploadStatus = document.getElementById('admin-dog-image-upload-status');
+      const dogImageUrlToggleBtn = document.getElementById('admin-dog-image-url-toggle-btn');
 
       dogImageUploadBtn.addEventListener('click', () => dogImageFileInput.click());
+
+      dogImageUrlToggleBtn.addEventListener('click', () => {
+        dogImageUrlInput.hidden = !dogImageUrlInput.hidden;
+        if (!dogImageUrlInput.hidden) dogImageUrlInput.focus();
+      });
 
       dogImageFileInput.addEventListener('change', async () => {
         const file = dogImageFileInput.files && dogImageFileInput.files[0];

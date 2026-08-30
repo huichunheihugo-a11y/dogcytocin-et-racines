@@ -131,11 +131,15 @@
               <svg viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z'/><circle cx='12' cy='13' r='3.5'/></svg>
               Choisir une photo
             </button>
+            <button type="button" id="admin-dog-image-url-toggle-btn" class="btn btn-outline admin-image-upload-btn">
+              <svg viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.5 1.5'/><path d='M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.5-1.5'/></svg>
+              Coller une URL
+            </button>
             <input type="file" id="admin-dog-image-file" accept="image/*" class="admin-file-input-visually-hidden">
             <span id="admin-dog-image-upload-status" class="admin-image-upload-status" hidden></span>
           </div>
-          <span class="admin-blog-image-hint">Depuis la galerie du téléphone ou de l'ordinateur — ou collez une URL d'image déjà en ligne ci-dessous.</span>
-          <input type="url" id="admin-dog-image-url" name="image_url" class="field" placeholder="https://...">
+          <span class="admin-blog-image-hint">Depuis la galerie du téléphone ou de l'ordinateur, ou collez l'URL d'une image déjà en ligne.</span>
+          <input type="url" id="admin-dog-image-url" name="image_url" class="field" placeholder="https://..." hidden>
 
           <div id="admin-dog-preview" class="admin-blog-preview" hidden>
             <img id="admin-dog-preview-img" class="admin-blog-preview-img" alt="Aperçu de l'image">
@@ -182,11 +186,15 @@
               <svg viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z'/><circle cx='12' cy='13' r='3.5'/></svg>
               Choisir une photo
             </button>
+            <button type="button" id="admin-blog-image-url-toggle-btn" class="btn btn-outline admin-image-upload-btn">
+              <svg viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.5 1.5'/><path d='M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.5-1.5'/></svg>
+              Coller une URL
+            </button>
             <input type="file" id="admin-blog-image-file" accept="image/*" class="admin-file-input-visually-hidden">
             <span id="admin-blog-image-upload-status" class="admin-image-upload-status" hidden></span>
           </div>
-          <span class="admin-blog-image-hint">Depuis la galerie du téléphone ou de l'ordinateur — ou collez une URL d'image déjà en ligne ci-dessous.</span>
-          <input type="url" id="admin-blog-image-url" name="image_url" class="field" placeholder="https://...">
+          <span class="admin-blog-image-hint">Depuis la galerie du téléphone ou de l'ordinateur, ou collez l'URL d'une image déjà en ligne.</span>
+          <input type="url" id="admin-blog-image-url" name="image_url" class="field" placeholder="https://..." hidden>
 
           <div id="admin-blog-preview" class="admin-blog-preview" hidden>
             <img id="admin-blog-preview-img" class="admin-blog-preview-img" alt="Aperçu de l'image">
