@@ -1863,7 +1863,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+        if (imageUrl && !/^https?:\/\//i.test(imageUrl) && !/^\/media\/\d+$/.test(imageUrl)) {
           showBlogImageError("L'URL de l'image doit commencer par http:// ou https://.");
           blogImageUrlInput.focus();
           return;
@@ -2230,7 +2230,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+        if (imageUrl && !/^https?:\/\//i.test(imageUrl) && !/^\/media\/\d+$/.test(imageUrl)) {
           showDogImageError("L'URL de l'image doit commencer par http:// ou https://.");
           dogImageUrlInput.focus();
           return;
