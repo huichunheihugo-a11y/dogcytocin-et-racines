@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-27.9';
+const WORKER_VERSION = '2026-08-27.10';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -16,6 +16,9 @@ const CSP = [
   "img-src 'self' data: https:",
   "connect-src 'self'",
   "form-action 'self'",
+  // Sans ceci, l'iframe OpenStreetMap de la section "Nous trouver" (accueil) est bloquee en
+  // silence par la CSP -- aucune erreur visible pour un visiteur, juste un cadre vide.
+  "frame-src https://www.openstreetmap.org",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "object-src 'none'",
