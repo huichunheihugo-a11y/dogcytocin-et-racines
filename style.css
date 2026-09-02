@@ -199,6 +199,10 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--brown-dark); font-we
   display: flex;
   align-items: center;
   gap: 12px;
+  /* Sans ça, quand le header manque de place (nav + bouton "Faire un don"), c'est le texte du
+     logo qui absorbe la compression en repassant a la ligne plutot que le reste -- header
+     soudain deux fois plus haut, qui peut chevaucher le titre de la section juste en dessous. */
+  flex-shrink: 0;
 }
 
 .logo-mark {
@@ -223,6 +227,7 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--brown-dark); font-we
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--brown-dark);
+  white-space: nowrap;
 }
 
 .logo-text .tagline {
@@ -233,6 +238,7 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--brown-dark); font-we
   letter-spacing: 0.3px;
   color: var(--olive);
   margin-top: 3px;
+  white-space: nowrap;
 }
 
 .nav-links {
@@ -277,7 +283,10 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--brown-dark); font-we
 
 .nav-cta:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(var(--olive-rgb), 0.35); }
 
-@media (max-width: 1200px) and (min-width: 1151px) {
+/* Etendu a 1360px (au lieu de 1200px) : a 1280px, une largeur d'ecran tres courante, le
+   header n'avait pas assez de place pour le logo + les 6 liens + le bouton "Faire un don"
+   sans ce resserrement -- desormais couvert avant le seuil du menu mobile (1150px). */
+@media (max-width: 1360px) and (min-width: 1151px) {
   .nav-links { gap: 14px; margin-right: 16px; }
   .nav-links a { font-size: 0.72rem; }
 }
