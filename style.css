@@ -462,6 +462,23 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--brown-dark); font-we
   transform: translateY(0);
 }
 
+/* Cascade en escalier pour les elements d'une meme rangee (cartes, photos chantier) --
+   plus premium qu'un fade-in simultane, purement visuel : le seuil de declenchement
+   individuel de l'IntersectionObserver (script.js) n'est pas touche. */
+.cards .card:nth-child(2),
+.actions-grid .action-block:nth-child(2),
+.support-grid .support-item:nth-child(2),
+.two-ways .fundraiser-box:nth-child(2),
+.bts-strip figure:nth-child(2) { transition-delay: 0.09s; }
+
+.cards .card:nth-child(3),
+.support-grid .support-item:nth-child(3),
+.two-ways .fundraiser-box:nth-child(3),
+.bts-strip figure:nth-child(3) { transition-delay: 0.18s; }
+
+.support-grid .support-item:nth-child(4),
+.bts-strip figure:nth-child(4) { transition-delay: 0.27s; }
+
 section {
   padding: 80px 0;
 }
@@ -2866,6 +2883,14 @@ select.field {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(47, 42, 34, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Coherent avec les autres cartes du site (.card, .dog-card, .contact-method, ...),
+   qui ont toutes ce leger effet de soulevement au survol -- il manquait ici. */
+.blog-post:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(47, 42, 34, 0.13);
 }
 
 .blog-post-media { aspect-ratio: 16 / 9; overflow: hidden; }
