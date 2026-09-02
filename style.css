@@ -1762,7 +1762,8 @@ select.field {
 .action-block .icon,
 .support-item .icon,
 .fundraiser-box .icon,
-.intro-card .icon {
+.intro-card .icon,
+.contact-location .icon {
   border-radius: 42% 58% 53% 47% / 45% 42% 58% 55%;
   transition: transform 0.2s ease;
 }
@@ -1781,7 +1782,8 @@ select.field {
   transform: rotate(4deg);
 }
 
-.intro-card .icon { transform: rotate(-3deg); }
+.intro-card .icon,
+.contact-location .icon { transform: rotate(-3deg); }
 
 .card:hover .icon,
 .action-block:hover .icon,
@@ -3084,7 +3086,6 @@ a.contact-method:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rg
   width: 56px;
   height: 56px;
   margin: 0 auto 18px;
-  border-radius: 50%;
   background: rgba(var(--olive-rgb), 0.14);
   color: var(--olive);
 }
@@ -3092,3 +3093,42 @@ a.contact-method:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rg
 .contact-location .icon svg { width: 26px; height: 26px; stroke: currentColor; fill: none; }
 
 .contact-location p { color: var(--text-muted); max-width: 380px; margin: 0 auto; }
+
+/* ===== "Nous trouver" (accueil) ===== */
+
+.find-us {
+  background: linear-gradient(160deg, #eef1e6, var(--cream));
+}
+
+.contact-location.is-map-companion {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.contact-location.is-map-companion .icon { margin: 0 0 18px; }
+.contact-location.is-map-companion p { max-width: none; margin: 0; }
+.contact-location.is-map-companion .btn-row { justify-content: flex-start; margin-top: 20px; }
+
+.map-frame {
+  height: 100%;
+  min-height: 320px;
+  background: #fffdf8;
+  padding: 10px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(47, 42, 34, 0.16), 0 2px 8px rgba(47, 42, 34, 0.08);
+}
+
+.map-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border: 0;
+  border-radius: 12px;
+  /* Adoucit le vert/jaune criards par defaut d'OpenStreetMap pour se rapprocher de la
+     palette du site -- meme recette que .bts-strip img. Un filtre CSS s'applique au rendu
+     entier de l'iframe (comme une image), meme si son contenu vient d'une autre origine. */
+  filter: sepia(0.2) saturate(0.65) contrast(1.05) brightness(1.03);
+}
