@@ -29,6 +29,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const galleryGrid = document.getElementById('gallery-grid');
+  const lightbox = document.getElementById('gallery-lightbox');
+
+  if (galleryGrid && lightbox) {
+    const lightboxImg = document.getElementById('gallery-lightbox-img');
+    const lightboxCaption = document.getElementById('gallery-lightbox-caption');
+    const lightboxClose = document.getElementById('gallery-lightbox-close');
+
+    const openLightbox = (item) => {
+      lightboxImg.src = item.dataset.full;
+      lightboxImg.alt = item.dataset.caption || '';
+      lightboxCaption.textContent = item.dataset.caption || '';
+      lightbox.hidden = false;
+    };
+
+    const closeLightbox = () => { lightbox.hidden = true; lightboxImg.src = ''; };
+
+    galleryGrid.querySelectorAll('.gallery-item').forEach((item) => {
+      item.addEventListener('click', () => openLightbox(item));
+    });
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !lightbox.hidden) closeLightbox(); });
+  }
+
   const gateForm = document.getElementById('gate-form');
   const gate = document.getElementById('password-gate');
 

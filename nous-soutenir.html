@@ -48,14 +48,21 @@
       <li><a href="actualites.html">Actualités</a></li>
       <li><a href="nous-soutenir.html" class="active">Nous soutenir</a></li>
     </ul>
+    <a href="nous-soutenir.html" class="nav-cta">Faire un don</a>
   </div>
 </header>
+
+<div class="container">
+  <nav class="breadcrumb" aria-label="Fil d'ariane">
+    <a href="index.html">Accueil</a><span class="sep">/</span><span class="current">Nous soutenir</span>
+  </nav>
+</div>
 
 <div class="page-header">
   <div class="container">
     <span class="kicker">Nous aider</span>
     <h1>Nous soutenir</h1>
-    <div class="divider on-green"></div>
+    <div class="divider on-cream"></div>
     <p>Nous ne sommes déjà plus seules. Autour de ce projet se rassemblent des personnes qui donnent
       du matériel, quelques euros, du temps, des compétences… Chaque geste compte.</p>
   </div>
@@ -65,20 +72,29 @@
 
 <section>
   <div class="container">
-    <div class="two-ways">
+    <div class="two-ways three-ways">
 
       <div class="fundraiser-box fade-in">
         <span class="icon"><svg viewBox='0 0 24 24'><path d='M12 21C12 21 4 14.5 4 8.8C4 5.6 6.4 3 9.5 3C11 3 12 3.8 12 3.8C12 3.8 13 3 14.5 3C17.6 3 20 5.6 20 8.8C20 14.5 12 21 12 21Z'/></svg></span>
-        <h2>Notre cagnotte</h2>
+        <h2>Faire un don</h2>
         <div class="divider on-cream"></div>
         <p style="margin-top: 18px;">Chaque don, petit ou grand, nous aide à avancer plus vite sur les soins,
           la nourriture et l'aménagement du terrain.</p>
         <a href="https://gofund.me/208f81762" target="_blank" rel="noopener" class="btn btn-primary">Faire un don</a>
       </div>
 
+      <div class="fundraiser-box volunteer-feature fade-in">
+        <span class="icon"><svg viewBox='0 0 24 24' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M23 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg></span>
+        <h2>Devenir bénévole</h2>
+        <div class="divider on-cream"></div>
+        <p style="margin-top: 18px;">Sur place ou à distance : promener, nourrir, bricoler, communiquer,
+          photographier… chaque coup de main compte, à votre rythme.</p>
+        <a href="contact.html" class="btn btn-primary">Devenir bénévole</a>
+      </div>
+
       <div class="fundraiser-box foster-feature fade-in">
         <span class="icon"><svg viewBox='0 0 24 24' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M3 11l9-8 9 8'/><path d='M5 10v10h14V10'/><path d='M9 20v-6h6v6'/></svg></span>
-        <h2>Devenir famille d'accueil</h2>
+        <h2>Famille d'accueil</h2>
         <div class="divider on-cream"></div>
         <p style="margin-top: 18px;">Accueillir un chien chez soi, le temps qu'il trouve sa place — non pas
           la première famille venue, mais la bonne. Celle qui restera.</p>
@@ -99,21 +115,21 @@
         <span class="icon"><svg viewBox='0 0 24 24' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M21 8l-9-5-9 5 9 5 9-5z'/><path d='M3 8v8l9 5 9-5V8'/><path d='M12 13v8'/></svg></span>
         <h3>Matériel</h3>
         <p>Croquettes, laisses, couvertures, matériel de clôture ou de construction : rien ne se perd.</p>
-        <a href="https://wa.me/33659120271" target="_blank" rel="noopener" class="link-more">Nous contacter →</a>
+        <a href="contact.html" class="link-more">Nous contacter →</a>
       </div>
 
       <div class="support-item fade-in">
         <span class="icon"><svg viewBox='0 0 24 24' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='9'/><path d='M12 7v5l3.5 2'/></svg></span>
         <h3>Temps</h3>
         <p>Quelques heures pour promener, nourrir, ou simplement tenir compagnie aux chiens.</p>
-        <a href="https://wa.me/33659120271" target="_blank" rel="noopener" class="link-more">Nous contacter →</a>
+        <a href="contact.html" class="link-more">Nous contacter →</a>
       </div>
 
       <div class="support-item fade-in">
         <span class="icon"><svg viewBox='0 0 24 24' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2l2.9 6.9L22 9.3l-5.5 4.8L18.2 21 12 17.3 5.8 21l1.7-6.9L2 9.3l7.1-.4L12 2z'/></svg></span>
         <h3>Compétences</h3>
         <p>Bricolage, vétérinaire, communication, photographie… chaque savoir-faire trouve sa place.</p>
-        <a href="https://wa.me/33659120271" target="_blank" rel="noopener" class="link-more">Nous contacter →</a>
+        <a href="contact.html" class="link-more">Nous contacter →</a>
       </div>
 
       <div class="support-item fade-in">
@@ -156,7 +172,7 @@
           <button type="submit" id="guestbook-submit" class="btn btn-primary">Envoyer mon message</button>
           <p class="form-reassurance">Votre mot s'affiche tout de suite après une vérification automatique anti-spam.</p>
         </form>
-        <p id="guestbook-success" class="form-reassurance" style="color: var(--green-deep); font-weight: 600;" hidden>Merci ! Votre mot vient d'être publié juste en dessous.</p>
+        <p id="guestbook-success" class="form-reassurance" style="color: var(--brown-dark); font-weight: 600;" hidden>Merci ! Votre mot vient d'être publié juste en dessous.</p>
       </div>
 
       <p class="guestbook-count" id="guestbook-count" hidden></p>

@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Actualités — Dogcytocin et Racines</title>
-<meta name="description" content="Les dernières nouvelles du refuge Dogcytocin et Racines : chantiers, sauvetages, adoptions et vie quotidienne.">
+<title>Album photo — Dogcytocin et Racines</title>
+<meta name="description" content="Le refuge en images : le terrain, les chantiers, la vie de tous les jours à Dogcytocin et Racines.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
-<meta property="og:title" content="Actualités — Dogcytocin et Racines">
-<meta property="og:description" content="Les dernières nouvelles du refuge Dogcytocin et Racines : chantiers, sauvetages, adoptions et vie quotidienne.">
+<meta property="og:title" content="Album photo — Dogcytocin et Racines">
+<meta property="og:description" content="Le refuge en images : le terrain, les chantiers, la vie de tous les jours à Dogcytocin et Racines.">
 <meta property="og:image" content="https://dogcytocin-et-racines.huichunheihugo.workers.dev/images/og-image.png">
-<meta property="og:url" content="https://dogcytocin-et-racines.huichunheihugo.workers.dev/actualites">
+<meta property="og:url" content="https://dogcytocin-et-racines.huichunheihugo.workers.dev/album">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="grain-light">
+<body>
 
 <div id="password-gate">
   <div class="gate-box">
@@ -45,7 +45,7 @@
       <li><a href="nos-chiens.html">Nos chiens</a></li>
       <li><a href="notre-histoire.html">Notre histoire</a></li>
       <li><a href="nos-actions.html">Nos actions</a></li>
-      <li><a href="actualites.html" class="active">Actualités</a></li>
+      <li><a href="actualites.html">Actualités</a></li>
       <li><a href="nous-soutenir.html">Nous soutenir</a></li>
     </ul>
     <a href="nous-soutenir.html" class="nav-cta">Faire un don</a>
@@ -54,33 +54,56 @@
 
 <div class="container">
   <nav class="breadcrumb" aria-label="Fil d'ariane">
-    <a href="index.html">Accueil</a><span class="sep">/</span><span class="current">Actualités</span>
+    <a href="index.html">Accueil</a><span class="sep">/</span><span class="current">Album photo</span>
   </nav>
 </div>
 
 <div class="page-header">
   <div class="container">
-    <span class="kicker">Les dernières nouvelles</span>
-    <h1>Actualités</h1>
+    <span class="kicker">En images</span>
+    <h1>Album photo</h1>
     <div class="divider on-cream"></div>
-    <p>Chantiers, sauvetages, arrivées et petites victoires du quotidien — les nouvelles du refuge, au fil de l'eau.</p>
+    <p>Le terrain, les chantiers, la vie de tous les jours — un aperçu de ce qui se construit ici,
+      chantier après chantier.</p>
   </div>
 </div>
 
-<div class="wave-divider wave-to-cream" aria-hidden="true"></div>
-
 <section>
   <div class="container">
-    <div id="blog-feed-loading" class="guestbook-loading">Chargement des articles...</div>
-    <div id="blog-feed-list" class="blog-list"></div>
-    <div id="blog-feed-empty" class="dogs-empty" hidden>
-      <svg class="dogs-empty-icon" viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' aria-hidden="true"><path d='M12 21C12 21 4 14.5 4 8.8C4 5.6 6.4 3 9.5 3C11 3 12 3.8 12 3.8C12 3.8 13 3 14.5 3C17.6 3 20 5.6 20 8.8C20 14.5 12 21 12 21Z'/></svg>
-      <p>Pas encore d'actualités publiées — revenez bientôt !</p>
+    <div class="gallery-grid fade-in" id="gallery-grid">
+      <figure class="gallery-item" data-full="images/chantier-renovation.jpg" data-caption="Rénovation des dépendances">
+        <img src="images/chantier-renovation.jpg" alt="Rénovation d'une dépendance" loading="lazy">
+        <figcaption class="gallery-item-caption">Rénovation des dépendances</figcaption>
+      </figure>
+      <figure class="gallery-item" data-full="images/chantier-debroussaillage.jpg" data-caption="Aménagement des parcs">
+        <img src="images/chantier-debroussaillage.jpg" alt="Débroussaillage du terrain" loading="lazy">
+        <figcaption class="gallery-item-caption">Aménagement des parcs</figcaption>
+      </figure>
+      <figure class="gallery-item" data-full="images/chantier-construction.jpg" data-caption="Travaux de construction">
+        <img src="images/chantier-construction.jpg" alt="Travaux de construction" loading="lazy">
+        <figcaption class="gallery-item-caption">Travaux de construction</figcaption>
+      </figure>
+      <figure class="gallery-item" data-full="images/chantier-vie-refuge.jpg" data-caption="La vie continue pendant les travaux">
+        <img src="images/chantier-vie-refuge.jpg" alt="Un chien du refuge" loading="lazy">
+        <figcaption class="gallery-item-caption">La vie continue pendant les travaux</figcaption>
+      </figure>
+      <figure class="gallery-item" data-full="images/chien-silhouette.jpg" data-caption="Un des pensionnaires du refuge">
+        <img src="images/chien-silhouette.jpg" alt="Un des pensionnaires du refuge" loading="lazy">
+        <figcaption class="gallery-item-caption">Un des pensionnaires du refuge</figcaption>
+      </figure>
     </div>
+
+    <p style="text-align: center; margin-top: 40px; color: var(--text-muted);">
+      L'album s'agrandit au fil des chantiers et des arrivées — revenez de temps en temps.
+    </p>
   </div>
 </section>
 
-<div class="wave-divider wave-to-green" aria-hidden="true"></div>
+<div class="gallery-lightbox" id="gallery-lightbox" hidden>
+  <button class="gallery-lightbox-close" id="gallery-lightbox-close" aria-label="Fermer">&times;</button>
+  <img src="" alt="" id="gallery-lightbox-img">
+  <p class="gallery-lightbox-caption" id="gallery-lightbox-caption"></p>
+</div>
 
 <footer class="site-footer">
   <div class="container">

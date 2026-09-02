@@ -1,0 +1,9 @@
+.git
+.claude
+.wrangler
+.agents
+node_modules
+skills-lock.json
+wrangler.jsonc
+d1
+*.md
