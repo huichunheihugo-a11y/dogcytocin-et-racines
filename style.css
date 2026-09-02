@@ -410,9 +410,11 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--brown-dark); font-we
   overflow: hidden;
   background-image:
     linear-gradient(180deg, rgba(36, 26, 16, 0.75) 0%, rgba(36, 26, 16, 0.55) 45%, rgba(36, 26, 16, 0.88) 100%),
-    url("images/chantier-vie-refuge.jpg");
+    url("images/chien-caresse.jpg");
   background-repeat: no-repeat;
-  background-position: center;
+  /* Recentre sur le chien et la main plutot que sur la haie/cloture en haut de la photo,
+     pour que le sujet reste visible meme quand cover rogne fort sur un ecran tres large. */
+  background-position: center 68%;
   background-size: cover;
 }
 
