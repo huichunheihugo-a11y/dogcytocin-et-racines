@@ -1331,7 +1331,8 @@ select.field {
   min-height: 440px;
   background-image:
     linear-gradient(180deg, rgba(36, 26, 16, 0.7) 0%, rgba(36, 26, 16, 0.5) 45%, rgba(36, 26, 16, 0.85) 100%),
-    url("images/chien-silhouette.jpg");
+    url("images/chien-portrait.jpg");
+  background-position: center 55%;
 }
 
 /* Le filigrane silhouette d'origine etait pense pour un fond illustre sans photo -- inutile
