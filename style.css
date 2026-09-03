@@ -499,8 +499,7 @@ section {
 .story-teaser {
   position: relative;
   overflow: hidden;
-  border-top: 1px solid rgba(var(--brown-light-rgb), 0.4);
-  background: linear-gradient(160deg, #eef1e6, var(--cream));
+  background: var(--cream);
   padding: 88px 0;
 }
 
