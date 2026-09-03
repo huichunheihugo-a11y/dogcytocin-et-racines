@@ -653,6 +653,10 @@ section {
 
 @media (max-width: 800px) {
   .feature-split { grid-template-columns: 1fr; gap: 28px; }
+  /* Quel que soit l'ordre texte/photo choisi sur desktop (alterne d'un bloc a l'autre pour
+     le rythme visuel), la photo passe toujours en premier une fois empilee -- elle donne le
+     ton immediatement, plutot que de faire defiler tout le texte avant de l'atteindre. */
+  .feature-split-media { order: -1; }
 }
 
 .feature-split-media {
