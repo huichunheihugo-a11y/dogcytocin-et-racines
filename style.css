@@ -586,16 +586,36 @@ section {
 
 .story-teaser-inner .link-more:hover { color: var(--brown-light); }
 
+/* Mosaique plutot qu'une simple rangee de 4 : une photo "vedette" (2x2) entouree de
+   vignettes, pour representer la variete de ce qui se passe sur le terrain (chantiers +
+   vie du refuge) au lieu de 4 cases figees de meme poids visuel. grid-auto-flow: dense
+   comble les cases laissees vides par la vedette avec les vignettes suivantes. */
 .bts-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 40px 26px;
+  /* 150px laissait a peine ~75px de photo utile une fois la legende et le cadre polaroid
+     retires -- les vignettes 1x1 etaient beaucoup trop rognees. 240px donne une vraie photo
+     visible sur les petites cartes, meme avec une legende sur 2 lignes. */
+  grid-auto-rows: 240px;
+  grid-auto-flow: dense;
+  gap: 30px 24px;
   margin: 56px 0 40px;
   padding: 0 28px;
 }
 
+.bts-strip .bts-featured {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+@media (max-width: 800px) {
+  .bts-strip .bts-featured { grid-column: span 2; grid-row: span 2; }
+}
+
 .bts-strip figure {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: #fffdf8;
   padding: 12px 12px 38px;
   box-shadow: 0 10px 22px rgba(47, 42, 34, 0.2), 0 2px 6px rgba(47, 42, 34, 0.12);
@@ -606,6 +626,7 @@ section {
 .bts-strip figure:nth-child(2) { transform: rotate(1.6deg); clip-path: polygon(0% 1.5%, 99.2% 0%, 100% 98.5%, 0.6% 100%); }
 .bts-strip figure:nth-child(3) { transform: rotate(-1.2deg); clip-path: polygon(1% 0.5%, 100% 0%, 99% 99%, 0% 100%); }
 .bts-strip figure:nth-child(4) { transform: rotate(2.4deg); clip-path: polygon(0.5% 1%, 99.5% 0.3%, 100% 99%, 0.3% 99.6%); }
+.bts-strip figure:nth-child(5) { transform: rotate(-1.6deg); clip-path: polygon(0.6% 0.4%, 99.4% 0%, 100% 99.5%, 0.4% 100%); }
 
 .bts-strip figure:hover {
   transform: rotate(0deg) translateY(-5px) scale(1.035);
@@ -638,13 +659,24 @@ section {
   z-index: 2;
 }
 
+.bts-photo {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .bts-strip img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  height: 100%;
   object-fit: cover;
   filter: sepia(0.22) saturate(0.78) contrast(1.04) brightness(1.03);
+  /* Zoom leger au survol de la carte entiere (voir figure:hover), sans deborder du cadre
+     polaroid grace a overflow:hidden sur .bts-photo. */
+  transition: transform 0.5s ease;
 }
+
+.bts-strip figure:hover img { transform: scale(1.08); }
 
 .bts-strip figcaption {
   margin-top: 12px;
@@ -665,6 +697,7 @@ section {
   .bts-strip figure:nth-child(2) { transform: rotate(0.9deg); }
   .bts-strip figure:nth-child(3) { transform: rotate(-0.7deg); }
   .bts-strip figure:nth-child(4) { transform: rotate(1.3deg); }
+  .bts-strip figure:nth-child(5) { transform: rotate(-0.9deg); }
 }
 
 /* ===== Cards ===== */
