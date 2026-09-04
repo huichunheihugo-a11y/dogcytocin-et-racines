@@ -928,7 +928,18 @@ section {
   margin: 0 auto 40px;
 }
 
-.who-we-are h2 { text-align: left; }
+/* Volontairement different du h2 uppercase/serif utilise partout ailleurs sur le site :
+   ce bloc reprend le style simple, gras, sans-serif demande (references montrees en
+   conversation), pas le traitement "titre de section" habituel. */
+.who-we-are h2 {
+  text-align: left;
+  font-family: var(--font-sans);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 700;
+  font-size: 1.9rem;
+  color: var(--olive);
+}
 
 .who-we-are p {
   color: var(--text-muted);
