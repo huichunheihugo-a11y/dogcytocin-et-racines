@@ -1,31 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const faders = document.querySelectorAll('.fade-in');
-  // rootMargin tres genereux : declenche le fade-in bien avant que l'element n'entre
-  // reellement dans le viewport (au lieu d'attendre 20% de visibilite comme avant). Sur
-  // mobile, un scroll rapide -- ou meme un lien ancre qui saute directement a une section --
-  // pouvait laisser un bloc largement affiche (texte, bouton) sans que la photo n'ait
-  // jamais declenche ce seuil : elle restait a opacity: 0 indefiniment, lisible comme une
-  // image manquante plutot que comme une animation en retard.
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.01, rootMargin: '600px 0px 600px 0px' });
-
-  faders.forEach((el) => observer.observe(el));
-
-  // Filet de securite : quel que soit le cas limite qui a pu empecher l'observer de se
-  // declencher (navigation instantanee, erreur JS ailleurs sur la page, etc.), personne ne
-  // doit rester bloque a opacity: 0 plus de quelques secondes.
-  window.setTimeout(() => {
-    document.querySelectorAll('.fade-in:not(.visible)').forEach((el) => {
-      el.classList.add('visible');
-      observer.unobserve(el);
-    });
-  }, 2500);
+  // .fade-in est visible par defaut en CSS desormais (voir style.css) -- .visible ne fait
+  // plus qu'ajouter une transition ; simple ajout immediat, plus besoin d'IntersectionObserver
+  // ni de logique de secours puisque rien ne depend plus du JS pour etre visible.
+  document.querySelectorAll('.fade-in').forEach((el) => el.classList.add('visible'));
 
   const siteHeader = document.querySelector('.site-header');
   if (siteHeader) {

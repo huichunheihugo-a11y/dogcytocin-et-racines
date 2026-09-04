@@ -494,10 +494,13 @@ h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--brown-dark); font-we
 /* ===== Section fade-in ===== */
 
 .fade-in {
-  opacity: 0;
-  transform: translateY(24px);
-  /* Courbe "ease-out-expo" : depart rapide puis ralenti tres progressif, plus doux et
-     premium qu'un ease-out standard qui ralentit de facon plus lineaire/mecanique. */
+  /* Visible par defaut (pas opacity: 0) : l'ancienne version cachait le contenu tant que le
+     JS (IntersectionObserver) n'avait pas ajoute .visible, et malgre plusieurs correctifs
+     successifs (marge de declenchement, filet de securite par timer...), des photos
+     restaient invisibles chez certain⋅es visiteur⋅ses mobiles -- cause exacte non confirmee
+     (JS bloque, edge case de l'observer...), mais le risque n'en valait plus la peine pour
+     une simple animation d'apparition. Le contenu est desormais toujours visible immediatement,
+     avec juste une legere transition si jamais .visible est ajoutee. */
   transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
