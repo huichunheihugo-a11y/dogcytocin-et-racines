@@ -685,11 +685,12 @@ section {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 52px;
-  /* "start" plutot que "center" : avec une liste a puces, la colonne de texte est souvent
-     bien plus haute que la photo -- un centrage vertical laissait un vide au-dessus de la
-     photo et le texte qui debordait en dessous, plutot que les deux colonnes alignees
-     naturellement en haut. */
-  align-items: start;
+  /* "stretch" (comportement grid par defaut) plutot qu'un centrage ou alignement en haut :
+     avec une liste a puces, la colonne de texte est souvent bien plus haute que la photo --
+     stretch etire le cadre photo (sans aspect-ratio fixe, cf. .feature-split-media) pour
+     qu'il occupe toute la hauteur de la rangee, meme hauteur que le texte en face, plutot
+     que de laisser un vide au-dessus ou en dessous.  */
+  align-items: stretch;
   margin-bottom: 56px;
 }
 
@@ -699,13 +700,19 @@ section {
      le rythme visuel), la photo passe toujours en premier une fois empilee -- elle donne le
      ton immediatement, plutot que de faire defiler tout le texte avant de l'atteindre. */
   .feature-split-media { order: -1; }
+  /* Colonnes empilees = plus de "rangee" a etirer -- sans aspect-ratio fixe ici, stretch
+     donnerait une image ecrasee a la hauteur intrinseque de l'img. */
+  .feature-split-media { aspect-ratio: 4 / 3; }
 }
 
 .feature-split-media {
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 14px 34px rgba(47, 42, 34, 0.15);
-  aspect-ratio: 5 / 4;
+  /* Pas d'aspect-ratio fixe sur desktop : stretch (ci-dessus) etire ce cadre a la hauteur
+     de la colonne de texte, et l'image en object-fit:cover a l'interieur suit. Une hauteur
+     mini evite un cadre ecrase si jamais le texte est tres court. */
+  min-height: 320px;
 }
 
 .feature-split-media img {
