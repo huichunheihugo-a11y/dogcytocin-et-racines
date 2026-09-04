@@ -758,7 +758,10 @@ section {
    position:absolute + object-fit:cover remplit simplement le cadre qui en resulte. */
 .feature-split-media img {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1680,7 +1683,10 @@ select.field {
 .dog-photo::after {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   box-shadow: inset 0 0 0 1px rgba(var(--brown-light-rgb), 0.3);
   pointer-events: none;
 }
@@ -1696,7 +1702,10 @@ select.field {
 .dog-photo-placeholder::before {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 1;
   background:
     radial-gradient(circle at 25% 18%, rgba(var(--brown-light-rgb), 0.16), transparent 55%),
@@ -1705,7 +1714,10 @@ select.field {
 
 .dog-silhouette {
   position: absolute;
-  inset: 7%;
+  top: 7%;
+  right: 7%;
+  bottom: 7%;
+  left: 7%;
   width: 86%;
   height: 86%;
   object-fit: contain;
@@ -1719,7 +1731,10 @@ select.field {
    pleine opacite, sans effet de fondu. */
 .dog-photo-img {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1758,7 +1773,10 @@ select.field {
 .dog-stamp::before {
   content: '';
   position: absolute;
-  inset: 5px;
+  top: 5px;
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
   border: 1px solid rgba(var(--brown-light-rgb), 0.9);
   border-radius: 50%;
 }
@@ -3166,7 +3184,10 @@ select.field {
 
 .gallery-lightbox {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 500;
   background: rgba(29, 32, 19, 0.92);
   display: flex;
