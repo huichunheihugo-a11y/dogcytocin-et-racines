@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         successBlock.hidden = false;
         successBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } catch (err) {
-        errorBlock.textContent = "Aïe, l'envoi n'est pas passé. Réessayez, ou écrivez-nous directement — on ne veut surtout pas rater votre message.";
+        errorBlock.textContent = "Aïe, l'envoi n'est pas passé. Réessayez, ou écrivez-nous directement, on ne veut surtout pas rater votre message.";
         errorBlock.hidden = false;
       } finally {
         submitBtn.disabled = false;
@@ -816,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         })
         .catch(() => {
-          throw new Error("Cette photo n'a pas pu être lue — si elle vient d'un iPhone au format HEIC, essaie de la convertir en JPEG avant l'envoi (ou choisis une autre photo).");
+          throw new Error("Cette photo n'a pas pu être lue, si elle vient d'un iPhone au format HEIC, essaie de la convertir en JPEG avant l'envoi (ou choisis une autre photo).");
         });
     }
 
