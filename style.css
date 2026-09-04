@@ -921,6 +921,41 @@ section {
   color: var(--text-muted);
 }
 
+/* ===== Qui sommes-nous (notre-histoire.html) ===== */
+
+.who-we-are {
+  max-width: 720px;
+  margin: 0 auto 40px;
+}
+
+.who-we-are h2 { text-align: left; }
+
+.who-we-are p {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  margin-bottom: 20px;
+}
+
+.who-we-are p:last-child { margin-bottom: 0; }
+
+.who-we-are strong { color: var(--brown-dark); }
+
+.who-we-are-photo {
+  max-width: 720px;
+  margin: 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(47, 42, 34, 0.12);
+}
+
+.who-we-are-photo img {
+  width: 100%;
+  display: block;
+  max-height: 420px;
+  object-fit: cover;
+}
+
 /* ===== Fil d'ariane ===== */
 
 .breadcrumb {
@@ -953,6 +988,17 @@ section {
 
 @media (max-width: 640px) {
   .story-page { padding: 40px 26px; }
+}
+
+.story-page-eyebrow {
+  display: block;
+  text-align: center;
+  font-family: var(--font-marker);
+  color: var(--olive);
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
 }
 
 .story {
