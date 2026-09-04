@@ -16,6 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   faders.forEach((el) => observer.observe(el));
 
+  const siteHeader = document.querySelector('.site-header');
+  if (siteHeader) {
+    const applyScrolledState = () => {
+      siteHeader.classList.toggle('is-scrolled', window.scrollY > 24);
+    };
+    applyScrolledState();
+    window.addEventListener('scroll', applyScrolledState, { passive: true });
+  }
+
   const navToggle = document.querySelector('.nav-toggle');
   const navLinks = document.querySelector('.nav-links');
 
@@ -42,9 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
       lightboxImg.alt = item.dataset.caption || '';
       lightboxCaption.textContent = item.dataset.caption || '';
       lightbox.hidden = false;
+      // Deux rAF imbriques : laisse le navigateur peindre l'etat de depart (opacity: 0)
+      // avant d'ajouter la classe qui declenche la transition CSS vers opacity: 1 -- sans
+      // ce detour, retirer [hidden] et ajouter la classe dans le meme tick saute la transition.
+      requestAnimationFrame(() => requestAnimationFrame(() => lightbox.classList.add('is-visible')));
     };
 
-    const closeLightbox = () => { lightbox.hidden = true; lightboxImg.src = ''; };
+    const closeLightbox = () => {
+      lightbox.classList.remove('is-visible');
+      window.setTimeout(() => { lightbox.hidden = true; lightboxImg.src = ''; }, 250);
+    };
 
     galleryGrid.querySelectorAll('.gallery-item').forEach((item) => {
       item.addEventListener('click', () => openLightbox(item));
