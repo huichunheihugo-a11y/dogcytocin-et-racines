@@ -729,14 +729,14 @@ section {
   font-size: 1.08rem;
   line-height: 1.75;
   margin-bottom: 28px;
-  max-width: 46ch;
+  max-width: 38ch;
 }
 
 .feature-split-text ul {
   color: var(--text-muted);
   margin: -8px 0 28px;
   padding-left: 20px;
-  max-width: 46ch;
+  max-width: 38ch;
 }
 
 .feature-split-text li { margin-bottom: 8px; line-height: 1.6; }
