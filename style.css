@@ -1241,7 +1241,15 @@ section {
   align-items: center;
 }
 
-.two-ways .fundraiser-box .btn { margin-top: auto; padding-top: 28px; align-self: center; }
+/* align-self: stretch (au lieu de center) : les 3 boutons prennent la largeur de leur carte
+   plutot que de s'ajuster a leur seul texte -- "Devenir famille d'accueil" est bien plus
+   long que "Faire un don", donnant des boutons de tailles visiblement differentes sinon. */
+.two-ways .fundraiser-box .btn {
+  margin-top: auto;
+  padding-top: 28px;
+  align-self: stretch;
+  text-align: center;
+}
 
 @media (max-width: 800px) {
   .two-ways { grid-template-columns: 1fr; gap: 24px; }
