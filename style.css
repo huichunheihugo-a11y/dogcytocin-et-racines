@@ -1244,11 +1244,20 @@ section {
 /* align-self: stretch (au lieu de center) : les 3 boutons prennent la largeur de leur carte
    plutot que de s'ajuster a leur seul texte -- "Devenir famille d'accueil" est bien plus
    long que "Faire un don", donnant des boutons de tailles visiblement differentes sinon. */
+/* min-height + flex centrage : "Devenir famille d'accueil" passe sur 2 lignes a certaines
+   largeurs d'ecran (tablette/desktop etroit) alors que les 2 autres textes, plus courts,
+   restent sur 1 -- sans ca, ce bouton devient plus haut que les deux autres. Le flex
+   recentre le texte verticalement dans les boutons a 1 ligne, qui heritent sinon d'un espace
+   vide en bas (padding fixe, hauteur poussee par la min-height commune). */
 .two-ways .fundraiser-box .btn {
   margin-top: auto;
   padding-top: 28px;
   align-self: stretch;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
 }
 
 @media (max-width: 800px) {
