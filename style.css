@@ -950,7 +950,9 @@ section {
 
 .who-we-are p:last-child { margin-bottom: 0; }
 
-.who-we-are strong { color: var(--brown-dark); }
+/* Vert plus franc que --olive (trop proche du brun sur fond creme) pour que
+   les passages en gras du recit ressortent nettement a la lecture. */
+.who-we-are strong { color: #2F6B3C; }
 
 .who-we-are-photo {
   max-width: 720px;
