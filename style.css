@@ -3218,7 +3218,7 @@ a.contact-method:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rg
 /* ===== "Nous trouver" (accueil) ===== */
 
 .find-us {
-  background: linear-gradient(160deg, #eef1e6, var(--cream));
+  background: var(--cream);
 }
 
 .contact-location.is-map-companion {
