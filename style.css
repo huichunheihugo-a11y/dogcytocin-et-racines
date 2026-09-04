@@ -965,6 +965,11 @@ section {
   display: block;
   max-height: 420px;
   object-fit: cover;
+  /* Photo portrait (676x1200) recadree dans un cadre bien plus large que haut : un
+     centrage par defaut coupait la tete du chien en haut. 30% garde la tete et le
+     harnais dans le cadre -- fonctionne aussi bien sur mobile (cadre plus haut,
+     donc moins de recadrage) que sur desktop (cadre large, recadrage vertical fort). */
+  object-position: center 30%;
 }
 
 /* ===== Fil d'ariane ===== */
