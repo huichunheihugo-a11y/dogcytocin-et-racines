@@ -685,7 +685,11 @@ section {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 52px;
-  align-items: center;
+  /* "start" plutot que "center" : avec une liste a puces, la colonne de texte est souvent
+     bien plus haute que la photo -- un centrage vertical laissait un vide au-dessus de la
+     photo et le texte qui debordait en dessous, plutot que les deux colonnes alignees
+     naturellement en haut. */
+  align-items: start;
   margin-bottom: 56px;
 }
 
