@@ -1,8 +1,3 @@
-if (localStorage.getItem('dogcytocin_unlocked') === 'true') {
-  const gate = document.getElementById('password-gate');
-  if (gate) gate.style.display = 'none';
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   const faders = document.querySelectorAll('.fade-in');
   const observer = new IntersectionObserver((entries) => {
@@ -69,26 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !lightbox.hidden) closeLightbox(); });
-  }
-
-  const gateForm = document.getElementById('gate-form');
-  const gate = document.getElementById('password-gate');
-
-  if (gateForm && gate) {
-    gateForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = document.getElementById('gate-password');
-      const error = document.getElementById('gate-error');
-
-      if (input.value === '123') {
-        localStorage.setItem('dogcytocin_unlocked', 'true');
-        gate.style.display = 'none';
-      } else {
-        error.hidden = false;
-        input.value = '';
-        input.focus();
-      }
-    });
   }
 
   const fosterForm = document.getElementById('foster-form');
