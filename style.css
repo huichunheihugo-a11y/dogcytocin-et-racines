@@ -721,12 +721,7 @@ section {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 52px;
-  /* "stretch" (comportement grid par defaut) plutot qu'un centrage ou alignement en haut :
-     avec une liste a puces, la colonne de texte est souvent bien plus haute que la photo --
-     stretch etire le cadre photo (sans aspect-ratio fixe, cf. .feature-split-media) pour
-     qu'il occupe toute la hauteur de la rangee, meme hauteur que le texte en face, plutot
-     que de laisser un vide au-dessus ou en dessous.  */
-  align-items: stretch;
+  align-items: center;
   margin-bottom: 56px;
 }
 
@@ -736,36 +731,25 @@ section {
      le rythme visuel), la photo passe toujours en premier une fois empilee -- elle donne le
      ton immediatement, plutot que de faire defiler tout le texte avant de l'atteindre. */
   .feature-split-media { order: -1; }
-  /* Colonnes empilees = plus de "rangee" a etirer -- sans aspect-ratio fixe ici, stretch
-     donnerait une image ecrasee a la hauteur intrinseque de l'img. */
-  .feature-split-media { aspect-ratio: 4 / 3; }
 }
 
+/* Photo en flux normal avec un aspect-ratio fixe (pas de position:absolute) : approche la
+   plus simple et la plus largement compatible, y compris sur les navigateurs mobiles plus
+   anciens. Une version precedente etirait le cadre a la hauteur du texte via
+   position:absolute -- plus soignee visuellement, mais des photos restaient invisibles sur
+   certains mobiles malgre plusieurs correctifs cibles, donc priorite a la fiabilite ici. */
 .feature-split-media {
-  position: relative;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 14px 34px rgba(47, 42, 34, 0.15);
-  min-height: 0;
+  aspect-ratio: 5 / 4;
 }
 
-/* L'image est en position absolute plutot qu'en flux normal : sinon, meme avec
-   min-height:0, sa taille intrinseque (ratio naturel de la photo) continue de compter dans
-   le calcul de la hauteur "auto" de la rangee de la grille -- ce qui gonflait la rangee bien
-   au-dela de ce dont le texte a besoin, avec un vide dans la colonne de texte (elle aussi
-   etiree a cette hauteur gonflee par stretch). Sortie du flux, l'image ne pese plus du tout
-   dans ce calcul : la rangee suit uniquement la hauteur du texte, et l'image en
-   position:absolute + object-fit:cover remplit simplement le cadre qui en resulte. */
 .feature-split-media img {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
 .feature-split-text {
