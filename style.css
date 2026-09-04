@@ -732,6 +732,15 @@ section {
   max-width: 46ch;
 }
 
+.feature-split-text ul {
+  color: var(--text-muted);
+  margin: -8px 0 28px;
+  padding-left: 20px;
+  max-width: 46ch;
+}
+
+.feature-split-text li { margin-bottom: 8px; line-height: 1.6; }
+
 /* Paire de cartes secondaires sous le message phare -- volontairement distincte de .cards
    (grille a 3) pour ne pas heriter de son empilement mobile a 800px, le seuil ici est plus bas. */
 .cards-pair {
