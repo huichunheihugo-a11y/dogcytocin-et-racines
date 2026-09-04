@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   const faders = document.querySelectorAll('.fade-in');
+  // rootMargin positif : declenche le fade-in ~150px avant que l'element n'entre reellement
+  // dans le viewport (au lieu d'attendre 20% de visibilite). Sur mobile, un scroll rapide
+  // depassait ce seuil de 0.2 avant que l'observer n'ait le temps de reagir -- l'image
+  // restait invisible (opacity: 0) le temps que l'utilisateur s'arrete dessus, percu comme
+  // une photo "disparue" plutot qu'une simple animation en retard.
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -7,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.2 });
+  }, { threshold: 0.01, rootMargin: '0px 0px 150px 0px' });
 
   faders.forEach((el) => observer.observe(el));
 
