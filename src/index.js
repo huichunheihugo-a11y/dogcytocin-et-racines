@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-05.3';
+const WORKER_VERSION = '2026-09-05.4';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -203,100 +203,6 @@ async function sendCommentNotification(env, comment) {
     });
   } catch (err) {
     // Best-effort : une notification manquee ne doit jamais empecher la publication du commentaire.
-  }
-}
-
-// Contenu des emails envoyes au candidat quand sa candidature est acceptee/refusee. Ton volontairement
-// chaleureux (pas de refus froid/automatique-sonnant) puisque ces messages partent sans relecture humaine.
-const FOSTER_STATUS_EMAIL_CONTENT = {
-  acceptee: {
-    subject: "Votre candidature famille d'accueil — bonne nouvelle !",
-    html: (name) => `
-      <p>Bonjour ${escapeHtml(name)},</p>
-      <p>Nous avons le plaisir de vous annoncer que votre candidature pour devenir famille d'accueil a été <strong>acceptée</strong> !</p>
-      <p>Nous allons revenir vers vous très prochainement pour organiser la suite ensemble.</p>
-      <p>Merci infiniment pour votre engagement — c'est grâce à des personnes comme vous que nos chiens trouvent le temps et l'amour dont ils ont besoin avant leur adoption définitive.</p>
-      <p>À très vite,<br>L'équipe Dogcytocin et Racines</p>
-    `,
-  },
-  refusee: {
-    subject: "Votre candidature famille d'accueil",
-    html: (name) => `
-      <p>Bonjour ${escapeHtml(name)},</p>
-      <p>Merci beaucoup pour l'intérêt que vous portez à nos chiens et pour le temps que vous avez pris à candidater.</p>
-      <p>Après réflexion, nous ne pouvons pas donner suite à votre candidature pour le moment. Cela ne remet absolument pas en cause votre motivation — la situation actuelle ne correspond simplement pas à ce dont nous avons besoin aujourd'hui.</p>
-      <p>N'hésitez pas à nous recontacter à l'avenir, ou à nous soutenir d'une autre façon si vous le souhaitez.</p>
-      <p>Merci encore,<br>L'équipe Dogcytocin et Racines</p>
-    `,
-  },
-};
-
-async function sendFosterStatusEmail(env, application, status) {
-  const content = FOSTER_STATUS_EMAIL_CONTENT[status];
-  if (!content || !env.RESEND_API_KEY) return;
-
-  try {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
-        to: application.email,
-        subject: content.subject,
-        html: content.html(application.nom_complet),
-      }),
-    });
-  } catch (err) {
-    // Best-effort : un email de notification manque ne doit jamais bloquer la mise a jour du statut.
-  }
-}
-
-const VOLUNTEER_STATUS_EMAIL_CONTENT = {
-  acceptee: {
-    subject: 'Votre candidature bénévole — bonne nouvelle !',
-    html: (name) => `
-      <p>Bonjour ${escapeHtml(name)},</p>
-      <p>Nous avons le plaisir de vous annoncer que votre candidature pour devenir bénévole a été <strong>acceptée</strong> !</p>
-      <p>Nous allons revenir vers vous très prochainement pour organiser la suite ensemble.</p>
-      <p>Merci infiniment pour votre engagement — c'est grâce à des personnes comme vous que ce projet avance.</p>
-      <p>À très vite,<br>L'équipe Dogcytocin et Racines</p>
-    `,
-  },
-  refusee: {
-    subject: 'Votre candidature bénévole',
-    html: (name) => `
-      <p>Bonjour ${escapeHtml(name)},</p>
-      <p>Merci beaucoup pour l'intérêt que vous portez à notre projet et pour le temps que vous avez pris à candidater.</p>
-      <p>Après réflexion, nous ne pouvons pas donner suite à votre candidature pour le moment. Cela ne remet absolument pas en cause votre motivation — la situation actuelle ne correspond simplement pas à ce dont nous avons besoin aujourd'hui.</p>
-      <p>N'hésitez pas à nous recontacter à l'avenir, ou à nous soutenir d'une autre façon si vous le souhaitez.</p>
-      <p>Merci encore,<br>L'équipe Dogcytocin et Racines</p>
-    `,
-  },
-};
-
-async function sendVolunteerStatusEmail(env, application, status) {
-  const content = VOLUNTEER_STATUS_EMAIL_CONTENT[status];
-  if (!content || !env.RESEND_API_KEY) return;
-
-  try {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
-        to: application.email,
-        subject: content.subject,
-        html: content.html(application.nom_complet),
-      }),
-    });
-  } catch (err) {
-    // Best-effort : un email de notification manque ne doit jamais bloquer la mise a jour du statut.
   }
 }
 
@@ -830,13 +736,6 @@ async function handleUpdateFosterStatus(request, env, id) {
     await env.DB.prepare('UPDATE foster_applications SET status = ?1 WHERE id = ?2')
       .bind(body.status, id).run();
 
-    if (body.status === 'acceptee' || body.status === 'refusee') {
-      const application = await env.DB.prepare(
-        'SELECT nom_complet, email FROM foster_applications WHERE id = ?1'
-      ).bind(id).first();
-      if (application) await sendFosterStatusEmail(env, application, body.status);
-    }
-
     return json({ success: true, status: body.status });
   } catch (err) {
     return json({ success: false, message: 'Erreur lors de la mise à jour.' }, 500);
@@ -940,13 +839,6 @@ async function handleUpdateVolunteerStatus(request, env, id) {
   try {
     await env.DB.prepare('UPDATE volunteer_applications SET status = ?1 WHERE id = ?2')
       .bind(body.status, id).run();
-
-    if (body.status === 'acceptee' || body.status === 'refusee') {
-      const application = await env.DB.prepare(
-        'SELECT nom_complet, email FROM volunteer_applications WHERE id = ?1'
-      ).bind(id).first();
-      if (application) await sendVolunteerStatusEmail(env, application, body.status);
-    }
 
     return json({ success: true, status: body.status });
   } catch (err) {
