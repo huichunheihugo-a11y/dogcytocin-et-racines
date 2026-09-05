@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-08-27.10';
+const WORKER_VERSION = '2026-09-05.1';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -344,6 +344,75 @@ async function handleFosterApplication(request, env) {
         // Permet de repondre directement au candidat depuis la boite mail, sans copier son adresse.
         reply_to: body.email.trim(),
         subject: `Nouvelle candidature famille d'accueil — ${body.nom_complet.trim()}`,
+        html: `<table cellpadding="0" cellspacing="0">${rows}</table>`,
+      }),
+    });
+
+    if (!resendResponse.ok) {
+      return json({ success: false, message: "L'envoi a échoué, réessayez ou écrivez-nous directement." }, 502);
+    }
+
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: "L'envoi a échoué, réessayez ou écrivez-nous directement." }, 502);
+  }
+}
+
+const VOLUNTEER_FIELD_LABELS = {
+  nom_complet: 'Nom complet',
+  telephone: 'Téléphone',
+  email: 'Email',
+  modalite: 'Sur place ou à distance',
+  competences: 'Ce qu’il ou elle peut faire',
+};
+
+const VOLUNTEER_REQUIRED_FIELDS = ['nom_complet', 'telephone', 'email', 'modalite', 'competences'];
+
+// Version simple (formulaire -> email) : pas de suivi dans le panel admin pour l'instant,
+// contrairement aux candidatures famille d'accueil -- a etendre plus tard si besoin.
+async function handleVolunteerApplication(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible, réessayez.' }, 400);
+  }
+
+  if (body?.botcheck) {
+    // Piège à robots déclenché : succès silencieux, rien n'est envoyé, pour ne pas alerter le bot.
+    return json({ success: true });
+  }
+
+  for (const key of VOLUNTEER_REQUIRED_FIELDS) {
+    if (typeof body?.[key] !== 'string' || !body[key].trim()) {
+      return json({ success: false, message: 'Merci de remplir tous les champs obligatoires.' }, 422);
+    }
+  }
+
+  if (!env.RESEND_API_KEY) {
+    return json({ success: false, message: "L'envoi n'est pas encore configuré, réessayez plus tard ou écrivez-nous directement." }, 503);
+  }
+
+  const rows = Object.entries(VOLUNTEER_FIELD_LABELS)
+    .filter(([key]) => typeof body[key] === 'string' && body[key].trim())
+    .map(([key, label]) => {
+      const value = escapeHtml(body[key].trim()).replace(/\n/g, '<br>');
+      return `<tr><td style="padding:4px 14px 4px 0;font-weight:600;white-space:nowrap;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:4px 0;">${value}</td></tr>`;
+    })
+    .join('');
+
+  try {
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        to: NOTIFICATION_EMAIL,
+        reply_to: body.email.trim(),
+        subject: `Nouvelle candidature bénévole — ${body.nom_complet.trim()}`,
         html: `<table cellpadding="0" cellspacing="0">${rows}</table>`,
       }),
     });
@@ -1286,6 +1355,11 @@ export default {
 
       if (url.pathname === '/api/foster-application') {
         if (request.method === 'POST') return withSecurityHeaders(await handleFosterApplication(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/volunteer-application') {
+        if (request.method === 'POST') return withSecurityHeaders(await handleVolunteerApplication(request, env));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

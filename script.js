@@ -116,6 +116,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const volunteerForm = document.getElementById('volunteer-form');
+
+  if (volunteerForm) {
+    const errorBlock = document.getElementById('volunteer-error');
+    const successBlock = document.getElementById('volunteer-success');
+    const submitBtn = document.getElementById('volunteer-submit');
+
+    volunteerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (volunteerForm.elements.botcheck.checked) {
+        volunteerForm.hidden = true;
+        successBlock.hidden = false;
+        return;
+      }
+
+      errorBlock.hidden = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Envoi en cours...';
+
+      const payload = {};
+      new FormData(volunteerForm).forEach((value, key) => { payload[key] = value; });
+
+      try {
+        const response = await fetch(volunteerForm.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('Réponse invalide');
+
+        volunteerForm.hidden = true;
+        successBlock.hidden = false;
+        successBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (err) {
+        errorBlock.textContent = "Aïe, l'envoi n'est pas passé. Réessayez, ou écrivez-nous directement, on ne veut surtout pas rater votre message.";
+        errorBlock.hidden = false;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Envoyer ma candidature';
+      }
+    });
+  }
+
   const dogsGrid = document.getElementById('dogs-grid');
 
   if (dogsGrid) {
