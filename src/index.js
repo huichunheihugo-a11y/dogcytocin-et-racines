@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-05.1';
+const WORKER_VERSION = '2026-09-05.2';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -391,6 +391,27 @@ async function handleVolunteerApplication(request, env) {
 
   if (!env.RESEND_API_KEY) {
     return json({ success: false, message: "L'envoi n'est pas encore configuré, réessayez plus tard ou écrivez-nous directement." }, 503);
+  }
+
+  if (env.DB) {
+    try {
+      // Enregistrement best-effort, comme pour foster_applications : l'email ci-dessous reste
+      // le vrai critere de succes pour la personne qui candidate.
+      await env.DB.prepare(
+        `INSERT INTO volunteer_applications
+         (nom_complet, telephone, email, modalite, competences, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)`
+      ).bind(
+        body.nom_complet.trim(),
+        body.telephone.trim(),
+        body.email.trim(),
+        body.modalite.trim(),
+        body.competences.trim(),
+        new Date().toISOString()
+      ).run();
+    } catch (err) {
+      // Table pas encore creee ou base indisponible : ne bloque jamais l'envoi de l'email.
+    }
   }
 
   const rows = Object.entries(VOLUNTEER_FIELD_LABELS)
@@ -823,6 +844,43 @@ async function handleDeleteFosterApplication(request, env, id) {
 
   try {
     await env.DB.prepare('DELETE FROM foster_applications WHERE id = ?1').bind(id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
+  }
+}
+
+async function handleGetVolunteerApplications(request, env) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!env.DB) return json({ applications: [] });
+
+  try {
+    const { results } = await env.DB.prepare(
+      `SELECT id, nom_complet, telephone, email, modalite, competences, created_at
+       FROM volunteer_applications ORDER BY id DESC LIMIT 200`
+    ).all();
+    return json({ applications: results });
+  } catch (err) {
+    // Table pas encore creee : on affiche une liste vide plutot que de casser la page.
+    return json({ applications: [] });
+  }
+}
+
+async function handleDeleteVolunteerApplication(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  try {
+    await env.DB.prepare('DELETE FROM volunteer_applications WHERE id = ?1').bind(id).run();
     return json({ success: true });
   } catch (err) {
     return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
@@ -1429,6 +1487,17 @@ export default {
       const fosterIdMatch = url.pathname.match(/^\/api\/admin\/foster-applications\/(\d+)$/);
       if (fosterIdMatch) {
         if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteFosterApplication(request, env, fosterIdMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/volunteer-applications') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetVolunteerApplications(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const volunteerIdMatch = url.pathname.match(/^\/api\/admin\/volunteer-applications\/(\d+)$/);
+      if (volunteerIdMatch) {
+        if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteVolunteerApplication(request, env, volunteerIdMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

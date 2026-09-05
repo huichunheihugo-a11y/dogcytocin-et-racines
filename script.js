@@ -649,6 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadRejected();
         loadStats();
         loadFosterApplications();
+        loadVolunteerApplications();
         loadBlogPosts();
         loadDogs();
       } catch (err) {
@@ -737,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const tabs = document.querySelectorAll('.admin-tab');
     const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", dogs: 'Nos chiens', blog: 'Blog', rejected: 'Messages refusés' };
+    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", benevoles: 'Bénévoles', dogs: 'Nos chiens', blog: 'Blog', rejected: 'Messages refusés' };
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -1611,6 +1612,125 @@ document.addEventListener('DOMContentLoaded', () => {
         empty.className = 'guestbook-empty';
         empty.textContent = 'Impossible de charger les candidatures.';
         fosterList.appendChild(empty);
+      }
+    }
+
+    // Version simple des candidatures benevoles : pas de statut ni de notes internes (voir
+    // handleVolunteerApplication cote serveur), juste la liste et la suppression.
+    const renderVolunteerEntry = (entry) => {
+      const row = document.createElement('div');
+      row.className = 'admin-entry';
+
+      const body = document.createElement('div');
+      body.className = 'admin-entry-body';
+
+      const head = document.createElement('div');
+      head.className = 'admin-entry-head';
+
+      const name = document.createElement('span');
+      name.className = 'admin-entry-name';
+      name.textContent = entry.nom_complet;
+
+      const date = document.createElement('span');
+      date.className = 'admin-entry-date';
+      date.textContent = dateFormatter.format(new Date(entry.created_at));
+
+      head.appendChild(name);
+      head.appendChild(date);
+
+      const contact = document.createElement('p');
+      contact.className = 'admin-foster-contact';
+      contact.textContent = `${entry.telephone} · ${entry.email}`;
+
+      const chipsWrap = document.createElement('div');
+      chipsWrap.className = 'admin-foster-chips';
+      const chip = document.createElement('span');
+      chip.className = 'admin-foster-chip';
+      chip.textContent = entry.modalite;
+      chipsWrap.appendChild(chip);
+
+      const competences = document.createElement('div');
+      competences.className = 'admin-foster-text';
+      const competencesLabel = document.createElement('span');
+      competencesLabel.className = 'admin-foster-text-label';
+      competencesLabel.textContent = 'Ce qu’il ou elle peut faire';
+      const competencesValue = document.createElement('p');
+      competencesValue.textContent = entry.competences;
+      competences.appendChild(competencesLabel);
+      competences.appendChild(competencesValue);
+
+      body.appendChild(head);
+      body.appendChild(contact);
+      body.appendChild(chipsWrap);
+      body.appendChild(competences);
+
+      const actions = document.createElement('div');
+      actions.className = 'admin-entry-actions';
+
+      const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
+        const response = await fetch(`/api/admin/volunteer-applications/${entry.id}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) throw Object.assign(new Error('Session expirée.'), { unauthorized: true });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('La suppression a échoué, réessaie.');
+
+        row.remove();
+        const benevolesList = document.getElementById('admin-benevoles-list');
+        if (benevolesList && !benevolesList.children.length) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucune candidature pour le moment.';
+          benevolesList.appendChild(empty);
+        }
+      });
+
+      actions.appendChild(deleteBtn);
+
+      row.appendChild(body);
+      row.appendChild(actions);
+      return row;
+    };
+
+    async function loadVolunteerApplications() {
+      const benevolesList = document.getElementById('admin-benevoles-list');
+      const pw = storedPassword();
+      if (!pw || !benevolesList) return;
+
+      benevolesList.innerHTML = '<p class="guestbook-loading">Chargement...</p>';
+      try {
+        const response = await fetch('/api/admin/volunteer-applications', {
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) {
+          requireReauth();
+          return;
+        }
+
+        const data = await response.json();
+        benevolesList.innerHTML = '';
+
+        if (!data.applications || data.applications.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucune candidature pour le moment.';
+          benevolesList.appendChild(empty);
+          return;
+        }
+
+        data.applications.forEach((entry) => {
+          benevolesList.appendChild(renderVolunteerEntry(entry));
+        });
+      } catch (err) {
+        benevolesList.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les candidatures.';
+        benevolesList.appendChild(empty);
       }
     }
 

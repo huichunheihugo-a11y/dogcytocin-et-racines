@@ -56,6 +56,18 @@ CREATE TABLE IF NOT EXISTS foster_applications (
 
 CREATE INDEX IF NOT EXISTS idx_foster_applications_created ON foster_applications (created_at);
 
+CREATE TABLE IF NOT EXISTS volunteer_applications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nom_complet TEXT NOT NULL,
+  telephone TEXT NOT NULL,
+  email TEXT NOT NULL,
+  modalite TEXT NOT NULL,
+  competences TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_volunteer_applications_created ON volunteer_applications (created_at);
+
 CREATE TABLE IF NOT EXISTS blog_posts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
