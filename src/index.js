@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-05.2';
+const WORKER_VERSION = '2026-09-05.3';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -254,6 +254,52 @@ async function sendFosterStatusEmail(env, application, status) {
   }
 }
 
+const VOLUNTEER_STATUS_EMAIL_CONTENT = {
+  acceptee: {
+    subject: 'Votre candidature bénévole — bonne nouvelle !',
+    html: (name) => `
+      <p>Bonjour ${escapeHtml(name)},</p>
+      <p>Nous avons le plaisir de vous annoncer que votre candidature pour devenir bénévole a été <strong>acceptée</strong> !</p>
+      <p>Nous allons revenir vers vous très prochainement pour organiser la suite ensemble.</p>
+      <p>Merci infiniment pour votre engagement — c'est grâce à des personnes comme vous que ce projet avance.</p>
+      <p>À très vite,<br>L'équipe Dogcytocin et Racines</p>
+    `,
+  },
+  refusee: {
+    subject: 'Votre candidature bénévole',
+    html: (name) => `
+      <p>Bonjour ${escapeHtml(name)},</p>
+      <p>Merci beaucoup pour l'intérêt que vous portez à notre projet et pour le temps que vous avez pris à candidater.</p>
+      <p>Après réflexion, nous ne pouvons pas donner suite à votre candidature pour le moment. Cela ne remet absolument pas en cause votre motivation — la situation actuelle ne correspond simplement pas à ce dont nous avons besoin aujourd'hui.</p>
+      <p>N'hésitez pas à nous recontacter à l'avenir, ou à nous soutenir d'une autre façon si vous le souhaitez.</p>
+      <p>Merci encore,<br>L'équipe Dogcytocin et Racines</p>
+    `,
+  },
+};
+
+async function sendVolunteerStatusEmail(env, application, status) {
+  const content = VOLUNTEER_STATUS_EMAIL_CONTENT[status];
+  if (!content || !env.RESEND_API_KEY) return;
+
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        to: application.email,
+        subject: content.subject,
+        html: content.html(application.nom_complet),
+      }),
+    });
+  } catch (err) {
+    // Best-effort : un email de notification manque ne doit jamais bloquer la mise a jour du statut.
+  }
+}
+
 const FOSTER_FIELD_LABELS = {
   nom_complet: 'Nom complet',
   telephone: 'Téléphone',
@@ -399,8 +445,8 @@ async function handleVolunteerApplication(request, env) {
       // le vrai critere de succes pour la personne qui candidate.
       await env.DB.prepare(
         `INSERT INTO volunteer_applications
-         (nom_complet, telephone, email, modalite, competences, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6)`
+         (nom_complet, telephone, email, modalite, competences, status, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, 'nouvelle', ?6)`
       ).bind(
         body.nom_complet.trim(),
         body.telephone.trim(),
@@ -858,13 +904,87 @@ async function handleGetVolunteerApplications(request, env) {
 
   try {
     const { results } = await env.DB.prepare(
-      `SELECT id, nom_complet, telephone, email, modalite, competences, created_at
+      `SELECT id, nom_complet, telephone, email, modalite, competences, status, created_at, notes
        FROM volunteer_applications ORDER BY id DESC LIMIT 200`
     ).all();
     return json({ applications: results });
   } catch (err) {
     // Table pas encore creee : on affiche une liste vide plutot que de casser la page.
     return json({ applications: [] });
+  }
+}
+
+async function handleUpdateVolunteerStatus(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible.' }, 400);
+  }
+
+  if (!FOSTER_STATUSES.includes(body?.status)) {
+    return json({ success: false, message: 'Statut invalide.' }, 400);
+  }
+
+  try {
+    await env.DB.prepare('UPDATE volunteer_applications SET status = ?1 WHERE id = ?2')
+      .bind(body.status, id).run();
+
+    if (body.status === 'acceptee' || body.status === 'refusee') {
+      const application = await env.DB.prepare(
+        'SELECT nom_complet, email FROM volunteer_applications WHERE id = ?1'
+      ).bind(id).first();
+      if (application) await sendVolunteerStatusEmail(env, application, body.status);
+    }
+
+    return json({ success: true, status: body.status });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la mise à jour.' }, 500);
+  }
+}
+
+async function handleUpdateVolunteerNotes(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible.' }, 400);
+  }
+
+  const notes = typeof body?.notes === 'string' ? body.notes.trim() : '';
+
+  if (notes.length > 2000) {
+    return json({ success: false, message: 'La note est trop longue (2000 caractères max).' }, 422);
+  }
+
+  try {
+    await env.DB.prepare('UPDATE volunteer_applications SET notes = ?1 WHERE id = ?2')
+      .bind(notes || null, id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de l'enregistrement." }, 500);
   }
 }
 
@@ -1492,6 +1612,18 @@ export default {
 
       if (url.pathname === '/api/admin/volunteer-applications') {
         if (request.method === 'GET') return withSecurityHeaders(await handleGetVolunteerApplications(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const volunteerStatusMatch = url.pathname.match(/^\/api\/admin\/volunteer-applications\/(\d+)\/status$/);
+      if (volunteerStatusMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleUpdateVolunteerStatus(request, env, volunteerStatusMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const volunteerNotesMatch = url.pathname.match(/^\/api\/admin\/volunteer-applications\/(\d+)\/notes$/);
+      if (volunteerNotesMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleUpdateVolunteerNotes(request, env, volunteerNotesMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

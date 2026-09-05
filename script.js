@@ -709,8 +709,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Filtre par statut des candidatures famille d'accueil -- purement cote client (les
     // candidatures sont deja toutes chargees), pas besoin de refaire une requete au clic.
+    // Scope aux boutons de #admin-foster-filter specifiquement : les candidatures benevoles
+    // (juste en dessous) ont leur propre jeu de boutons identiques par ailleurs.
     let currentFosterFilter = 'all';
-    const fosterFilterButtons = document.querySelectorAll('.admin-status-filter-btn');
+    const fosterFilterButtons = document.querySelectorAll('#admin-foster-filter .admin-status-filter-btn');
 
     const applyFosterFilterToRow = (row) => {
       row.hidden = currentFosterFilter !== 'all' && row.dataset.status !== currentFosterFilter;
@@ -731,6 +733,32 @@ document.addEventListener('DOMContentLoaded', () => {
         currentFosterFilter = btn.dataset.statusFilter;
         fosterFilterButtons.forEach((b) => b.classList.toggle('active', b === btn));
         document.querySelectorAll('#admin-foster-list .admin-entry').forEach(applyFosterFilterToRow);
+      });
+    });
+
+    // Meme mecanisme de filtre, pour les candidatures benevoles.
+    let currentBenevolesFilter = 'all';
+    const benevolesFilterButtons = document.querySelectorAll('#admin-benevoles-filter .admin-status-filter-btn');
+
+    const applyBenevolesFilterToRow = (row) => {
+      row.hidden = currentBenevolesFilter !== 'all' && row.dataset.status !== currentBenevolesFilter;
+    };
+
+    const benevolesBadge = document.getElementById('admin-benevoles-badge');
+    const updateBenevolesBadge = () => {
+      if (!benevolesBadge) return;
+      const benevolesList = document.getElementById('admin-benevoles-list');
+      const count = benevolesList ? benevolesList.querySelectorAll('.admin-entry[data-status="nouvelle"]').length : 0;
+      benevolesBadge.textContent = String(count);
+      benevolesBadge.hidden = count === 0;
+    };
+
+    benevolesFilterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!storedPassword()) return;
+        currentBenevolesFilter = btn.dataset.statusFilter;
+        benevolesFilterButtons.forEach((b) => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('#admin-benevoles-list .admin-entry').forEach(applyBenevolesFilterToRow);
       });
     });
 
@@ -1620,6 +1648,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderVolunteerEntry = (entry) => {
       const row = document.createElement('div');
       row.className = 'admin-entry';
+      row.dataset.status = entry.status;
 
       const body = document.createElement('div');
       body.className = 'admin-entry-body';
@@ -1659,13 +1688,127 @@ document.addEventListener('DOMContentLoaded', () => {
       competences.appendChild(competencesLabel);
       competences.appendChild(competencesValue);
 
+      const notesBlock = document.createElement('div');
+      notesBlock.className = 'admin-foster-notes';
+
+      const notesLabel = document.createElement('label');
+      notesLabel.className = 'admin-foster-text-label';
+      notesLabel.textContent = "Note interne (visible seulement par l'équipe)";
+
+      const notesTextarea = document.createElement('textarea');
+      notesTextarea.className = 'admin-foster-notes-textarea field';
+      notesTextarea.placeholder = 'Ex. Appelé le 12/09, très motivé...';
+      notesTextarea.rows = 2;
+      notesTextarea.maxLength = 2000;
+      notesTextarea.value = entry.notes || '';
+
+      const saveNotesBtn = document.createElement('button');
+      saveNotesBtn.type = 'button';
+      saveNotesBtn.className = 'admin-foster-notes-save';
+      saveNotesBtn.textContent = 'Enregistrer la note';
+
+      saveNotesBtn.addEventListener('click', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          requireReauth();
+          return;
+        }
+
+        saveNotesBtn.disabled = true;
+        saveNotesBtn.textContent = 'Enregistrement...';
+
+        try {
+          const response = await fetch(`/api/admin/volunteer-applications/${entry.id}/notes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+            body: JSON.stringify({ notes: notesTextarea.value }),
+          });
+
+          if (response.status === 401) {
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('échec');
+
+          entry.notes = notesTextarea.value.trim();
+          saveNotesBtn.textContent = 'Enregistré ✓';
+          setTimeout(() => { saveNotesBtn.textContent = 'Enregistrer la note'; }, 2000);
+        } catch (err) {
+          showActionMsg("L'enregistrement de la note a échoué, réessaie.", true);
+          saveNotesBtn.textContent = 'Enregistrer la note';
+        } finally {
+          saveNotesBtn.disabled = false;
+        }
+      });
+
+      notesBlock.appendChild(notesLabel);
+      notesBlock.appendChild(notesTextarea);
+      notesBlock.appendChild(saveNotesBtn);
+
       body.appendChild(head);
       body.appendChild(contact);
       body.appendChild(chipsWrap);
       body.appendChild(competences);
+      body.appendChild(notesBlock);
 
       const actions = document.createElement('div');
       actions.className = 'admin-entry-actions';
+
+      const statusSelect = document.createElement('select');
+      statusSelect.className = 'admin-foster-status field';
+      Object.entries(FOSTER_STATUS_LABELS).forEach(([value, label]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        if (value === entry.status) option.selected = true;
+        statusSelect.appendChild(option);
+      });
+      statusSelect.dataset.status = entry.status;
+
+      statusSelect.addEventListener('change', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          statusSelect.value = entry.status;
+          requireReauth();
+          return;
+        }
+
+        const newStatus = statusSelect.value;
+        const previousStatus = entry.status;
+        statusSelect.disabled = true;
+
+        try {
+          const response = await fetch(`/api/admin/volunteer-applications/${entry.id}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+            body: JSON.stringify({ status: newStatus }),
+          });
+
+          if (response.status === 401) {
+            statusSelect.value = previousStatus;
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('échec');
+
+          entry.status = newStatus;
+          statusSelect.dataset.status = newStatus;
+          row.dataset.status = newStatus;
+          applyBenevolesFilterToRow(row);
+          updateBenevolesBadge();
+        } catch (err) {
+          statusSelect.value = previousStatus;
+          showActionMsg("La mise à jour du statut a échoué, réessaie.", true);
+        } finally {
+          statusSelect.disabled = false;
+        }
+      });
+
+      actions.appendChild(statusSelect);
 
       const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
         const response = await fetch(`/api/admin/volunteer-applications/${entry.id}`, {
@@ -1679,6 +1822,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!response.ok || !result.success) throw new Error('La suppression a échoué, réessaie.');
 
         row.remove();
+        updateBenevolesBadge();
         const benevolesList = document.getElementById('admin-benevoles-list');
         if (benevolesList && !benevolesList.children.length) {
           const empty = document.createElement('p');
@@ -1719,12 +1863,16 @@ document.addEventListener('DOMContentLoaded', () => {
           empty.className = 'guestbook-empty';
           empty.textContent = 'Aucune candidature pour le moment.';
           benevolesList.appendChild(empty);
+          updateBenevolesBadge();
           return;
         }
 
         data.applications.forEach((entry) => {
-          benevolesList.appendChild(renderVolunteerEntry(entry));
+          const row = renderVolunteerEntry(entry);
+          applyBenevolesFilterToRow(row);
+          benevolesList.appendChild(row);
         });
+        updateBenevolesBadge();
       } catch (err) {
         benevolesList.innerHTML = '';
         const empty = document.createElement('p');

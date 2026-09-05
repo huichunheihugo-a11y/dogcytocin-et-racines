@@ -63,8 +63,15 @@ CREATE TABLE IF NOT EXISTS volunteer_applications (
   email TEXT NOT NULL,
   modalite TEXT NOT NULL,
   competences TEXT NOT NULL,
-  created_at TEXT NOT NULL
+  status TEXT NOT NULL DEFAULT 'nouvelle',
+  created_at TEXT NOT NULL,
+  notes TEXT
 );
+
+-- Si la table volunteer_applications existe deja sans ces colonnes (creee avant l'ajout du
+-- statut et des notes), executer separement dans la console D1 :
+-- ALTER TABLE volunteer_applications ADD COLUMN status TEXT NOT NULL DEFAULT 'nouvelle';
+-- ALTER TABLE volunteer_applications ADD COLUMN notes TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_volunteer_applications_created ON volunteer_applications (created_at);
 
