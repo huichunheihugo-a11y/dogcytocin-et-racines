@@ -8,13 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (heartNotes.length) {
     const heartsMsg = document.getElementById('hearts-wall-msg');
+    const heartsTotal = document.getElementById('hearts-wall-total');
     const HEART_REACTED_KEY = 'dogcytocine-heart-reacted';
 
+    // Un seul total affiche (toutes couleurs confondues) -- les couleurs restent des choix
+    // distincts pour le visiteur (et des compteurs distincts cote serveur), mais l'interet
+    // affiche ici est le nombre de personnes touchees, pas la repartition par couleur.
     const paintCounts = (counts) => {
-      document.querySelectorAll('.heart-note-count').forEach((el) => {
-        const color = el.dataset.count;
-        if (counts && typeof counts[color] === 'number') el.textContent = String(counts[color]);
-      });
+      if (!counts || !heartsTotal) return;
+      const total = Object.values(counts).reduce((sum, n) => sum + (typeof n === 'number' ? n : 0), 0);
+      heartsTotal.textContent = String(total);
     };
 
     const lockHearts = () => {

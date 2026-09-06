@@ -3387,9 +3387,11 @@ a.contact-method:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rg
 
 .heart-note:hover .heart-note-emoji { transform: scale(1.12); }
 
-.heart-note-count {
+.hearts-wall-total {
+  text-align: center;
+  margin-top: 32px;
   font-family: var(--font-marker);
-  font-size: 1.15rem;
+  font-size: 1.3rem;
   color: var(--brown-deepest);
 }
 
