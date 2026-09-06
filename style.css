@@ -530,27 +530,23 @@ section {
   padding: 80px 0;
 }
 
-/* Trainee d'empreintes : petit ornement "fait main" entre deux sections, dans le meme
-   esprit que les fleurons (❧) du recit ou le coeur des .divider -- une trace qui rappelle
-   discretement le sujet du site sans jouer les mascottes. */
-.paw-trail {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 22px;
-  padding: 8px 0 0;
+/* Empreintes eparpillees : texture de fond discrete entre deux sections, dans le meme esprit
+   "fait main" que les fleurons (❧) du recit ou le coeur des .divider -- disposees a la main
+   (position/rotation/taille variables) plutot qu'en motif repete regulier, pour un effet
+   naturel de trace au sol et non de papier peint. */
+.paw-scatter {
+  position: relative;
+  height: 90px;
+  overflow: hidden;
 }
 
-.paw-trail svg {
+.paw-scatter svg {
+  position: absolute;
   width: 20px;
   height: 20px;
   fill: var(--khaki);
-  opacity: 0.55;
+  opacity: 0.3;
 }
-
-.paw-trail svg:nth-child(1) { transform: rotate(-14deg) translateY(4px); }
-.paw-trail svg:nth-child(2) { transform: rotate(4deg) translateY(-4px); width: 24px; height: 24px; opacity: 0.7; }
-.paw-trail svg:nth-child(3) { transform: rotate(16deg) translateY(4px); }
 
 .section-intro {
   text-align: center;
