@@ -4,6 +4,73 @@ document.addEventListener('DOMContentLoaded', () => {
   // ni de logique de secours puisque rien ne depend plus du JS pour etre visible.
   document.querySelectorAll('.fade-in').forEach((el) => el.classList.add('visible'));
 
+  const heartNotes = document.querySelectorAll('.heart-note');
+
+  if (heartNotes.length) {
+    const heartsMsg = document.getElementById('hearts-wall-msg');
+    const HEART_REACTED_KEY = 'dogcytocine-heart-reacted';
+
+    const paintCounts = (counts) => {
+      document.querySelectorAll('.heart-note-count').forEach((el) => {
+        const color = el.dataset.count;
+        if (counts && typeof counts[color] === 'number') el.textContent = String(counts[color]);
+      });
+    };
+
+    const lockHearts = () => {
+      heartNotes.forEach((btn) => { btn.disabled = true; });
+    };
+
+    // localStorage n'est qu'un confort d'UX (evite un aller-retour reseau pour savoir si on
+    // desactive les boutons au chargement) -- la verification qui compte vraiment se fait
+    // cote serveur par IP a chaque clic, voir handleHeartReaction dans src/index.js.
+    if (localStorage.getItem(HEART_REACTED_KEY)) lockHearts();
+
+    fetch('/api/heart-counts')
+      .then((r) => r.json())
+      .then((data) => paintCounts(data.counts))
+      .catch(() => {});
+
+    heartNotes.forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (btn.disabled) return;
+        heartNotes.forEach((b) => { b.disabled = true; });
+
+        try {
+          const response = await fetch('/api/heart-reaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ color: btn.dataset.color }),
+          });
+          const result = await response.json();
+
+          if (!response.ok || !result.success) {
+            heartsMsg.textContent = "Aïe, ça n'a pas fonctionné, réessayez.";
+            heartsMsg.hidden = false;
+            heartNotes.forEach((b) => { b.disabled = false; });
+            return;
+          }
+
+          paintCounts(result.counts);
+          localStorage.setItem(HEART_REACTED_KEY, '1');
+          lockHearts();
+
+          if (!result.alreadyReacted) {
+            btn.classList.add('just-picked');
+            heartsMsg.textContent = 'Merci pour ce petit cœur, ça nous touche 💛';
+          } else {
+            heartsMsg.textContent = 'Vous avez déjà mis votre cœur, merci encore !';
+          }
+          heartsMsg.hidden = false;
+        } catch (err) {
+          heartsMsg.textContent = "Aïe, ça n'a pas fonctionné, réessayez.";
+          heartsMsg.hidden = false;
+          heartNotes.forEach((b) => { b.disabled = false; });
+        }
+      });
+    });
+  }
+
   const siteHeader = document.querySelector('.site-header');
   if (siteHeader) {
     const applyScrolledState = () => {

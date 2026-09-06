@@ -107,3 +107,23 @@ CREATE TABLE IF NOT EXISTS media (
   mime TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+
+-- "Mur de coeurs" (accueil) : un compteur par couleur, incremente cote serveur (jamais
+-- envoye tel quel par le visiteur) pour eviter qu'une requete forgee ne fixe un total
+-- arbitraire. Les lignes sont creees a la volee par UPSERT au premier clic sur chaque
+-- couleur -- pas besoin de les pre-remplir ici.
+CREATE TABLE IF NOT EXISTS heart_counts (
+  color TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0
+);
+
+-- Une ligne par visiteur ayant deja reagi (identifie par IP hashee, meme principe que
+-- admin_attempts) : sert uniquement a bloquer un deuxieme clic depuis la meme adresse,
+-- jamais affichee ni exploitee autrement.
+CREATE TABLE IF NOT EXISTS heart_reactions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ip_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_heart_reactions_ip ON heart_reactions (ip_hash);

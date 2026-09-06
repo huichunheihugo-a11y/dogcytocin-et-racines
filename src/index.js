@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-05.4';
+const WORKER_VERSION = '2026-09-06.1';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -397,6 +397,78 @@ async function handleVolunteerApplication(request, env) {
     return json({ success: true });
   } catch (err) {
     return json({ success: false, message: "L'envoi a échoué, réessayez ou écrivez-nous directement." }, 502);
+  }
+}
+
+// Couleurs disponibles pour le "mur de coeurs" (accueil). Liste blanche stricte : la couleur
+// vient du visiteur (POST /api/heart-reaction), jamais utilisee telle quelle sans etre
+// verifiee contre cette liste avant d'atteindre la base.
+const HEART_COLORS = ['rouge', 'bleu', 'jaune', 'vert', 'rose'];
+
+async function handleGetHeartCounts(env) {
+  const counts = Object.fromEntries(HEART_COLORS.map((c) => [c, 0]));
+  if (!env.DB) return json({ counts });
+
+  try {
+    const { results } = await env.DB.prepare('SELECT color, count FROM heart_counts').all();
+    for (const row of results) {
+      if (HEART_COLORS.includes(row.color)) counts[row.color] = row.count;
+    }
+  } catch (err) {
+    // Table pas encore creee : on renvoie des compteurs a 0 plutot que de casser la page.
+  }
+  return json({ counts });
+}
+
+async function handleHeartReaction(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible.' }, 400);
+  }
+
+  if (!HEART_COLORS.includes(body?.color)) {
+    return json({ success: false, message: 'Couleur invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  const ip = request.headers.get('CF-Connecting-IP') || '0.0.0.0';
+  const ipHash = await hashIp('heart:' + ip);
+
+  try {
+    // Un visiteur (une IP) ne peut reagir qu'une seule fois au total, toutes couleurs
+    // confondues -- coherent avec la consigne "un coeur par visiteur". Le cookie/localStorage
+    // cote client (voir script.js) n'est qu'un confort d'UX pour desactiver les boutons sans
+    // aller-retour reseau ; la seule verification qui compte vraiment est celle-ci, cote serveur.
+    const already = await env.DB.prepare(
+      'SELECT id FROM heart_reactions WHERE ip_hash = ?1 LIMIT 1'
+    ).bind(ipHash).first();
+
+    if (already) {
+      const countsResponse = await handleGetHeartCounts(env);
+      const { counts } = await countsResponse.json();
+      return json({ success: true, alreadyReacted: true, counts });
+    }
+
+    await env.DB.prepare(
+      'INSERT INTO heart_reactions (ip_hash, created_at) VALUES (?1, ?2)'
+    ).bind(ipHash, new Date().toISOString()).run();
+
+    // UPSERT : la ligne peut ne pas encore exister pour cette couleur (premier clic dessus).
+    await env.DB.prepare(
+      `INSERT INTO heart_counts (color, count) VALUES (?1, 1)
+       ON CONFLICT(color) DO UPDATE SET count = count + 1`
+    ).bind(body.color).run();
+
+    const countsResponse = await handleGetHeartCounts(env);
+    const { counts } = await countsResponse.json();
+    return json({ success: true, alreadyReacted: false, counts });
+  } catch (err) {
+    return json({ success: false, message: "L'enregistrement a échoué, réessayez." }, 500);
   }
 }
 
@@ -1430,6 +1502,16 @@ export default {
 
       if (url.pathname === '/api/volunteer-application') {
         if (request.method === 'POST') return withSecurityHeaders(await handleVolunteerApplication(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/heart-counts') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetHeartCounts(env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/heart-reaction') {
+        if (request.method === 'POST') return withSecurityHeaders(await handleHeartReaction(request, env));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 
