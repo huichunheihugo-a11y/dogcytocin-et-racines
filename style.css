@@ -3108,7 +3108,40 @@ select.field {
   box-shadow: 0 10px 26px rgba(47, 42, 34, 0.13);
 }
 
-.blog-post-media { aspect-ratio: 16 / 9; overflow: hidden; }
+.blog-post-media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--brown-deepest); }
+
+/* Repere immediatement un article video avant meme de lancer la lecture -- meme traitement
+   visuel que .dog-badge (pastille sombre arrondie). En haut a droite : le coin le moins
+   susceptible de chevaucher les propres surcouches des lecteurs externes (YouTube affiche
+   souvent logo de chaine + titre en haut a gauche avant lecture, Vimeo/Facebook leurs
+   controles en bas). */
+.blog-video-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(29, 32, 19, 0.75);
+  backdrop-filter: blur(2px);
+  color: var(--cream);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 7px 14px 7px 12px;
+  border-radius: 50px;
+  box-shadow: 0 3px 10px rgba(47, 42, 34, 0.18);
+  pointer-events: none;
+}
+
+.blog-video-badge svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
 
 .blog-post-media img,
 .blog-post-media video {

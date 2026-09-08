@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-08.5';
+const WORKER_VERSION = '2026-09-08.6';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -1039,7 +1039,10 @@ function validateVideoUrl(raw) {
   if (value.length > 500) return { ok: false };
 
   const youtube = value.match(YOUTUBE_VIDEO_RE);
-  if (youtube) return { ok: true, value: `https://www.youtube-nocookie.com/embed/${youtube[1]}` };
+  // rel=0 : n'affiche que des suggestions de la meme chaine en fin de lecture plutot que
+  // n'importe quelle video tierce. modestbranding=1 : reduit (sans le supprimer entierement,
+  // YouTube ne le permet plus) le logo YouTube affiche sur le lecteur.
+  if (youtube) return { ok: true, value: `https://www.youtube-nocookie.com/embed/${youtube[1]}?rel=0&modestbranding=1` };
 
   const vimeo = value.match(VIMEO_VIDEO_RE);
   if (vimeo) return { ok: true, value: `https://player.vimeo.com/video/${vimeo[1]}` };

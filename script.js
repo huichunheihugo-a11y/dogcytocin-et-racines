@@ -476,6 +476,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (post.video_url) {
         const media = document.createElement('div');
         media.className = 'blog-post-media';
+
+        const badge = document.createElement('span');
+        badge.className = 'blog-video-badge';
+        badge.innerHTML = "<svg viewBox='0 0 24 24' fill='none' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M15 10l5-3v10l-5-3'/><rect x='2' y='6' width='13' height='12' rx='2'/></svg> Vidéo";
+        media.appendChild(badge);
+
         if (post.video_url.includes('youtube-nocookie.com') || post.video_url.includes('player.vimeo.com') || post.video_url.includes('facebook.com/plugins/video')) {
           const iframe = document.createElement('iframe');
           iframe.src = post.video_url;
