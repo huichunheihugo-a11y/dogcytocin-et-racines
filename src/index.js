@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-08.3';
+const WORKER_VERSION = '2026-09-08.2';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -1027,10 +1027,7 @@ const YOUTUBE_VIDEO_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/s
 const VIMEO_VIDEO_RE = /vimeo\.com\/(?:video\/)?(\d+)/i;
 // Facebook n'expose pas d'identifiant simple a extraire comme YouTube/Vimeo -- son plugin
 // d'integration officiel prend l'URL de la video (page/reel/watch) telle quelle en parametre.
-// /share/v/ et /share/r/ : le format genere par le bouton "Partager -> Copier le lien" de
-// l'appli mobile Facebook, tres different des liens "classiques" (/watch, /videos/, /reel/)
-// obtenus depuis un navigateur -- sans ce cas, un lien copie depuis un telephone est rejete.
-const FACEBOOK_VIDEO_RE = /(?:facebook\.com\/[^/]+\/videos\/|facebook\.com\/watch\/?\?v=|facebook\.com\/reel\/|facebook\.com\/share\/[rv]\/|fb\.watch\/)/i;
+const FACEBOOK_VIDEO_RE = /(?:facebook\.com\/[^/]+\/videos\/|facebook\.com\/watch\/?\?v=|facebook\.com\/reel\/|fb\.watch\/)/i;
 const DIRECT_VIDEO_FILE_RE = /\.(mp4|webm|ogg)(\?.*)?$/i;
 
 function validateVideoUrl(raw) {
