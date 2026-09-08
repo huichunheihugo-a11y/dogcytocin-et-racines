@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (post.video_url) {
         const media = document.createElement('div');
         media.className = 'blog-post-media';
-        if (post.video_url.includes('youtube-nocookie.com') || post.video_url.includes('player.vimeo.com')) {
+        if (post.video_url.includes('youtube-nocookie.com') || post.video_url.includes('player.vimeo.com') || post.video_url.includes('facebook.com/plugins/video')) {
           const iframe = document.createElement('iframe');
           iframe.src = post.video_url;
           iframe.loading = 'lazy';
