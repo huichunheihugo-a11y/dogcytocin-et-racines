@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-08.2';
+const WORKER_VERSION = '2026-09-08.1';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -22,7 +22,7 @@ const CSP = [
   // Sans ceci, l'iframe OpenStreetMap de la section "Nous trouver" (accueil) et les iframes
   // YouTube/Vimeo des articles de blog avec video sont bloquees en silence par la CSP --
   // aucune erreur visible pour un visiteur, juste un cadre vide.
-  "frame-src https://www.openstreetmap.org https://www.youtube-nocookie.com https://player.vimeo.com https://www.facebook.com",
+  "frame-src https://www.openstreetmap.org https://www.youtube-nocookie.com https://player.vimeo.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "object-src 'none'",
@@ -1025,9 +1025,6 @@ function validateImageUrl(raw) {
 // telle quelle, sans avoir a reparser l'URL d'origine a chaque affichage.
 const YOUTUBE_VIDEO_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{6,})/i;
 const VIMEO_VIDEO_RE = /vimeo\.com\/(?:video\/)?(\d+)/i;
-// Facebook n'expose pas d'identifiant simple a extraire comme YouTube/Vimeo -- son plugin
-// d'integration officiel prend l'URL de la video (page/reel/watch) telle quelle en parametre.
-const FACEBOOK_VIDEO_RE = /(?:facebook\.com\/[^/]+\/videos\/|facebook\.com\/watch\/?\?v=|facebook\.com\/reel\/|fb\.watch\/)/i;
 const DIRECT_VIDEO_FILE_RE = /\.(mp4|webm|ogg)(\?.*)?$/i;
 
 function validateVideoUrl(raw) {
@@ -1040,10 +1037,6 @@ function validateVideoUrl(raw) {
 
   const vimeo = value.match(VIMEO_VIDEO_RE);
   if (vimeo) return { ok: true, value: `https://player.vimeo.com/video/${vimeo[1]}` };
-
-  if (FACEBOOK_VIDEO_RE.test(value) && IMAGE_URL_RE.test(value)) {
-    return { ok: true, value: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(value)}&show_text=false` };
-  }
 
   if (IMAGE_URL_RE.test(value) && DIRECT_VIDEO_FILE_RE.test(value)) return { ok: true, value };
 
@@ -1152,7 +1145,7 @@ async function handleCreateBlogPost(request, env) {
 
   const videoUrlResult = validateVideoUrl(body.video_url);
   if (!videoUrlResult.ok) {
-    return json({ success: false, message: 'Lien vidéo non reconnu (YouTube, Vimeo, Facebook, ou lien direct .mp4/.webm).' }, 422);
+    return json({ success: false, message: 'Lien vidéo non reconnu (YouTube, Vimeo, ou lien direct .mp4/.webm).' }, 422);
   }
   const videoUrl = videoUrlResult.value;
 
@@ -1237,7 +1230,7 @@ async function handleUpdateBlogPost(request, env, id) {
 
   const videoUrlResult = validateVideoUrl(body.video_url);
   if (!videoUrlResult.ok) {
-    return json({ success: false, message: 'Lien vidéo non reconnu (YouTube, Vimeo, Facebook, ou lien direct .mp4/.webm).' }, 422);
+    return json({ success: false, message: 'Lien vidéo non reconnu (YouTube, Vimeo, ou lien direct .mp4/.webm).' }, 422);
   }
   const videoUrl = videoUrlResult.value;
 
