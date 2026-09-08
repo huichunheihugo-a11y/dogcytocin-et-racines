@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-08.1';
+const WORKER_VERSION = '2026-09-07.1';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -16,13 +16,9 @@ const CSP = [
   "img-src 'self' data: https:",
   "connect-src 'self'",
   "form-action 'self'",
-  // Videos de blog hebergees ailleurs (lien direct .mp4/.webm colle par l'admin, voir
-  // validateVideoUrl) -- sans ceci, la balise <video> reste silencieusement vide.
-  "media-src 'self' https:",
-  // Sans ceci, l'iframe OpenStreetMap de la section "Nous trouver" (accueil) et les iframes
-  // YouTube/Vimeo des articles de blog avec video sont bloquees en silence par la CSP --
-  // aucune erreur visible pour un visiteur, juste un cadre vide.
-  "frame-src https://www.openstreetmap.org https://www.youtube-nocookie.com https://player.vimeo.com",
+  // Sans ceci, l'iframe OpenStreetMap de la section "Nous trouver" (accueil) est bloquee en
+  // silence par la CSP -- aucune erreur visible pour un visiteur, juste un cadre vide.
+  "frame-src https://www.openstreetmap.org",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "object-src 'none'",
@@ -1019,30 +1015,6 @@ function validateImageUrl(raw) {
   return { ok: true, value: upgradeImageUrl(value) };
 }
 
-// Video de blog : meme logique que les images (pas de stockage de fichier, R2 etant payant) --
-// l'admin colle un lien YouTube/Vimeo ou un lien direct vers un fichier video deja heberge
-// ailleurs. On convertit tout de suite en URL "embed" pour que le front n'ait qu'a l'utiliser
-// telle quelle, sans avoir a reparser l'URL d'origine a chaque affichage.
-const YOUTUBE_VIDEO_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{6,})/i;
-const VIMEO_VIDEO_RE = /vimeo\.com\/(?:video\/)?(\d+)/i;
-const DIRECT_VIDEO_FILE_RE = /\.(mp4|webm|ogg)(\?.*)?$/i;
-
-function validateVideoUrl(raw) {
-  const value = typeof raw === 'string' ? raw.trim() : '';
-  if (!value) return { ok: true, value: null };
-  if (value.length > 500) return { ok: false };
-
-  const youtube = value.match(YOUTUBE_VIDEO_RE);
-  if (youtube) return { ok: true, value: `https://www.youtube-nocookie.com/embed/${youtube[1]}` };
-
-  const vimeo = value.match(VIMEO_VIDEO_RE);
-  if (vimeo) return { ok: true, value: `https://player.vimeo.com/video/${vimeo[1]}` };
-
-  if (IMAGE_URL_RE.test(value) && DIRECT_VIDEO_FILE_RE.test(value)) return { ok: true, value };
-
-  return { ok: false };
-}
-
 const MEDIA_MIME_TYPES = { 'image/jpeg': true, 'image/png': true, 'image/webp': true };
 // Marge sous la limite de 2 Mo/ligne de D1 -- laisse de la place pour le reste de la ligne et
 // pour le gonflement d'environ 33% du base64 par rapport aux octets bruts. Le navigateur
@@ -1143,21 +1115,15 @@ async function handleCreateBlogPost(request, env) {
   }
   const imageUrl = imageUrlResult.value;
 
-  const videoUrlResult = validateVideoUrl(body.video_url);
-  if (!videoUrlResult.ok) {
-    return json({ success: false, message: 'Lien vidéo non reconnu (YouTube, Vimeo, ou lien direct .mp4/.webm).' }, 422);
-  }
-  const videoUrl = videoUrlResult.value;
-
   try {
     const createdAt = new Date().toISOString();
     const insert = await env.DB.prepare(
-      'INSERT INTO blog_posts (title, content, image_url, video_url, created_at) VALUES (?1, ?2, ?3, ?4, ?5)'
-    ).bind(title, content, imageUrl, videoUrl, createdAt).run();
+      'INSERT INTO blog_posts (title, content, image_url, created_at) VALUES (?1, ?2, ?3, ?4)'
+    ).bind(title, content, imageUrl, createdAt).run();
 
     return json({
       success: true,
-      post: { id: insert.meta.last_row_id, title, content, image_url: imageUrl, video_url: videoUrl, created_at: createdAt },
+      post: { id: insert.meta.last_row_id, title, content, image_url: imageUrl, created_at: createdAt },
     });
   } catch (err) {
     return json({ success: false, message: "Erreur lors de l'enregistrement de l'article." }, 500);
@@ -1170,7 +1136,6 @@ function toPublicBlogPost(row) {
     title: row.title,
     content: row.content,
     image_url: row.image_url || null,
-    video_url: row.video_url || null,
     created_at: row.created_at,
   };
 }
@@ -1183,7 +1148,7 @@ async function handleListBlogPosts(env) {
 
   try {
     const { results } = await env.DB.prepare(
-      'SELECT id, title, content, image_url, video_url, created_at FROM blog_posts ORDER BY id DESC LIMIT 200'
+      'SELECT id, title, content, image_url, created_at FROM blog_posts ORDER BY id DESC LIMIT 200'
     ).all();
     return json({ posts: results.map(toPublicBlogPost) });
   } catch (err) {
@@ -1228,12 +1193,6 @@ async function handleUpdateBlogPost(request, env, id) {
   }
   const imageUrl = imageUrlResult.value;
 
-  const videoUrlResult = validateVideoUrl(body.video_url);
-  if (!videoUrlResult.ok) {
-    return json({ success: false, message: 'Lien vidéo non reconnu (YouTube, Vimeo, ou lien direct .mp4/.webm).' }, 422);
-  }
-  const videoUrl = videoUrlResult.value;
-
   let existing;
   try {
     existing = await env.DB.prepare('SELECT id FROM blog_posts WHERE id = ?1').bind(id).first();
@@ -1245,14 +1204,14 @@ async function handleUpdateBlogPost(request, env, id) {
   }
 
   try {
-    await env.DB.prepare('UPDATE blog_posts SET title = ?1, content = ?2, image_url = ?3, video_url = ?4 WHERE id = ?5')
-      .bind(title, content, imageUrl, videoUrl, id).run();
+    await env.DB.prepare('UPDATE blog_posts SET title = ?1, content = ?2, image_url = ?3 WHERE id = ?4')
+      .bind(title, content, imageUrl, id).run();
   } catch (err) {
     return json({ success: false, message: "Erreur lors de l'enregistrement de l'article." }, 500);
   }
 
   const row = await env.DB.prepare(
-    'SELECT id, title, content, image_url, video_url, created_at FROM blog_posts WHERE id = ?1'
+    'SELECT id, title, content, image_url, created_at FROM blog_posts WHERE id = ?1'
   ).bind(id).first();
 
   return json({ success: true, post: toPublicBlogPost(row) });
