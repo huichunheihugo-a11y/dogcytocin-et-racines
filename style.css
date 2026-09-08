@@ -3110,11 +3110,19 @@ select.field {
 
 .blog-post-media { aspect-ratio: 16 / 9; overflow: hidden; }
 
-.blog-post-media img {
+.blog-post-media img,
+.blog-post-media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.blog-post-media iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
 }
 
 .blog-post-body { padding: 28px 30px 32px; }

@@ -80,8 +80,12 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   title TEXT NOT NULL,
   content TEXT NOT NULL,
   image_url TEXT,
+  video_url TEXT,
   created_at TEXT NOT NULL
 );
+
+-- Si la table blog_posts existe deja sans cette colonne, executer separement dans la
+-- console D1 : ALTER TABLE blog_posts ADD COLUMN video_url TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_blog_posts_created ON blog_posts (created_at);
 

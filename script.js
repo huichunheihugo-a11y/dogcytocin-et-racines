@@ -469,7 +469,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const article = document.createElement('article');
       article.className = 'blog-post fade-in visible';
 
-      if (post.image_url) {
+      // La video prime sur l'image si les deux sont renseignees (plus engageant, et evite
+      // d'empiler les deux au-dessus du texte). video_url est deja resolue en URL "embed"
+      // cote serveur (voir validateVideoUrl) : soit un iframe YouTube/Vimeo, soit un lien
+      // direct vers un fichier video a mettre dans une balise <video>.
+      if (post.video_url) {
+        const media = document.createElement('div');
+        media.className = 'blog-post-media';
+        if (post.video_url.includes('youtube-nocookie.com') || post.video_url.includes('player.vimeo.com') || post.video_url.includes('facebook.com/plugins/video')) {
+          const iframe = document.createElement('iframe');
+          iframe.src = post.video_url;
+          iframe.loading = 'lazy';
+          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+          iframe.allowFullscreen = true;
+          iframe.title = post.title;
+          media.appendChild(iframe);
+        } else {
+          const video = document.createElement('video');
+          video.src = post.video_url;
+          video.controls = true;
+          media.appendChild(video);
+        }
+        article.appendChild(media);
+      } else if (post.image_url) {
         const media = document.createElement('div');
         media.className = 'blog-post-media';
         const img = document.createElement('img');
@@ -1941,6 +1963,8 @@ document.addEventListener('DOMContentLoaded', () => {
       titleInput.value = entry.title;
       contentInput.value = entry.content;
       imageUrlInput.value = entry.image_url || '';
+      const videoUrlInput = document.getElementById('admin-blog-video-url');
+      if (videoUrlInput) videoUrlInput.value = entry.video_url || '';
       // Affiche le champ URL des qu'une valeur existe deja (venant d'un envoi galerie ou d'un
       // lien colle), pour que l'admin voie ce qui est actuellement enregistre.
       imageUrlInput.hidden = !entry.image_url;
@@ -2185,6 +2209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = blogTitleInput.value.trim();
         const content = blogContentInput.value.trim();
         const imageUrl = blogImageUrlInput.value.trim();
+        const videoUrl = document.getElementById('admin-blog-video-url')?.value.trim() || '';
 
         if (!title) {
           showBlogMsg('Le titre est obligatoire.', true);
@@ -2214,7 +2239,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const response = await fetch(url, {
             method: 'POST',
             headers: { 'X-Admin-Password': pw, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, content, image_url: imageUrl }),
+            body: JSON.stringify({ title, content, image_url: imageUrl, video_url: videoUrl }),
           });
 
           if (response.status === 401) {
