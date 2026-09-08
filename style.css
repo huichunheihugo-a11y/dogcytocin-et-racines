@@ -3117,28 +3117,28 @@ select.field {
    controles en bas). */
 .blog-video-badge {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 8px;
+  right: 8px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
   background: rgba(29, 32, 19, 0.75);
   backdrop-filter: blur(2px);
   color: var(--cream);
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
-  padding: 7px 14px 7px 12px;
+  padding: 4px 9px 4px 7px;
   border-radius: 50px;
-  box-shadow: 0 3px 10px rgba(47, 42, 34, 0.18);
+  box-shadow: 0 2px 6px rgba(47, 42, 34, 0.18);
   pointer-events: none;
 }
 
 .blog-video-badge svg {
-  width: 13px;
-  height: 13px;
+  width: 10px;
+  height: 10px;
   stroke: currentColor;
   flex-shrink: 0;
 }
