@@ -2839,6 +2839,17 @@ document.addEventListener('DOMContentLoaded', () => {
     audio.addEventListener('play', updateIcons);
     audio.addEventListener('pause', updateIcons);
 
+    // Certains navigateurs (surtout mobile) restaurent la page precedente depuis un cache
+    // memoire (bfcache) plutot que de la recharger entierement lors d'un retour arriere ou
+    // d'un changement de page -- dans ce cas, l'audio garde exactement son etat d'avant
+    // (donc continue de jouer) puisque le script ne se re-execute jamais. On force l'arret
+    // juste avant de quitter la page pour qu'une restauration depuis ce cache retrouve
+    // toujours la musique coupee.
+    window.addEventListener('pagehide', () => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+
     updateIcons();
   }
 });
