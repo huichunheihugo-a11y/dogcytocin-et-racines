@@ -162,8 +162,16 @@
 
         <div class="admin-field-group">
           <label for="admin-dog-photos">Photos supplémentaires (facultatif)</label>
+          <div class="admin-image-upload-row">
+            <button type="button" id="admin-dog-photos-upload-btn" class="btn admin-image-upload-btn">
+              <svg viewBox='0 0 24 24' fill='none' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z'/><circle cx='12' cy='13' r='3.5'/></svg>
+              Ajouter des photos
+            </button>
+            <input type="file" id="admin-dog-photos-file" accept="image/*" multiple class="admin-file-input-visually-hidden">
+            <span id="admin-dog-photos-upload-status" class="admin-image-upload-status" hidden></span>
+          </div>
           <textarea id="admin-dog-photos" name="photo_urls" class="field admin-dog-description-textarea" rows="3" placeholder="Une URL par ligne, 8 maximum"></textarea>
-          <span class="admin-blog-image-hint">S'affichent en plus de la photo principale, sur la fiche du chien. Une URL par ligne.</span>
+          <span class="admin-blog-image-hint">Depuis la galerie du téléphone (plusieurs à la fois), ou collez des URLs directement, une par ligne. S'affichent en plus de la photo principale.</span>
         </div>
 
         <p id="admin-dog-msg" class="admin-auth-msg" hidden></p>

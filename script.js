@@ -2599,6 +2599,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
+      const dogPhotosUploadBtn = document.getElementById('admin-dog-photos-upload-btn');
+      const dogPhotosFileInput = document.getElementById('admin-dog-photos-file');
+      const dogPhotosUploadStatus = document.getElementById('admin-dog-photos-upload-status');
+      const dogPhotosTextareaEl = document.getElementById('admin-dog-photos');
+
+      if (dogPhotosUploadBtn && dogPhotosFileInput && dogPhotosTextareaEl) {
+        dogPhotosUploadBtn.addEventListener('click', () => dogPhotosFileInput.click());
+
+        // Plusieurs fichiers peuvent etre choisis d'un coup (galerie mobile) : chacun est
+        // envoye l'un apres l'autre, et son URL /media/:id ajoutee sur une nouvelle ligne du
+        // textarea au fur et a mesure -- pas besoin d'attendre que tout soit fini pour voir
+        // les premieres reussir.
+        dogPhotosFileInput.addEventListener('change', async () => {
+          const files = dogPhotosFileInput.files ? Array.from(dogPhotosFileInput.files) : [];
+          if (!files.length) return;
+
+          const pw = storedPassword();
+          if (!pw) {
+            requireReauth();
+            return;
+          }
+
+          dogPhotosUploadBtn.disabled = true;
+          dogPhotosUploadStatus.hidden = false;
+          dogPhotosUploadStatus.className = 'admin-image-upload-status';
+
+          let done = 0;
+          let failed = 0;
+          for (const file of files) {
+            dogPhotosUploadStatus.textContent = `Envoi de la photo ${done + failed + 1}/${files.length}...`;
+            try {
+              const url = await uploadMediaFile(file, pw);
+              const existing = dogPhotosTextareaEl.value.split('\n').map((l) => l.trim()).filter(Boolean);
+              existing.push(url);
+              dogPhotosTextareaEl.value = existing.join('\n');
+              done++;
+            } catch (err) {
+              if (err.unauthorized) {
+                requireReauth();
+                return;
+              }
+              failed++;
+            }
+          }
+
+          dogPhotosUploadStatus.className = failed ? 'admin-image-upload-status is-error' : 'admin-image-upload-status';
+          dogPhotosUploadStatus.textContent = failed
+            ? `${done} photo(s) envoyée(s), ${failed} échec(s).`
+            : `${done} photo(s) envoyée(s) ✓`;
+          dogPhotosUploadBtn.disabled = false;
+          dogPhotosFileInput.value = '';
+        });
+      }
+
       dogForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
