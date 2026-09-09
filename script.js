@@ -26,39 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const galleryGrid = document.getElementById('gallery-grid');
-  const lightbox = document.getElementById('gallery-lightbox');
-
-  if (galleryGrid && lightbox) {
-    const lightboxImg = document.getElementById('gallery-lightbox-img');
-    const lightboxCaption = document.getElementById('gallery-lightbox-caption');
-    const lightboxClose = document.getElementById('gallery-lightbox-close');
-
-    const openLightbox = (item) => {
-      lightboxImg.src = item.dataset.full;
-      lightboxImg.alt = item.dataset.caption || '';
-      lightboxCaption.textContent = item.dataset.caption || '';
-      lightbox.hidden = false;
-      // Deux rAF imbriques : laisse le navigateur peindre l'etat de depart (opacity: 0)
-      // avant d'ajouter la classe qui declenche la transition CSS vers opacity: 1 -- sans
-      // ce detour, retirer [hidden] et ajouter la classe dans le meme tick saute la transition.
-      requestAnimationFrame(() => requestAnimationFrame(() => lightbox.classList.add('is-visible')));
-    };
-
-    const closeLightbox = () => {
-      lightbox.classList.remove('is-visible');
-      window.setTimeout(() => { lightbox.hidden = true; lightboxImg.src = ''; }, 250);
-    };
-
-    galleryGrid.querySelectorAll('.gallery-item').forEach((item) => {
-      item.addEventListener('click', () => openLightbox(item));
-    });
-
-    lightboxClose.addEventListener('click', closeLightbox);
-    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !lightbox.hidden) closeLightbox(); });
-  }
-
   const fosterForm = document.getElementById('foster-form');
 
   if (fosterForm) {
