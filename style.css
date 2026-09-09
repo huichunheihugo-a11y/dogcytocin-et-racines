@@ -3476,9 +3476,35 @@ a.contact-method:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rg
   color: #fff;
 }
 
+/* Petite jauge de volume entre le bouton muet et le "+" : donne un repere visuel du niveau
+   actuel (rempli via JS a chaque changement), plutot que des boutons +/- sans aucun retour
+   sur ou on en est deja. Masquee tant que le lecteur n'est pas actif, comme les autres
+   controles de volume. */
+.music-volume-bar {
+  width: 44px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(var(--cream-rgb), 0.2);
+  overflow: hidden;
+  margin: 0 2px;
+}
+
+.music-volume-fill {
+  height: 100%;
+  width: 60%;
+  background: var(--khaki);
+  border-radius: 3px;
+  transition: width 0.15s ease;
+}
+
+@media (max-width: 560px) {
+  .music-volume-bar { width: 34px; }
+}
+
 /* Les boutons +/- sont masques tant que rien ne joue -- inutile de regler le volume d'un
    silence, et ca garde le bouton compact dans son etat par defaut (avant toute interaction). */
-.music-player:not(.is-active) .music-btn:not(.music-btn-main) { display: none; }
+.music-player:not(.is-active) .music-btn:not(.music-btn-main),
+.music-player:not(.is-active) .music-volume-bar { display: none; }
 
 @media (max-width: 560px) {
   .music-player { bottom: 14px; right: 14px; }

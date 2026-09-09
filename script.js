@@ -2771,6 +2771,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const iconPause = document.getElementById('music-icon-pause');
     const iconSound = document.getElementById('music-icon-sound');
     const iconMuted = document.getElementById('music-icon-muted');
+    const volumeFill = document.getElementById('music-volume-fill');
 
     // A remplacer par le vrai fichier une fois choisi (voir images/ pour la meme logique de
     // chemin relatif) -- tant qu'il n'existe pas, le lecteur reste visible mais ne joue rien.
@@ -2801,6 +2802,7 @@ document.addEventListener('DOMContentLoaded', () => {
         muteBtn.setAttribute('aria-label', audio.muted ? 'Remettre le son' : 'Couper le son');
         muteBtn.classList.toggle('is-muted', audio.muted);
       }
+      if (volumeFill) volumeFill.style.width = `${Math.round((audio.muted ? 0 : audio.volume) * 100)}%`;
     };
 
     if (toggleBtn) {
