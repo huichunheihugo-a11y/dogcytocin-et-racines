@@ -2777,11 +2777,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // chemin relatif) -- tant qu'il n'existe pas, le lecteur reste visible mais ne joue rien.
     audio.src = 'audio/musique-fond.mp3';
 
-    const MUSIC_KEYS = { volume: 'dogcytocine-music-volume', muted: 'dogcytocine-music-muted' };
+    const MUSIC_KEYS = { playing: 'dogcytocine-music-playing', volume: 'dogcytocine-music-volume', muted: 'dogcytocine-music-muted', time: 'dogcytocine-music-time' };
 
     const storedVolume = parseFloat(localStorage.getItem(MUSIC_KEYS.volume));
     audio.volume = Number.isFinite(storedVolume) ? Math.min(1, Math.max(0, storedVolume)) : 0.6;
     audio.muted = localStorage.getItem(MUSIC_KEYS.muted) === '1';
+
+    const storedTime = parseFloat(localStorage.getItem(MUSIC_KEYS.time));
+    if (Number.isFinite(storedTime) && storedTime > 0) {
+      // Reprend approximativement ou le visiteur en etait, plutot que de repartir du debut a
+      // chaque page -- seulement une fois les metadonnees chargees (duree connue).
+      audio.addEventListener('loadedmetadata', () => { audio.currentTime = storedTime % (audio.duration || storedTime + 1); }, { once: true });
+    }
 
     const updateIcons = () => {
       const playing = !audio.paused;
@@ -2805,12 +2812,15 @@ document.addEventListener('DOMContentLoaded', () => {
           // certains navigateurs mobiles) -- un clic direct de l'utilisateur est normalement
           // le cas le plus permissif, mais on ne casse rien si ca echoue silencieusement.
           audio.play().catch(() => {});
+          localStorage.setItem(MUSIC_KEYS.playing, '1');
         } else {
           audio.pause();
           // Repart du debut au prochain lancement plutot que de reprendre ou on s'etait
           // arrete -- comportement demande, plus proche d'un bouton "stop" que d'une vraie
           // pause avec memoire de la position.
           audio.currentTime = 0;
+          localStorage.setItem(MUSIC_KEYS.playing, '0');
+          localStorage.removeItem(MUSIC_KEYS.time);
         }
       });
     }
@@ -2839,17 +2849,21 @@ document.addEventListener('DOMContentLoaded', () => {
     audio.addEventListener('play', updateIcons);
     audio.addEventListener('pause', updateIcons);
 
-    // Certains navigateurs (surtout mobile) restaurent la page precedente depuis un cache
-    // memoire (bfcache) plutot que de la recharger entierement lors d'un retour arriere ou
-    // d'un changement de page -- dans ce cas, l'audio garde exactement son etat d'avant
-    // (donc continue de jouer) puisque le script ne se re-execute jamais. On force l'arret
-    // juste avant de quitter la page pour qu'une restauration depuis ce cache retrouve
-    // toujours la musique coupee.
-    window.addEventListener('pagehide', () => {
-      audio.pause();
-      audio.currentTime = 0;
+    // Enregistre la position dans le morceau de temps en temps (pas a chaque frame) pour
+    // pouvoir reprendre a peu pres au meme endroit sur la page suivante.
+    audio.addEventListener('timeupdate', () => {
+      if (Math.floor(audio.currentTime) % 3 === 0) localStorage.setItem(MUSIC_KEYS.time, String(audio.currentTime));
     });
 
     updateIcons();
+
+    // Reprise automatique si la musique jouait deja sur la page precedente -- jamais au tout
+    // premier chargement (rien n'est encore stocke). Peut echouer silencieusement si le
+    // navigateur bloque l'autoplay malgre l'interaction precedente (aucune garantie totale
+    // d'un navigateur a l'autre), mais c'est le comportement voulu : la musique continue
+    // d'une page a l'autre plutot que de s'arreter a chaque navigation.
+    if (localStorage.getItem(MUSIC_KEYS.playing) === '1') {
+      audio.play().catch(() => {});
+    }
   }
 });
