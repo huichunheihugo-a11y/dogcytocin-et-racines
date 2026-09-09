@@ -2754,11 +2754,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== Lecteur de musique flottant =====
-  // Present sur toutes les pages publiques (voir style.css) ; l'etat (lecture, volume, coupe,
-  // position dans le morceau) est repris via localStorage a chaque nouvelle page, puisqu'un
-  // site multi-pages classique recharge tout le DOM (et donc l'element <audio>) a chaque
-  // navigation -- pas de lecture ininterrompue possible sans passer a une architecture
-  // single-page, mais le reglage du visiteur suit malgre tout d'une page a l'autre.
+  // Present sur toutes les pages publiques (voir style.css). Le volume et l'etat muet sont
+  // repris via localStorage d'une page a l'autre (reglage du visiteur), mais la lecture
+  // elle-meme ne redemarre jamais toute seule au chargement d'une page -- seul un clic
+  // explicite du visiteur sur le bouton lance la musique, meme si elle jouait deja sur la
+  // page precedente.
   const musicPlayer = document.getElementById('music-player');
 
   if (musicPlayer) {
@@ -2777,18 +2777,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // chemin relatif) -- tant qu'il n'existe pas, le lecteur reste visible mais ne joue rien.
     audio.src = 'audio/musique-fond.mp3';
 
-    const MUSIC_KEYS = { playing: 'dogcytocine-music-playing', volume: 'dogcytocine-music-volume', muted: 'dogcytocine-music-muted', time: 'dogcytocine-music-time' };
+    const MUSIC_KEYS = { volume: 'dogcytocine-music-volume', muted: 'dogcytocine-music-muted' };
 
     const storedVolume = parseFloat(localStorage.getItem(MUSIC_KEYS.volume));
     audio.volume = Number.isFinite(storedVolume) ? Math.min(1, Math.max(0, storedVolume)) : 0.6;
     audio.muted = localStorage.getItem(MUSIC_KEYS.muted) === '1';
-
-    const storedTime = parseFloat(localStorage.getItem(MUSIC_KEYS.time));
-    if (Number.isFinite(storedTime) && storedTime > 0) {
-      // Reprend approximativement ou le visiteur en etait, plutot que de repartir du debut a
-      // chaque page -- seulement une fois les metadonnees chargees (duree connue).
-      audio.addEventListener('loadedmetadata', () => { audio.currentTime = storedTime % (audio.duration || storedTime + 1); }, { once: true });
-    }
 
     const updateIcons = () => {
       const playing = !audio.paused;
@@ -2812,15 +2805,12 @@ document.addEventListener('DOMContentLoaded', () => {
           // certains navigateurs mobiles) -- un clic direct de l'utilisateur est normalement
           // le cas le plus permissif, mais on ne casse rien si ca echoue silencieusement.
           audio.play().catch(() => {});
-          localStorage.setItem(MUSIC_KEYS.playing, '1');
         } else {
           audio.pause();
           // Repart du debut au prochain lancement plutot que de reprendre ou on s'etait
           // arrete -- comportement demande, plus proche d'un bouton "stop" que d'une vraie
           // pause avec memoire de la position.
           audio.currentTime = 0;
-          localStorage.setItem(MUSIC_KEYS.playing, '0');
-          localStorage.removeItem(MUSIC_KEYS.time);
         }
       });
     }
@@ -2849,20 +2839,6 @@ document.addEventListener('DOMContentLoaded', () => {
     audio.addEventListener('play', updateIcons);
     audio.addEventListener('pause', updateIcons);
 
-    // Enregistre la position dans le morceau de temps en temps (pas a chaque frame) pour
-    // pouvoir reprendre a peu pres au meme endroit sur la page suivante.
-    audio.addEventListener('timeupdate', () => {
-      if (Math.floor(audio.currentTime) % 3 === 0) localStorage.setItem(MUSIC_KEYS.time, String(audio.currentTime));
-    });
-
     updateIcons();
-
-    // Reprise automatique seulement si le visiteur avait deja active la musique sur une page
-    // precedente -- jamais au tout premier chargement, conformement a la demande de ne pas
-    // activer la musique toute seule. Peut echouer silencieusement si le navigateur bloque
-    // encore l'autoplay malgre l'interaction precedente (aucune garantie inter-pages).
-    if (localStorage.getItem(MUSIC_KEYS.playing) === '1') {
-      audio.play().catch(() => {});
-    }
   }
 });
