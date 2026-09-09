@@ -1811,6 +1811,28 @@ select.field {
   flex-shrink: 0;
 }
 
+/* Signale qu'une fiche a plus d'une photo avant meme d'ouvrir la visionneuse -- en bas a
+   gauche pour ne jamais chevaucher .dog-badge/.dog-stamp, deja en bas a droite. */
+.dog-photo-count {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(29, 32, 19, 0.75);
+  backdrop-filter: blur(2px);
+  color: var(--cream);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 50px;
+}
+
+.dog-photo-count svg { width: 13px; height: 13px; stroke: currentColor; flex-shrink: 0; }
+
+.dog-photo.has-photos { cursor: pointer; }
+
 .dog-info { padding: 20px 22px 24px; }
 
 .dog-info h3 { margin-bottom: 4px; }
@@ -3294,5 +3316,82 @@ a.contact-method:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rg
      palette du site -- meme recette que .bts-strip img. Un filtre CSS s'applique au rendu
      entier de l'iframe (comme une image), meme si son contenu vient d'une autre origine. */
   filter: sepia(0.2) saturate(0.65) contrast(1.05) brightness(1.03);
+}
+
+/* ===== Visionneuse photo (fiches chiens) ===== */
+
+.dog-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(29, 32, 19, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Ajoutee par script.js une frame apres avoir retire [hidden], pour laisser le temps au
+   navigateur de peindre l'etat opacity:0 avant de lancer la transition vers 1. */
+.dog-lightbox.is-visible { opacity: 1; }
+
+.dog-lightbox img {
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  transform: scale(0.94);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dog-lightbox.is-visible img { transform: scale(1); }
+
+.dog-lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.dog-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: #fff;
+  font-size: 1.3rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dog-lightbox-nav:hover { background: rgba(255, 255, 255, 0.24); }
+.dog-lightbox-prev { left: 16px; }
+.dog-lightbox-next { right: 16px; }
+
+@media (max-width: 560px) {
+  .dog-lightbox-prev { left: 6px; }
+  .dog-lightbox-next { right: 6px; }
+}
+
+.dog-lightbox-count {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
 }
 

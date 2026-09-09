@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-08.6';
+const WORKER_VERSION = '2026-09-09.1';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -1019,6 +1019,25 @@ function validateImageUrl(raw) {
   return { ok: true, value: upgradeImageUrl(value) };
 }
 
+// Photos supplementaires d'une fiche chien (en plus de image_url, la couverture) : meme
+// validation que pour une image seule, appliquee a chaque entree. Plafonne a 8 -- largement
+// assez pour une fiche, et evite qu'une liste demesuree alourdisse la page publique.
+const MAX_DOG_PHOTOS = 8;
+
+function validatePhotoUrls(raw) {
+  if (raw === undefined || raw === null) return { ok: true, value: [] };
+  if (!Array.isArray(raw)) return { ok: false };
+  if (raw.length > MAX_DOG_PHOTOS) return { ok: false };
+
+  const urls = [];
+  for (const entry of raw) {
+    const result = validateImageUrl(entry);
+    if (!result.ok) return { ok: false };
+    if (result.value) urls.push(result.value);
+  }
+  return { ok: true, value: urls };
+}
+
 // Video de blog : meme logique que les images (pas de stockage de fichier, R2 etant payant) --
 // l'admin colle un lien YouTube/Vimeo ou un lien direct vers un fichier video deja heberge
 // ailleurs. On convertit tout de suite en URL "embed" pour que le front n'ait qu'a l'utiliser
@@ -1296,6 +1315,16 @@ async function handleDeleteBlogPost(request, env, id) {
 const DOG_STATUSES = ['adoption', 'bientot'];
 
 function toPublicDog(row) {
+  let photoUrls = [];
+  if (row.photo_urls) {
+    try {
+      const parsed = JSON.parse(row.photo_urls);
+      if (Array.isArray(parsed)) photoUrls = parsed;
+    } catch (err) {
+      // Colonne corrompue ou pas encore au format JSON : on affiche la fiche sans ces photos
+      // plutot que de faire echouer tout l'affichage.
+    }
+  }
   return {
     id: row.id,
     name: row.name,
@@ -1304,6 +1333,7 @@ function toPublicDog(row) {
     description: row.description,
     status: row.status,
     image_url: row.image_url || null,
+    photo_urls: photoUrls,
     created_at: row.created_at,
   };
 }
@@ -1313,7 +1343,7 @@ async function handleListDogs(env) {
 
   try {
     const { results } = await env.DB.prepare(
-      'SELECT id, name, age, size, description, status, image_url, created_at FROM dogs ORDER BY id DESC LIMIT 200'
+      'SELECT id, name, age, size, description, status, image_url, photo_urls, created_at FROM dogs ORDER BY id DESC LIMIT 200'
     ).all();
     return json({ dogs: results.map(toPublicDog) });
   } catch (err) {
@@ -1364,15 +1394,21 @@ async function handleCreateDog(request, env) {
   }
   const imageUrl = imageUrlResult.value;
 
+  const photoUrlsResult = validatePhotoUrls(body.photo_urls);
+  if (!photoUrlsResult.ok) {
+    return json({ success: false, message: `Photos supplémentaires invalides (${MAX_DOG_PHOTOS} maximum, chaque URL doit commencer par http:// ou https://).` }, 422);
+  }
+  const photoUrls = photoUrlsResult.value;
+
   try {
     const createdAt = new Date().toISOString();
     const insert = await env.DB.prepare(
-      'INSERT INTO dogs (name, age, size, description, status, image_url, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)'
-    ).bind(name, age, size, description, status, imageUrl, createdAt).run();
+      'INSERT INTO dogs (name, age, size, description, status, image_url, created_at, photo_urls) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)'
+    ).bind(name, age, size, description, status, imageUrl, createdAt, JSON.stringify(photoUrls)).run();
 
     return json({
       success: true,
-      dog: { id: insert.meta.last_row_id, name, age, size, description, status, image_url: imageUrl, created_at: createdAt },
+      dog: { id: insert.meta.last_row_id, name, age, size, description, status, image_url: imageUrl, photo_urls: photoUrls, created_at: createdAt },
     });
   } catch (err) {
     return json({ success: false, message: "Erreur lors de l'enregistrement de la fiche." }, 500);
@@ -1425,6 +1461,12 @@ async function handleUpdateDog(request, env, id) {
   }
   const imageUrl = imageUrlResult.value;
 
+  const photoUrlsResult = validatePhotoUrls(body.photo_urls);
+  if (!photoUrlsResult.ok) {
+    return json({ success: false, message: `Photos supplémentaires invalides (${MAX_DOG_PHOTOS} maximum, chaque URL doit commencer par http:// ou https://).` }, 422);
+  }
+  const photoUrls = photoUrlsResult.value;
+
   let existing;
   try {
     existing = await env.DB.prepare('SELECT id FROM dogs WHERE id = ?1').bind(id).first();
@@ -1436,14 +1478,14 @@ async function handleUpdateDog(request, env, id) {
   }
 
   try {
-    await env.DB.prepare('UPDATE dogs SET name = ?1, age = ?2, size = ?3, description = ?4, status = ?5, image_url = ?6 WHERE id = ?7')
-      .bind(name, age, size, description, status, imageUrl, id).run();
+    await env.DB.prepare('UPDATE dogs SET name = ?1, age = ?2, size = ?3, description = ?4, status = ?5, image_url = ?6, photo_urls = ?7 WHERE id = ?8')
+      .bind(name, age, size, description, status, imageUrl, JSON.stringify(photoUrls), id).run();
   } catch (err) {
     return json({ success: false, message: "Erreur lors de l'enregistrement de la fiche." }, 500);
   }
 
   const row = await env.DB.prepare(
-    'SELECT id, name, age, size, description, status, image_url, created_at FROM dogs WHERE id = ?1'
+    'SELECT id, name, age, size, description, status, image_url, photo_urls, created_at FROM dogs WHERE id = ?1'
   ).bind(id).first();
 
   return json({ success: true, dog: toPublicDog(row) });

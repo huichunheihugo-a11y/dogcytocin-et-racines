@@ -140,6 +140,57 @@ document.addEventListener('DOMContentLoaded', () => {
       bientot: '<span class="dog-badge"><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke-width=\'1.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'12\' cy=\'12\' r=\'9\'/><path d=\'M12 7v5l3.5 2\'/></svg> Bientôt</span>',
     };
 
+    // Visionneuse plein ecran pour parcourir les photos d'une fiche (image_url + photo_urls) --
+    // une seule instance partagee par toutes les cartes, alimentee au clic avec la liste de la
+    // fiche concernee, plutot qu'une visionneuse par carte.
+    const dogLightbox = document.getElementById('dog-lightbox');
+    const dogLightboxImg = document.getElementById('dog-lightbox-img');
+    const dogLightboxCount = document.getElementById('dog-lightbox-count');
+    const dogLightboxClose = document.getElementById('dog-lightbox-close');
+    const dogLightboxPrev = document.getElementById('dog-lightbox-prev');
+    const dogLightboxNext = document.getElementById('dog-lightbox-next');
+    let currentDogPhotos = [];
+    let currentDogPhotoIndex = 0;
+
+    const showDogPhoto = (index) => {
+      if (!currentDogPhotos.length) return;
+      currentDogPhotoIndex = (index + currentDogPhotos.length) % currentDogPhotos.length;
+      dogLightboxImg.src = currentDogPhotos[currentDogPhotoIndex];
+      const multiple = currentDogPhotos.length > 1;
+      dogLightboxCount.textContent = multiple ? `${currentDogPhotoIndex + 1} / ${currentDogPhotos.length}` : '';
+      if (dogLightboxPrev) dogLightboxPrev.hidden = !multiple;
+      if (dogLightboxNext) dogLightboxNext.hidden = !multiple;
+    };
+
+    const openDogLightbox = (photos, startIndex) => {
+      if (!dogLightbox || !photos.length) return;
+      currentDogPhotos = photos;
+      showDogPhoto(startIndex);
+      dogLightbox.hidden = false;
+      // Deux rAF imbriques : laisse le navigateur peindre l'etat de depart (opacity: 0) avant
+      // d'ajouter la classe qui declenche la transition CSS vers opacity: 1.
+      requestAnimationFrame(() => requestAnimationFrame(() => dogLightbox.classList.add('is-visible')));
+    };
+
+    const closeDogLightbox = () => {
+      if (!dogLightbox) return;
+      dogLightbox.classList.remove('is-visible');
+      window.setTimeout(() => { dogLightbox.hidden = true; dogLightboxImg.src = ''; }, 250);
+    };
+
+    if (dogLightbox) {
+      dogLightboxClose.addEventListener('click', closeDogLightbox);
+      dogLightbox.addEventListener('click', (e) => { if (e.target === dogLightbox) closeDogLightbox(); });
+      dogLightboxPrev.addEventListener('click', () => showDogPhoto(currentDogPhotoIndex - 1));
+      dogLightboxNext.addEventListener('click', () => showDogPhoto(currentDogPhotoIndex + 1));
+      document.addEventListener('keydown', (e) => {
+        if (dogLightbox.hidden) return;
+        if (e.key === 'Escape') closeDogLightbox();
+        if (e.key === 'ArrowLeft') showDogPhoto(currentDogPhotoIndex - 1);
+        if (e.key === 'ArrowRight') showDogPhoto(currentDogPhotoIndex + 1);
+      });
+    }
+
     const renderDogCard = (dog) => {
       const article = document.createElement('article');
       article.className = 'dog-card fade-in visible';
@@ -164,6 +215,20 @@ document.addEventListener('DOMContentLoaded', () => {
       placeholder.appendChild(img);
       photo.appendChild(placeholder);
       photo.insertAdjacentHTML('beforeend', DOG_STATUS_STAMP[dog.status] || '');
+
+      // Toutes les photos de la fiche (couverture + supplementaires) : ouvre la visionneuse au
+      // clic des qu'il y en a au moins une, avec navigation prev/next si plusieurs.
+      const allPhotos = [dog.image_url, ...(Array.isArray(dog.photo_urls) ? dog.photo_urls : [])].filter(Boolean);
+      if (allPhotos.length > 0) {
+        photo.classList.add('has-photos');
+        photo.addEventListener('click', () => openDogLightbox(allPhotos, 0));
+        if (allPhotos.length > 1) {
+          const countBadge = document.createElement('span');
+          countBadge.className = 'dog-photo-count';
+          countBadge.innerHTML = `<svg viewBox='0 0 24 24' fill='none' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='6' width='18' height='14' rx='2'/><path d='M8 6l2-3h4l2 3'/><circle cx='12' cy='13' r='3.5'/></svg> ${allPhotos.length}`;
+          photo.appendChild(countBadge);
+        }
+      }
 
       const info = document.createElement('div');
       info.className = 'dog-info';
@@ -2294,12 +2359,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const submit = document.getElementById('admin-dog-submit');
       const cancelEdit = document.getElementById('admin-dog-cancel-edit');
 
+      const photosTextarea = document.getElementById('admin-dog-photos');
+
       nameInput.value = entry.name;
       ageInput.value = entry.age;
       sizeInput.value = entry.size;
       descriptionInput.value = entry.description;
       statusSelect.value = entry.status;
       imageUrlInput.value = entry.image_url || '';
+      if (photosTextarea) photosTextarea.value = Array.isArray(entry.photo_urls) ? entry.photo_urls.join('\n') : '';
       // Affiche le champ URL des qu'une valeur existe deja (venant d'un envoi galerie ou d'un
       // lien colle), pour que l'admin voie ce qui est actuellement enregistre.
       imageUrlInput.hidden = !entry.image_url;
@@ -2549,6 +2617,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const description = dogDescriptionInput.value.trim();
         const status = dogStatusSelect.value;
         const imageUrl = dogImageUrlInput.value.trim();
+        const dogPhotosTextarea = document.getElementById('admin-dog-photos');
+        const photoUrls = dogPhotosTextarea
+          ? dogPhotosTextarea.value.split('\n').map((line) => line.trim()).filter(Boolean)
+          : [];
 
         if (!name) {
           showDogMsg('Le nom est obligatoire.', true);
@@ -2580,6 +2652,16 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
+        if (photoUrls.length > 8) {
+          showDogMsg('8 photos supplémentaires maximum.', true);
+          return;
+        }
+        const invalidPhoto = photoUrls.find((u) => !/^https?:\/\//i.test(u) && !/^\/media\/\d+$/.test(u));
+        if (invalidPhoto) {
+          showDogMsg("Chaque photo supplémentaire doit être une URL commençant par http:// ou https://.", true);
+          return;
+        }
+
         const isEditing = editingDogId !== null;
         const url = isEditing ? `/api/admin/dogs/${editingDogId}` : '/api/admin/dogs';
 
@@ -2590,7 +2672,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const response = await fetch(url, {
             method: 'POST',
             headers: { 'X-Admin-Password': pw, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, age, size, description, status, image_url: imageUrl }),
+            body: JSON.stringify({ name, age, size, description, status, image_url: imageUrl, photo_urls: photoUrls }),
           });
 
           if (response.status === 401) {

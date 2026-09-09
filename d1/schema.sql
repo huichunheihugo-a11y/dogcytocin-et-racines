@@ -97,8 +97,17 @@ CREATE TABLE IF NOT EXISTS dogs (
   description TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'adoption',
   image_url TEXT,
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  photo_urls TEXT
 );
+
+-- Si la table dogs existe deja sans cette colonne, executer separement dans la console D1 :
+-- ALTER TABLE dogs ADD COLUMN photo_urls TEXT;
+--
+-- photo_urls stocke un tableau JSON de photos supplementaires (en plus de image_url, qui reste
+-- la photo de couverture affichee dans la grille) -- ex: ["https://...jpg","https://...jpg"].
+-- Pas de table separee : le nombre de photos par chien reste petit, un simple champ JSON evite
+-- une jointure pour ce qui est en pratique toujours charge et affiche en bloc avec la fiche.
 
 CREATE INDEX IF NOT EXISTS idx_dogs_created ON dogs (created_at);
 
