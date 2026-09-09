@@ -2752,4 +2752,81 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
+
+  // ===== Lecteur de musique flottant (accueil uniquement) =====
+  // Present seulement sur cette page (voir style.css) : pas besoin de faire suivre la lecture
+  // d'une page a l'autre, donc pas de blocage lie a l'autoplay des navigateurs. Le volume et
+  // l'etat muet restent memorises d'une visite a l'autre (simple confort), mais rien d'autre.
+  const musicPlayer = document.getElementById('music-player');
+
+  if (musicPlayer) {
+    const audio = document.getElementById('site-audio');
+    const toggleBtn = document.getElementById('music-toggle');
+    const muteBtn = document.getElementById('music-mute');
+    const volDownBtn = document.getElementById('music-vol-down');
+    const volUpBtn = document.getElementById('music-vol-up');
+    const iconPlay = document.getElementById('music-icon-play');
+    const iconPause = document.getElementById('music-icon-pause');
+    const iconSound = document.getElementById('music-icon-sound');
+    const iconMuted = document.getElementById('music-icon-muted');
+    const volumeFill = document.getElementById('music-volume-fill');
+
+    const MUSIC_KEYS = { volume: 'dogcytocine-music-volume', muted: 'dogcytocine-music-muted' };
+
+    const storedVolume = parseFloat(localStorage.getItem(MUSIC_KEYS.volume));
+    audio.volume = Number.isFinite(storedVolume) ? Math.min(1, Math.max(0, storedVolume)) : 0.6;
+    audio.muted = localStorage.getItem(MUSIC_KEYS.muted) === '1';
+
+    const updateIcons = () => {
+      const playing = !audio.paused;
+      if (iconPlay) iconPlay.hidden = playing;
+      if (iconPause) iconPause.hidden = !playing;
+      if (iconSound) iconSound.hidden = audio.muted;
+      if (iconMuted) iconMuted.hidden = !audio.muted;
+      musicPlayer.classList.toggle('is-active', playing);
+      if (toggleBtn) toggleBtn.setAttribute('aria-label', playing ? 'Mettre en pause' : 'Lancer la musique');
+      if (muteBtn) {
+        muteBtn.setAttribute('aria-label', audio.muted ? 'Remettre le son' : 'Couper le son');
+        muteBtn.classList.toggle('is-muted', audio.muted);
+      }
+      if (volumeFill) volumeFill.style.width = `${Math.round((audio.muted ? 0 : audio.volume) * 100)}%`;
+    };
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        if (audio.paused) {
+          audio.play().catch(() => {});
+        } else {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+    }
+
+    if (muteBtn) {
+      muteBtn.addEventListener('click', () => {
+        audio.muted = !audio.muted;
+        localStorage.setItem(MUSIC_KEYS.muted, audio.muted ? '1' : '0');
+        updateIcons();
+      });
+    }
+
+    const adjustVolume = (delta) => {
+      audio.volume = Math.min(1, Math.max(0, audio.volume + delta));
+      if (audio.volume > 0 && audio.muted) {
+        audio.muted = false;
+        localStorage.setItem(MUSIC_KEYS.muted, '0');
+      }
+      localStorage.setItem(MUSIC_KEYS.volume, String(audio.volume));
+      updateIcons();
+    };
+
+    if (volDownBtn) volDownBtn.addEventListener('click', () => adjustVolume(-0.1));
+    if (volUpBtn) volUpBtn.addEventListener('click', () => adjustVolume(0.1));
+
+    audio.addEventListener('play', updateIcons);
+    audio.addEventListener('pause', updateIcons);
+
+    updateIcons();
+  }
 });
