@@ -2815,7 +2815,12 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem(MUSIC_KEYS.playing, '1');
         } else {
           audio.pause();
+          // Repart du debut au prochain lancement plutot que de reprendre ou on s'etait
+          // arrete -- comportement demande, plus proche d'un bouton "stop" que d'une vraie
+          // pause avec memoire de la position.
+          audio.currentTime = 0;
           localStorage.setItem(MUSIC_KEYS.playing, '0');
+          localStorage.removeItem(MUSIC_KEYS.time);
         }
       });
     }
