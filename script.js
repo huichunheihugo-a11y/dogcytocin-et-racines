@@ -2857,13 +2857,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateIcons();
 
-    // Reprise automatique si la musique jouait deja sur la page precedente -- jamais au tout
-    // premier chargement (rien n'est encore stocke). Peut echouer silencieusement si le
-    // navigateur bloque l'autoplay malgre l'interaction precedente (aucune garantie totale
-    // d'un navigateur a l'autre), mais c'est le comportement voulu : la musique continue
-    // d'une page a l'autre plutot que de s'arreter a chaque navigation.
+    // Un vrai "ca continue tout seul" est bloque par les navigateurs (surtout mobile/iOS) :
+    // un appel .play() qui ne vient pas d'un geste direct sur CETTE page est systematiquement
+    // refuse, meme si la musique jouait deja juste avant sur la page precedente -- aucune
+    // astuce cote JS ne peut contourner cette regle de securite, volontairement stricte.
+    // Le mieux qu'on puisse offrir honnetement : reprendre exactement a la bonne position des
+    // le premier tap, plutot que de repartir de zero. .load() prepare la piste (avance
+    // jusqu'a storedTime via l'ecouteur loadedmetadata plus haut) sans jamais tenter de la
+    // jouer -- ca ne demande pas de geste utilisateur, contrairement a .play().
     if (localStorage.getItem(MUSIC_KEYS.playing) === '1') {
-      audio.play().catch(() => {});
+      audio.load();
     }
   }
 });
