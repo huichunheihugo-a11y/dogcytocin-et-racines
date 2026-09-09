@@ -3447,6 +3447,35 @@ a.contact-method:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rg
 
 .music-btn-main:hover { background: var(--olive); opacity: 0.88; }
 
+/* Avant le premier clic, le bouton s'elargit en pastille "icone + texte" (comme un bouton
+   d'action classique) pour qu'on comprenne tout de suite que c'est un lecteur de musique,
+   pas une icone mysterieuse. Une fois active, revient a une simple icone ronde pour laisser
+   la place aux boutons +/- et muet a cote. */
+.music-label {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding-right: 4px;
+}
+
+.music-player:not(.is-active) .music-btn-main {
+  width: auto;
+  padding: 0 16px 0 12px;
+  gap: 7px;
+  border-radius: 50px;
+}
+
+.music-player.is-active .music-label { display: none; }
+
+/* Etat "muet" bien visible sur le bouton lui-meme (pas seulement l'icone qui change) -- une
+   simple icone barree au milieu d'autres petits boutons ronds est facile a manquer d'un
+   coup d'oeil. */
+.music-btn.is-muted {
+  background: rgba(156, 50, 50, 0.35);
+  color: #fff;
+}
+
 /* Les boutons +/- sont masques tant que rien ne joue -- inutile de regler le volume d'un
    silence, et ca garde le bouton compact dans son etat par defaut (avant toute interaction). */
 .music-player:not(.is-active) .music-btn:not(.music-btn-main) { display: none; }

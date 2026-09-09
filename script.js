@@ -2797,7 +2797,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (iconMuted) iconMuted.hidden = !audio.muted;
       musicPlayer.classList.toggle('is-active', playing);
       if (toggleBtn) toggleBtn.setAttribute('aria-label', playing ? 'Mettre en pause' : 'Lancer la musique');
-      if (muteBtn) muteBtn.setAttribute('aria-label', audio.muted ? 'Remettre le son' : 'Couper le son');
+      if (muteBtn) {
+        muteBtn.setAttribute('aria-label', audio.muted ? 'Remettre le son' : 'Couper le son');
+        muteBtn.classList.toggle('is-muted', audio.muted);
+      }
     };
 
     if (toggleBtn) {
