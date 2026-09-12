@@ -191,6 +191,79 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Formulaire "Je suis intéressé(e)" : une seule instance de la fenêtre, réutilisée pour
+    // chaque fiche, avec le nom du chien pré-rempli au moment de l'ouverture.
+    const adoptionModal = document.getElementById('adoption-modal');
+    const adoptionForm = document.getElementById('adoption-form');
+    const adoptionDogInput = document.getElementById('ad-dog');
+    const adoptionError = document.getElementById('adoption-error');
+    const adoptionSuccess = document.getElementById('adoption-success');
+    const adoptionSubmit = document.getElementById('adoption-submit');
+
+    const openAdoptionModal = (dogName) => {
+      if (!adoptionModal) return;
+      adoptionForm.hidden = false;
+      adoptionSuccess.hidden = true;
+      adoptionError.hidden = true;
+      adoptionForm.reset();
+      if (adoptionDogInput) adoptionDogInput.value = dogName || '';
+      adoptionModal.hidden = false;
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeAdoptionModal = () => {
+      if (!adoptionModal) return;
+      adoptionModal.hidden = true;
+      document.body.style.overflow = '';
+    };
+
+    if (adoptionModal) {
+      document.getElementById('adoption-modal-close').addEventListener('click', closeAdoptionModal);
+      document.getElementById('adoption-modal-scrim').addEventListener('click', closeAdoptionModal);
+      document.addEventListener('keydown', (e) => {
+        if (!adoptionModal.hidden && e.key === 'Escape') closeAdoptionModal();
+      });
+    }
+
+    if (adoptionForm) {
+      adoptionForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (adoptionForm.elements.botcheck.checked) {
+          adoptionForm.hidden = true;
+          adoptionSuccess.hidden = false;
+          return;
+        }
+
+        adoptionError.hidden = true;
+        adoptionSubmit.disabled = true;
+        adoptionSubmit.textContent = 'Envoi en cours...';
+
+        const payload = {};
+        new FormData(adoptionForm).forEach((value, key) => { payload[key] = value; });
+
+        try {
+          const response = await fetch(adoptionForm.action, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('Réponse invalide');
+
+          adoptionForm.hidden = true;
+          adoptionSuccess.hidden = false;
+        } catch (err) {
+          adoptionError.textContent = "Aïe, l'envoi n'est pas passé. Réessayez, ou écrivez-nous directement, on ne veut surtout pas rater votre message.";
+          adoptionError.hidden = false;
+        } finally {
+          adoptionSubmit.disabled = false;
+          adoptionSubmit.textContent = 'Envoyer ma candidature';
+        }
+      });
+    }
+
     const renderDogCard = (dog) => {
       const article = document.createElement('article');
       article.className = 'dog-card fade-in visible';
@@ -243,6 +316,13 @@ document.addEventListener('DOMContentLoaded', () => {
       info.appendChild(name);
       info.appendChild(meta);
       info.appendChild(quote);
+
+      const interestBtn = document.createElement('button');
+      interestBtn.type = 'button';
+      interestBtn.className = 'dog-interest-btn';
+      interestBtn.textContent = 'Je suis intéressé(e)';
+      interestBtn.addEventListener('click', () => openAdoptionModal(dog.name));
+      info.appendChild(interestBtn);
 
       article.appendChild(photo);
       article.appendChild(info);
@@ -654,6 +734,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (fosterList) fosterList.innerHTML = '';
       const fosterBadgeEl = document.getElementById('admin-foster-badge');
       if (fosterBadgeEl) fosterBadgeEl.hidden = true;
+      const adoptionList = document.getElementById('admin-adoption-list');
+      if (adoptionList) adoptionList.innerHTML = '';
+      const adoptionBadgeEl = document.getElementById('admin-adoption-badge');
+      if (adoptionBadgeEl) adoptionBadgeEl.hidden = true;
       const blogListEl = document.getElementById('admin-blog-list');
       if (blogListEl) blogListEl.innerHTML = '';
       resetBlogForm();
@@ -710,6 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadStats();
         loadFosterApplications();
         loadVolunteerApplications();
+        loadAdoptionApplications();
         loadBlogPosts();
         loadDogs();
       } catch (err) {
@@ -741,6 +826,8 @@ document.addEventListener('DOMContentLoaded', () => {
           loadRejected();
           loadStats();
           loadFosterApplications();
+          loadVolunteerApplications();
+          loadAdoptionApplications();
           loadBlogPosts();
           loadDogs();
         } else {
@@ -822,11 +909,37 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    // Meme mecanisme de filtre, pour les candidatures d'adoption.
+    let currentAdoptionFilter = 'all';
+    const adoptionFilterButtons = document.querySelectorAll('#admin-adoption-filter .admin-status-filter-btn');
+
+    const applyAdoptionFilterToRow = (row) => {
+      row.hidden = currentAdoptionFilter !== 'all' && row.dataset.status !== currentAdoptionFilter;
+    };
+
+    const adoptionBadge = document.getElementById('admin-adoption-badge');
+    const updateAdoptionBadge = () => {
+      if (!adoptionBadge) return;
+      const adoptionList = document.getElementById('admin-adoption-list');
+      const count = adoptionList ? adoptionList.querySelectorAll('.admin-entry[data-status="nouvelle"]').length : 0;
+      adoptionBadge.textContent = String(count);
+      adoptionBadge.hidden = count === 0;
+    };
+
+    adoptionFilterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!storedPassword()) return;
+        currentAdoptionFilter = btn.dataset.statusFilter;
+        adoptionFilterButtons.forEach((b) => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('#admin-adoption-list .admin-entry').forEach(applyAdoptionFilterToRow);
+      });
+    });
+
     // Bascule entre les onglets principaux "Commentaires" et "Messages refusés".
     const navLinks = document.querySelectorAll('.admin-nav-link');
     const tabs = document.querySelectorAll('.admin-tab');
     const tabTitle = document.getElementById('admin-tab-title');
-    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", benevoles: 'Bénévoles', dogs: 'Nos chiens', blog: 'Blog', rejected: 'Messages refusés' };
+    const tabLabels = { comments: 'Commentaires', foster: "Familles d'accueil", benevoles: 'Bénévoles', adoption: 'Candidatures adoption', dogs: 'Nos chiens', blog: 'Blog', rejected: 'Messages refusés' };
 
     navLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -1942,6 +2055,261 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    const renderAdoptionEntry = (entry) => {
+      const row = document.createElement('div');
+      row.className = 'admin-entry';
+      row.dataset.status = entry.status;
+
+      const body = document.createElement('div');
+      body.className = 'admin-entry-body';
+
+      const head = document.createElement('div');
+      head.className = 'admin-entry-head';
+
+      const name = document.createElement('span');
+      name.className = 'admin-entry-name';
+      name.textContent = entry.nom_complet;
+
+      const date = document.createElement('span');
+      date.className = 'admin-entry-date';
+      date.textContent = dateFormatter.format(new Date(entry.created_at));
+
+      head.appendChild(name);
+      head.appendChild(date);
+
+      const contact = document.createElement('p');
+      contact.className = 'admin-foster-contact';
+      contact.textContent = `${entry.telephone} · ${entry.email} · ${entry.ville}`;
+
+      const chipsWrap = document.createElement('div');
+      chipsWrap.className = 'admin-foster-chips';
+
+      const chipTexts = [
+        `Chien : ${entry.chien_interesse}`,
+        `Logement : ${entry.logement}`,
+      ];
+      chipTexts.forEach((text) => {
+        const chip = document.createElement('span');
+        chip.className = 'admin-foster-chip';
+        chip.textContent = text;
+        chipsWrap.appendChild(chip);
+      });
+
+      const experience = document.createElement('div');
+      experience.className = 'admin-foster-text';
+      const experienceLabel = document.createElement('span');
+      experienceLabel.className = 'admin-foster-text-label';
+      experienceLabel.textContent = 'Expérience avec les chiens';
+      const experienceValue = document.createElement('p');
+      experienceValue.textContent = entry.experience_chiens;
+      experience.appendChild(experienceLabel);
+      experience.appendChild(experienceValue);
+
+      const motivation = document.createElement('div');
+      motivation.className = 'admin-foster-text';
+      const motivationLabel = document.createElement('span');
+      motivationLabel.className = 'admin-foster-text-label';
+      motivationLabel.textContent = 'Motivation';
+      const motivationValue = document.createElement('p');
+      motivationValue.textContent = entry.motivation;
+      motivation.appendChild(motivationLabel);
+      motivation.appendChild(motivationValue);
+
+      const notesBlock = document.createElement('div');
+      notesBlock.className = 'admin-foster-notes';
+
+      const notesLabel = document.createElement('label');
+      notesLabel.className = 'admin-foster-text-label';
+      notesLabel.textContent = "Note interne (visible seulement par l'équipe)";
+
+      const notesTextarea = document.createElement('textarea');
+      notesTextarea.className = 'admin-foster-notes-textarea field';
+      notesTextarea.placeholder = 'Ex. Appelé le 12/09, très motivé...';
+      notesTextarea.rows = 2;
+      notesTextarea.maxLength = 2000;
+      notesTextarea.value = entry.notes || '';
+
+      const saveNotesBtn = document.createElement('button');
+      saveNotesBtn.type = 'button';
+      saveNotesBtn.className = 'admin-foster-notes-save';
+      saveNotesBtn.textContent = 'Enregistrer la note';
+
+      saveNotesBtn.addEventListener('click', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          requireReauth();
+          return;
+        }
+
+        saveNotesBtn.disabled = true;
+        saveNotesBtn.textContent = 'Enregistrement...';
+
+        try {
+          const response = await fetch(`/api/admin/adoption-applications/${entry.id}/notes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+            body: JSON.stringify({ notes: notesTextarea.value }),
+          });
+
+          if (response.status === 401) {
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('échec');
+
+          entry.notes = notesTextarea.value.trim();
+          saveNotesBtn.textContent = 'Enregistré ✓';
+          setTimeout(() => { saveNotesBtn.textContent = 'Enregistrer la note'; }, 2000);
+        } catch (err) {
+          showActionMsg("L'enregistrement de la note a échoué, réessaie.", true);
+          saveNotesBtn.textContent = 'Enregistrer la note';
+        } finally {
+          saveNotesBtn.disabled = false;
+        }
+      });
+
+      notesBlock.appendChild(notesLabel);
+      notesBlock.appendChild(notesTextarea);
+      notesBlock.appendChild(saveNotesBtn);
+
+      body.appendChild(head);
+      body.appendChild(contact);
+      body.appendChild(chipsWrap);
+      body.appendChild(experience);
+      body.appendChild(motivation);
+      body.appendChild(notesBlock);
+
+      const actions = document.createElement('div');
+      actions.className = 'admin-entry-actions';
+
+      const statusSelect = document.createElement('select');
+      statusSelect.className = 'admin-foster-status field';
+      Object.entries(FOSTER_STATUS_LABELS).forEach(([value, label]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        if (value === entry.status) option.selected = true;
+        statusSelect.appendChild(option);
+      });
+      statusSelect.dataset.status = entry.status;
+
+      statusSelect.addEventListener('change', async () => {
+        const pw = storedPassword();
+        if (!pw) {
+          statusSelect.value = entry.status;
+          requireReauth();
+          return;
+        }
+
+        const newStatus = statusSelect.value;
+        const previousStatus = entry.status;
+        statusSelect.disabled = true;
+
+        try {
+          const response = await fetch(`/api/admin/adoption-applications/${entry.id}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Password': pw },
+            body: JSON.stringify({ status: newStatus }),
+          });
+
+          if (response.status === 401) {
+            statusSelect.value = previousStatus;
+            requireReauth();
+            return;
+          }
+
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error('échec');
+
+          entry.status = newStatus;
+          statusSelect.dataset.status = newStatus;
+          row.dataset.status = newStatus;
+          applyAdoptionFilterToRow(row);
+          updateAdoptionBadge();
+        } catch (err) {
+          statusSelect.value = previousStatus;
+          showActionMsg("La mise à jour du statut a échoué, réessaie.", true);
+        } finally {
+          statusSelect.disabled = false;
+        }
+      });
+
+      actions.appendChild(statusSelect);
+
+      const deleteBtn = createTwoStepButton('Supprimer', async (pw) => {
+        const response = await fetch(`/api/admin/adoption-applications/${entry.id}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) throw Object.assign(new Error('Session expirée.'), { unauthorized: true });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('La suppression a échoué, réessaie.');
+
+        row.remove();
+        updateAdoptionBadge();
+        const adoptionList = document.getElementById('admin-adoption-list');
+        if (adoptionList && !adoptionList.children.length) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucune candidature pour le moment.';
+          adoptionList.appendChild(empty);
+        }
+      });
+
+      actions.appendChild(deleteBtn);
+
+      row.appendChild(body);
+      row.appendChild(actions);
+      return row;
+    };
+
+    async function loadAdoptionApplications() {
+      const adoptionList = document.getElementById('admin-adoption-list');
+      const pw = storedPassword();
+      if (!pw || !adoptionList) return;
+
+      adoptionList.innerHTML = '<p class="guestbook-loading">Chargement...</p>';
+      try {
+        const response = await fetch('/api/admin/adoption-applications', {
+          headers: { 'X-Admin-Password': pw },
+        });
+
+        if (response.status === 401) {
+          requireReauth();
+          return;
+        }
+
+        const data = await response.json();
+        adoptionList.innerHTML = '';
+
+        if (!data.applications || data.applications.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'guestbook-empty';
+          empty.textContent = 'Aucune candidature pour le moment.';
+          adoptionList.appendChild(empty);
+          updateAdoptionBadge();
+          return;
+        }
+
+        data.applications.forEach((entry) => {
+          const row = renderAdoptionEntry(entry);
+          applyAdoptionFilterToRow(row);
+          adoptionList.appendChild(row);
+        });
+        updateAdoptionBadge();
+      } catch (err) {
+        adoptionList.innerHTML = '';
+        const empty = document.createElement('p');
+        empty.className = 'guestbook-empty';
+        empty.textContent = 'Impossible de charger les candidatures.';
+        adoptionList.appendChild(empty);
+      }
+    }
+
     // Formulaire de creation/modification d'article de blog : la photo est une simple URL externe
     // (pas d'upload de fichier -- R2 necessiterait un abonnement payant cote Cloudflare). Le meme
     // formulaire sert aussi a modifier un article existant (bouton "Modifier" de la liste ci-dessous) --
@@ -2753,80 +3121,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ===== Lecteur de musique flottant (accueil uniquement) =====
-  // Present seulement sur cette page (voir style.css) : pas besoin de faire suivre la lecture
-  // d'une page a l'autre, donc pas de blocage lie a l'autoplay des navigateurs. Le volume et
-  // l'etat muet restent memorises d'une visite a l'autre (simple confort), mais rien d'autre.
-  const musicPlayer = document.getElementById('music-player');
-
-  if (musicPlayer) {
-    const audio = document.getElementById('site-audio');
-    const toggleBtn = document.getElementById('music-toggle');
-    const muteBtn = document.getElementById('music-mute');
-    const volDownBtn = document.getElementById('music-vol-down');
-    const volUpBtn = document.getElementById('music-vol-up');
-    const iconPlay = document.getElementById('music-icon-play');
-    const iconPause = document.getElementById('music-icon-pause');
-    const iconSound = document.getElementById('music-icon-sound');
-    const iconMuted = document.getElementById('music-icon-muted');
-    const volumeFill = document.getElementById('music-volume-fill');
-
-    const MUSIC_KEYS = { volume: 'dogcytocine-music-volume', muted: 'dogcytocine-music-muted' };
-
-    const storedVolume = parseFloat(localStorage.getItem(MUSIC_KEYS.volume));
-    audio.volume = Number.isFinite(storedVolume) ? Math.min(1, Math.max(0, storedVolume)) : 0.6;
-    audio.muted = localStorage.getItem(MUSIC_KEYS.muted) === '1';
-
-    const updateIcons = () => {
-      const playing = !audio.paused;
-      if (iconPlay) iconPlay.hidden = playing;
-      if (iconPause) iconPause.hidden = !playing;
-      if (iconSound) iconSound.hidden = audio.muted;
-      if (iconMuted) iconMuted.hidden = !audio.muted;
-      musicPlayer.classList.toggle('is-active', playing);
-      if (toggleBtn) toggleBtn.setAttribute('aria-label', playing ? 'Mettre en pause' : 'Lancer la musique');
-      if (muteBtn) {
-        muteBtn.setAttribute('aria-label', audio.muted ? 'Remettre le son' : 'Couper le son');
-        muteBtn.classList.toggle('is-muted', audio.muted);
-      }
-      if (volumeFill) volumeFill.style.width = `${Math.round((audio.muted ? 0 : audio.volume) * 100)}%`;
-    };
-
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => {
-        if (audio.paused) {
-          audio.play().catch(() => {});
-        } else {
-          audio.pause();
-          audio.currentTime = 0;
-        }
-      });
-    }
-
-    if (muteBtn) {
-      muteBtn.addEventListener('click', () => {
-        audio.muted = !audio.muted;
-        localStorage.setItem(MUSIC_KEYS.muted, audio.muted ? '1' : '0');
-        updateIcons();
-      });
-    }
-
-    const adjustVolume = (delta) => {
-      audio.volume = Math.min(1, Math.max(0, audio.volume + delta));
-      if (audio.volume > 0 && audio.muted) {
-        audio.muted = false;
-        localStorage.setItem(MUSIC_KEYS.muted, '0');
-      }
-      localStorage.setItem(MUSIC_KEYS.volume, String(audio.volume));
-      updateIcons();
-    };
-
-    if (volDownBtn) volDownBtn.addEventListener('click', () => adjustVolume(-0.1));
-    if (volUpBtn) volUpBtn.addEventListener('click', () => adjustVolume(0.1));
-
-    audio.addEventListener('play', updateIcons);
-    audio.addEventListener('pause', updateIcons);
-
-    updateIcons();
-  }
 });

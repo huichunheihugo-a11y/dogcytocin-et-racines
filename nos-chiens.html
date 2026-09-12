@@ -84,6 +84,77 @@
   <p class="dog-lightbox-count" id="dog-lightbox-count"></p>
 </div>
 
+<div class="adoption-modal" id="adoption-modal" hidden>
+  <div class="adoption-modal-scrim" id="adoption-modal-scrim"></div>
+  <div class="adoption-modal-dialog">
+    <button class="adoption-modal-close" id="adoption-modal-close" aria-label="Fermer">&times;</button>
+    <div class="form-card">
+      <h2>Je suis intéressé(e)</h2>
+      <div class="divider on-cream"></div>
+      <p style="margin-top: 18px; color: var(--text-muted);">Dites-nous en un peu plus sur vous, on revient vers vous très vite.</p>
+
+      <form id="adoption-form" name="candidature-adoption" method="POST" action="/api/adoption-application" style="margin-top: 24px;">
+
+        <!-- Piège à robots (anti-spam) : le serveur ignore silencieusement toute soumission où cette case est cochée -->
+        <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
+
+        <div class="form-field">
+          <label for="ad-name">Nom complet</label>
+          <input type="text" id="ad-name" name="nom_complet" required autocomplete="name" class="field" placeholder="Prénom et nom">
+        </div>
+
+        <div class="form-field form-row">
+          <div>
+            <label for="ad-phone">Téléphone</label>
+            <input type="tel" id="ad-phone" name="telephone" required autocomplete="tel" class="field" placeholder="06 12 34 56 78">
+          </div>
+          <div>
+            <label for="ad-email">Email</label>
+            <input type="email" id="ad-email" name="email" required autocomplete="email" class="field" placeholder="vous@exemple.fr">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="ad-ville">Ville</label>
+          <input type="text" id="ad-ville" name="ville" required autocomplete="address-level2" class="field" placeholder="Votre ville">
+        </div>
+
+        <div class="form-field">
+          <label for="ad-dog">Chien qui vous intéresse</label>
+          <input type="text" id="ad-dog" name="chien_interesse" required class="field">
+        </div>
+
+        <div class="form-field">
+          <label for="ad-logement">Logement</label>
+          <input type="text" id="ad-logement" name="logement" required class="field" placeholder="Ex. maison avec jardin clôturé">
+        </div>
+
+        <div class="form-field">
+          <label for="ad-experience">Votre expérience avec les chiens</label>
+          <textarea id="ad-experience" name="experience_chiens" rows="3" required class="field" placeholder="Racontez-nous votre expérience avec les chiens, passée ou présente."></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="ad-motivation">Votre motivation</label>
+          <textarea id="ad-motivation" name="motivation" rows="3" required class="field" placeholder="Ce qui vous donne envie d'accueillir ce chien."></textarea>
+        </div>
+
+        <p id="adoption-error" class="form-msg-error" hidden></p>
+
+        <button type="submit" id="adoption-submit" class="btn btn-primary">Envoyer ma candidature</button>
+        <p class="form-reassurance">Envoyer ce formulaire ne vous engage à rien, c'est le début d'une
+          conversation, pas un contrat.</p>
+      </form>
+
+      <div id="adoption-success" class="form-success" hidden>
+        <h2>Merci !</h2>
+        <p>Votre message vient d'atterrir chez nous, et on est déjà touchés que vous ayez pensé à lui.
+          On revient vers vous très vite, promis.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="wave-divider wave-to-green" aria-hidden="true"></div>
 
 <footer class="site-footer">

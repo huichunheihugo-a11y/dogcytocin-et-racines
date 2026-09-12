@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-09.1';
+const WORKER_VERSION = '2026-09-12.1';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -390,6 +390,103 @@ async function handleVolunteerApplication(request, env) {
         to: NOTIFICATION_EMAIL,
         reply_to: body.email.trim(),
         subject: `Nouvelle candidature bénévole — ${body.nom_complet.trim()}`,
+        html: `<table cellpadding="0" cellspacing="0">${rows}</table>`,
+      }),
+    });
+
+    if (!resendResponse.ok) {
+      return json({ success: false, message: "L'envoi a échoué, réessayez ou écrivez-nous directement." }, 502);
+    }
+
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: "L'envoi a échoué, réessayez ou écrivez-nous directement." }, 502);
+  }
+}
+
+const ADOPTION_FIELD_LABELS = {
+  nom_complet: 'Nom complet',
+  telephone: 'Téléphone',
+  email: 'Email',
+  ville: 'Ville',
+  chien_interesse: 'Chien qui vous intéresse',
+  logement: 'Logement',
+  experience_chiens: 'Expérience avec les chiens',
+  motivation: 'Motivation',
+};
+
+const ADOPTION_REQUIRED_FIELDS = [
+  'nom_complet', 'telephone', 'email', 'ville',
+  'chien_interesse', 'logement', 'experience_chiens', 'motivation',
+];
+
+async function handleAdoptionApplication(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible, réessayez.' }, 400);
+  }
+
+  if (body?.botcheck) {
+    // Piège à robots déclenché : succès silencieux, rien n'est envoyé, pour ne pas alerter le bot.
+    return json({ success: true });
+  }
+
+  for (const key of ADOPTION_REQUIRED_FIELDS) {
+    if (typeof body?.[key] !== 'string' || !body[key].trim()) {
+      return json({ success: false, message: 'Merci de remplir tous les champs obligatoires.' }, 422);
+    }
+  }
+
+  if (!env.RESEND_API_KEY) {
+    return json({ success: false, message: "L'envoi n'est pas encore configuré, réessayez plus tard ou écrivez-nous directement." }, 503);
+  }
+
+  if (env.DB) {
+    try {
+      // Enregistrement best-effort, comme pour foster_applications : l'email ci-dessous reste
+      // le vrai critere de succes pour la personne qui candidate.
+      await env.DB.prepare(
+        `INSERT INTO adoption_applications
+         (nom_complet, telephone, email, ville, chien_interesse, logement, experience_chiens, motivation, status, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 'nouvelle', ?9)`
+      ).bind(
+        body.nom_complet.trim(),
+        body.telephone.trim(),
+        body.email.trim(),
+        body.ville.trim(),
+        body.chien_interesse.trim(),
+        body.logement.trim(),
+        body.experience_chiens.trim(),
+        body.motivation.trim(),
+        new Date().toISOString()
+      ).run();
+    } catch (err) {
+      // Table pas encore creee ou base indisponible : ne bloque jamais l'envoi de l'email.
+    }
+  }
+
+  const rows = Object.entries(ADOPTION_FIELD_LABELS)
+    .filter(([key]) => typeof body[key] === 'string' && body[key].trim())
+    .map(([key, label]) => {
+      const value = escapeHtml(body[key].trim()).replace(/\n/g, '<br>');
+      return `<tr><td style="padding:4px 14px 4px 0;font-weight:600;white-space:nowrap;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:4px 0;">${value}</td></tr>`;
+    })
+    .join('');
+
+  try {
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        to: NOTIFICATION_EMAIL,
+        reply_to: body.email.trim(),
+        subject: `Nouvelle candidature d'adoption — ${body.nom_complet.trim()} (${body.chien_interesse.trim()})`,
         html: `<table cellpadding="0" cellspacing="0">${rows}</table>`,
       }),
     });
@@ -897,6 +994,110 @@ async function handleDeleteVolunteerApplication(request, env, id) {
 
   try {
     await env.DB.prepare('DELETE FROM volunteer_applications WHERE id = ?1').bind(id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
+  }
+}
+
+async function handleGetAdoptionApplications(request, env) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!env.DB) return json({ applications: [] });
+
+  try {
+    const { results } = await env.DB.prepare(
+      `SELECT id, nom_complet, telephone, email, ville, chien_interesse, logement, experience_chiens, motivation, status, created_at, notes
+       FROM adoption_applications ORDER BY id DESC LIMIT 200`
+    ).all();
+    return json({ applications: results });
+  } catch (err) {
+    // Table pas encore creee : on affiche une liste vide plutot que de casser la page.
+    return json({ applications: [] });
+  }
+}
+
+async function handleUpdateAdoptionStatus(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible.' }, 400);
+  }
+
+  if (!FOSTER_STATUSES.includes(body?.status)) {
+    return json({ success: false, message: 'Statut invalide.' }, 400);
+  }
+
+  try {
+    await env.DB.prepare('UPDATE adoption_applications SET status = ?1 WHERE id = ?2')
+      .bind(body.status, id).run();
+
+    return json({ success: true, status: body.status });
+  } catch (err) {
+    return json({ success: false, message: 'Erreur lors de la mise à jour.' }, 500);
+  }
+}
+
+async function handleUpdateAdoptionNotes(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ success: false, message: 'Requête illisible.' }, 400);
+  }
+
+  const notes = typeof body?.notes === 'string' ? body.notes.trim() : '';
+
+  if (notes.length > 2000) {
+    return json({ success: false, message: 'La note est trop longue (2000 caractères max).' }, 422);
+  }
+
+  try {
+    await env.DB.prepare('UPDATE adoption_applications SET notes = ?1 WHERE id = ?2')
+      .bind(notes || null, id).run();
+    return json({ success: true });
+  } catch (err) {
+    return json({ success: false, message: "Erreur lors de l'enregistrement." }, 500);
+  }
+}
+
+async function handleDeleteAdoptionApplication(request, env, id) {
+  const authError = await checkAdminPassword(request, env);
+  if (authError) return authError;
+
+  if (!/^\d+$/.test(id)) {
+    return json({ success: false, message: 'Identifiant invalide.' }, 400);
+  }
+  if (!env.DB) {
+    return json({ success: false, message: 'Base indisponible.' }, 503);
+  }
+
+  try {
+    await env.DB.prepare('DELETE FROM adoption_applications WHERE id = ?1').bind(id).run();
     return json({ success: true });
   } catch (err) {
     return json({ success: false, message: 'Erreur lors de la suppression.' }, 500);
@@ -1529,6 +1730,10 @@ export default {
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 
+      if (url.pathname === '/api/adoption-application') {
+        if (request.method === 'POST') return withSecurityHeaders(await handleAdoptionApplication(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
 
       if (url.pathname === '/api/comments') {
         if (request.method === 'GET') return withSecurityHeaders(await handleGetComments(env, url.searchParams.get('order')));
@@ -1619,6 +1824,29 @@ export default {
       const volunteerIdMatch = url.pathname.match(/^\/api\/admin\/volunteer-applications\/(\d+)$/);
       if (volunteerIdMatch) {
         if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteVolunteerApplication(request, env, volunteerIdMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      if (url.pathname === '/api/admin/adoption-applications') {
+        if (request.method === 'GET') return withSecurityHeaders(await handleGetAdoptionApplications(request, env));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const adoptionStatusMatch = url.pathname.match(/^\/api\/admin\/adoption-applications\/(\d+)\/status$/);
+      if (adoptionStatusMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleUpdateAdoptionStatus(request, env, adoptionStatusMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const adoptionNotesMatch = url.pathname.match(/^\/api\/admin\/adoption-applications\/(\d+)\/notes$/);
+      if (adoptionNotesMatch) {
+        if (request.method === 'POST') return withSecurityHeaders(await handleUpdateAdoptionNotes(request, env, adoptionNotesMatch[1]));
+        return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
+      }
+
+      const adoptionIdMatch = url.pathname.match(/^\/api\/admin\/adoption-applications\/(\d+)$/);
+      if (adoptionIdMatch) {
+        if (request.method === 'DELETE') return withSecurityHeaders(await handleDeleteAdoptionApplication(request, env, adoptionIdMatch[1]));
         return withSecurityHeaders(json({ success: false, message: 'Méthode non supportée' }, 405));
       }
 

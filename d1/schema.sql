@@ -75,6 +75,23 @@ CREATE TABLE IF NOT EXISTS volunteer_applications (
 
 CREATE INDEX IF NOT EXISTS idx_volunteer_applications_created ON volunteer_applications (created_at);
 
+CREATE TABLE IF NOT EXISTS adoption_applications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nom_complet TEXT NOT NULL,
+  telephone TEXT NOT NULL,
+  email TEXT NOT NULL,
+  ville TEXT NOT NULL,
+  chien_interesse TEXT NOT NULL,
+  logement TEXT NOT NULL,
+  experience_chiens TEXT NOT NULL,
+  motivation TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'nouvelle',
+  created_at TEXT NOT NULL,
+  notes TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_adoption_applications_created ON adoption_applications (created_at);
+
 CREATE TABLE IF NOT EXISTS blog_posts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,

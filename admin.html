@@ -20,6 +20,7 @@
       <a href="#" class="admin-nav-link active" data-tab="comments">Commentaires</a>
       <a href="#" class="admin-nav-link" data-tab="foster">Familles d'accueil <span id="admin-foster-badge" class="admin-nav-badge" hidden>0</span></a>
       <a href="#" class="admin-nav-link" data-tab="benevoles">Bénévoles <span id="admin-benevoles-badge" class="admin-nav-badge" hidden>0</span></a>
+      <a href="#" class="admin-nav-link" data-tab="adoption">Candidatures adoption <span id="admin-adoption-badge" class="admin-nav-badge" hidden>0</span></a>
       <a href="#" class="admin-nav-link" data-tab="dogs">Nos chiens</a>
       <a href="#" class="admin-nav-link" data-tab="blog">Blog</a>
       <a href="#" class="admin-nav-link" data-tab="rejected">Messages refusés</a>
@@ -96,6 +97,17 @@
         <button type="button" class="admin-status-filter-btn" data-status-filter="refusee">Refusées</button>
       </div>
       <div id="admin-benevoles-list" class="admin-list"></div>
+    </div>
+
+    <div id="admin-tab-adoption" class="admin-tab" hidden>
+      <div class="admin-status-filter" id="admin-adoption-filter">
+        <button type="button" class="admin-status-filter-btn active" data-status-filter="all">Toutes</button>
+        <button type="button" class="admin-status-filter-btn" data-status-filter="nouvelle">Nouvelles</button>
+        <button type="button" class="admin-status-filter-btn" data-status-filter="en_cours">En cours</button>
+        <button type="button" class="admin-status-filter-btn" data-status-filter="acceptee">Acceptées</button>
+        <button type="button" class="admin-status-filter-btn" data-status-filter="refusee">Refusées</button>
+      </div>
+      <div id="admin-adoption-list" class="admin-list"></div>
     </div>
 
     <div id="admin-tab-dogs" class="admin-tab" hidden>
