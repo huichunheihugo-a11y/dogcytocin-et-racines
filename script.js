@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
       name.textContent = dog.name;
       const meta = document.createElement('p');
       meta.className = 'dog-meta';
-      meta.textContent = `${dog.age} · ${dog.size}`;
+      meta.textContent = dog.sexe ? `${dog.age} · ${dog.size} · ${dog.sexe}` : `${dog.age} · ${dog.size}`;
       const quote = document.createElement('p');
       quote.className = 'dog-quote';
       quote.textContent = dog.description;
@@ -2716,6 +2716,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const nameInput = document.getElementById('admin-dog-name');
       const ageInput = document.getElementById('admin-dog-age');
       const sizeInput = document.getElementById('admin-dog-size');
+      const sexeSelect = document.getElementById('admin-dog-sexe');
       const descriptionInput = document.getElementById('admin-dog-description');
       const statusSelect = document.getElementById('admin-dog-status');
       const imageUrlInput = document.getElementById('admin-dog-image-url');
@@ -2732,6 +2733,7 @@ document.addEventListener('DOMContentLoaded', () => {
       nameInput.value = entry.name;
       ageInput.value = entry.age;
       sizeInput.value = entry.size;
+      sexeSelect.value = entry.sexe || '';
       descriptionInput.value = entry.description;
       statusSelect.value = entry.status;
       imageUrlInput.value = entry.image_url || '';
@@ -2807,7 +2809,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const meta = document.createElement('span');
       meta.className = 'admin-entry-date';
-      meta.textContent = `${entry.age} · ${entry.size}`;
+      meta.textContent = entry.sexe ? `${entry.age} · ${entry.size} · ${entry.sexe}` : `${entry.age} · ${entry.size}`;
       body.appendChild(meta);
 
       const actions = document.createElement('div');
@@ -2879,6 +2881,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const dogNameInput = document.getElementById('admin-dog-name');
       const dogAgeInput = document.getElementById('admin-dog-age');
       const dogSizeInput = document.getElementById('admin-dog-size');
+      const dogSexeSelect = document.getElementById('admin-dog-sexe');
       const dogDescriptionInput = document.getElementById('admin-dog-description');
       const dogStatusSelect = document.getElementById('admin-dog-status');
       const dogImageUrlInput = document.getElementById('admin-dog-image-url');
@@ -3036,6 +3039,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = dogNameInput.value.trim();
         const age = dogAgeInput.value.trim();
         const size = dogSizeInput.value.trim();
+        const sexe = dogSexeSelect.value;
         const description = dogDescriptionInput.value.trim();
         const status = dogStatusSelect.value;
         const imageUrl = dogImageUrlInput.value.trim();
@@ -3059,6 +3063,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!size) {
           showDogMsg('La taille est obligatoire.', true);
           dogSizeInput.focus();
+          return;
+        }
+
+        if (!sexe) {
+          showDogMsg('Le sexe est obligatoire.', true);
+          dogSexeSelect.focus();
           return;
         }
 
@@ -3094,7 +3104,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const response = await fetch(url, {
             method: 'POST',
             headers: { 'X-Admin-Password': pw, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, age, size, description, status, image_url: imageUrl, photo_urls: photoUrls }),
+            body: JSON.stringify({ name, age, size, sexe, description, status, image_url: imageUrl, photo_urls: photoUrls }),
           });
 
           if (response.status === 401) {

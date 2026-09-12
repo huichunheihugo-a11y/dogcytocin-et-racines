@@ -134,17 +134,28 @@
           </div>
         </div>
 
-        <div class="admin-field-group">
-          <label for="admin-dog-description">Description</label>
-          <textarea id="admin-dog-description" name="description" class="field admin-dog-description-textarea" rows="4" maxlength="1000" required></textarea>
+        <div class="admin-dog-form-row">
+          <div class="admin-field-group">
+            <label for="admin-dog-sexe">Sexe</label>
+            <select id="admin-dog-sexe" name="sexe" class="field" required>
+              <option value="" disabled selected>Sélectionnez une option</option>
+              <option value="Mâle">Mâle</option>
+              <option value="Femelle">Femelle</option>
+            </select>
+          </div>
+
+          <div class="admin-field-group">
+            <label for="admin-dog-status">Statut</label>
+            <select id="admin-dog-status" name="status" class="field" required>
+              <option value="adoption">À l'adoption</option>
+              <option value="bientot">Bientôt à l'adoption</option>
+            </select>
+          </div>
         </div>
 
         <div class="admin-field-group">
-          <label for="admin-dog-status">Statut</label>
-          <select id="admin-dog-status" name="status" class="field" required>
-            <option value="adoption">À l'adoption</option>
-            <option value="bientot">Bientôt à l'adoption</option>
-          </select>
+          <label for="admin-dog-description">Description</label>
+          <textarea id="admin-dog-description" name="description" class="field admin-dog-description-textarea" rows="4" maxlength="1000" required></textarea>
         </div>
 
         <div class="admin-field-group">

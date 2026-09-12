@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-12.1';
+const WORKER_VERSION = '2026-09-12.2';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or.
 // Pas un secret (visible aussi en pied de page du site) -- seule la cle API Resend
@@ -1514,6 +1514,7 @@ async function handleDeleteBlogPost(request, env, id) {
 // vs badge vert "Bientot") -- ces valeurs sont aussi celles utilisees par le filtre client
 // (data-status) et doivent donc rester synchronisees avec nos-chiens.html / script.js.
 const DOG_STATUSES = ['adoption', 'bientot'];
+const DOG_SEXES = ['Mâle', 'Femelle'];
 
 function toPublicDog(row) {
   let photoUrls = [];
@@ -1531,6 +1532,7 @@ function toPublicDog(row) {
     name: row.name,
     age: row.age,
     size: row.size,
+    sexe: row.sexe || null,
     description: row.description,
     status: row.status,
     image_url: row.image_url || null,
@@ -1544,7 +1546,7 @@ async function handleListDogs(env) {
 
   try {
     const { results } = await env.DB.prepare(
-      'SELECT id, name, age, size, description, status, image_url, photo_urls, created_at FROM dogs ORDER BY id DESC LIMIT 200'
+      'SELECT id, name, age, size, sexe, description, status, image_url, photo_urls, created_at FROM dogs ORDER BY id DESC LIMIT 200'
     ).all();
     return json({ dogs: results.map(toPublicDog) });
   } catch (err) {
@@ -1570,6 +1572,7 @@ async function handleCreateDog(request, env) {
   const name = typeof body.name === 'string' ? body.name.trim() : '';
   const age = typeof body.age === 'string' ? body.age.trim() : '';
   const size = typeof body.size === 'string' ? body.size.trim() : '';
+  const sexe = typeof body.sexe === 'string' ? body.sexe.trim() : '';
   const description = typeof body.description === 'string' ? body.description.trim() : '';
   const status = typeof body.status === 'string' ? body.status.trim() : '';
 
@@ -1581,6 +1584,9 @@ async function handleCreateDog(request, env) {
   }
   if (!size || size.length > 50) {
     return json({ success: false, message: 'La taille est obligatoire (50 caractères max).' }, 422);
+  }
+  if (!DOG_SEXES.includes(sexe)) {
+    return json({ success: false, message: 'Le sexe est obligatoire.' }, 422);
   }
   if (!description || description.length > 1000) {
     return json({ success: false, message: 'La description est obligatoire (1000 caractères max).' }, 422);
@@ -1604,12 +1610,12 @@ async function handleCreateDog(request, env) {
   try {
     const createdAt = new Date().toISOString();
     const insert = await env.DB.prepare(
-      'INSERT INTO dogs (name, age, size, description, status, image_url, created_at, photo_urls) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)'
-    ).bind(name, age, size, description, status, imageUrl, createdAt, JSON.stringify(photoUrls)).run();
+      'INSERT INTO dogs (name, age, size, sexe, description, status, image_url, created_at, photo_urls) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)'
+    ).bind(name, age, size, sexe, description, status, imageUrl, createdAt, JSON.stringify(photoUrls)).run();
 
     return json({
       success: true,
-      dog: { id: insert.meta.last_row_id, name, age, size, description, status, image_url: imageUrl, photo_urls: photoUrls, created_at: createdAt },
+      dog: { id: insert.meta.last_row_id, name, age, size, sexe, description, status, image_url: imageUrl, photo_urls: photoUrls, created_at: createdAt },
     });
   } catch (err) {
     return json({ success: false, message: "Erreur lors de l'enregistrement de la fiche." }, 500);
@@ -1637,6 +1643,7 @@ async function handleUpdateDog(request, env, id) {
   const name = typeof body.name === 'string' ? body.name.trim() : '';
   const age = typeof body.age === 'string' ? body.age.trim() : '';
   const size = typeof body.size === 'string' ? body.size.trim() : '';
+  const sexe = typeof body.sexe === 'string' ? body.sexe.trim() : '';
   const description = typeof body.description === 'string' ? body.description.trim() : '';
   const status = typeof body.status === 'string' ? body.status.trim() : '';
 
@@ -1648,6 +1655,9 @@ async function handleUpdateDog(request, env, id) {
   }
   if (!size || size.length > 50) {
     return json({ success: false, message: 'La taille est obligatoire (50 caractères max).' }, 422);
+  }
+  if (!DOG_SEXES.includes(sexe)) {
+    return json({ success: false, message: 'Le sexe est obligatoire.' }, 422);
   }
   if (!description || description.length > 1000) {
     return json({ success: false, message: 'La description est obligatoire (1000 caractères max).' }, 422);
@@ -1679,14 +1689,14 @@ async function handleUpdateDog(request, env, id) {
   }
 
   try {
-    await env.DB.prepare('UPDATE dogs SET name = ?1, age = ?2, size = ?3, description = ?4, status = ?5, image_url = ?6, photo_urls = ?7 WHERE id = ?8')
-      .bind(name, age, size, description, status, imageUrl, JSON.stringify(photoUrls), id).run();
+    await env.DB.prepare('UPDATE dogs SET name = ?1, age = ?2, size = ?3, sexe = ?4, description = ?5, status = ?6, image_url = ?7, photo_urls = ?8 WHERE id = ?9')
+      .bind(name, age, size, sexe, description, status, imageUrl, JSON.stringify(photoUrls), id).run();
   } catch (err) {
     return json({ success: false, message: "Erreur lors de l'enregistrement de la fiche." }, 500);
   }
 
   const row = await env.DB.prepare(
-    'SELECT id, name, age, size, description, status, image_url, photo_urls, created_at FROM dogs WHERE id = ?1'
+    'SELECT id, name, age, size, sexe, description, status, image_url, photo_urls, created_at FROM dogs WHERE id = ?1'
   ).bind(id).first();
 
   return json({ success: true, dog: toPublicDog(row) });

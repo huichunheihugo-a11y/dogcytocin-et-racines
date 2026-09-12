@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS dogs (
   name TEXT NOT NULL,
   age TEXT NOT NULL,
   size TEXT NOT NULL,
+  sexe TEXT,
   description TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'adoption',
   image_url TEXT,
@@ -118,8 +119,9 @@ CREATE TABLE IF NOT EXISTS dogs (
   photo_urls TEXT
 );
 
--- Si la table dogs existe deja sans cette colonne, executer separement dans la console D1 :
+-- Si la table dogs existe deja sans ces colonnes, executer separement dans la console D1 :
 -- ALTER TABLE dogs ADD COLUMN photo_urls TEXT;
+-- ALTER TABLE dogs ADD COLUMN sexe TEXT;
 --
 -- photo_urls stocke un tableau JSON de photos supplementaires (en plus de image_url, qui reste
 -- la photo de couverture affichee dans la grille) -- ex: ["https://...jpg","https://...jpg"].
