@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://dogcytocin-et-racines.huichunheihugo.workers.dev/sitemap.xml
+Sitemap: https://dogcytocin.fr/sitemap.xml
