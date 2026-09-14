@@ -1847,8 +1847,30 @@ select.field {
 .dog-quote {
   font-style: italic;
   color: var(--text-muted);
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
+
+.dog-quote.is-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dog-quote-toggle {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 16px;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--olive);
+  cursor: pointer;
+}
+
+.dog-quote-toggle:hover { text-decoration: underline; }
 
 .dog-interest-btn {
   display: block;

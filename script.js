@@ -311,11 +311,25 @@ document.addEventListener('DOMContentLoaded', () => {
       meta.className = 'dog-meta';
       meta.textContent = dog.sexe ? `${dog.age} · ${dog.size} · ${dog.sexe}` : `${dog.age} · ${dog.size}`;
       const quote = document.createElement('p');
-      quote.className = 'dog-quote';
+      quote.className = 'dog-quote is-clamped';
       quote.textContent = dog.description;
+
+      // Masque tant qu'on ne sait pas si le texte deborde reellement (verifie apres l'ajout
+      // de la carte au DOM, une fois la largeur reelle connue -- voir plus bas).
+      const quoteToggle = document.createElement('button');
+      quoteToggle.type = 'button';
+      quoteToggle.className = 'dog-quote-toggle';
+      quoteToggle.textContent = 'Voir en détail';
+      quoteToggle.hidden = true;
+      quoteToggle.addEventListener('click', () => {
+        const expanded = quote.classList.toggle('is-clamped') === false;
+        quoteToggle.textContent = expanded ? 'Voir moins' : 'Voir en détail';
+      });
+
       info.appendChild(name);
       info.appendChild(meta);
       info.appendChild(quote);
+      info.appendChild(quoteToggle);
 
       const interestBtn = document.createElement('button');
       interestBtn.type = 'button';
@@ -366,6 +380,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         data.dogs.forEach((dog) => dogsGrid.appendChild(renderDogCard(dog)));
         wireDogFilters();
+
+        // N'affiche le lien "Voir en detail" que pour les descriptions qui debordent
+        // vraiment une fois affichees (largeur reelle de la carte connue a ce stade).
+        requestAnimationFrame(() => {
+          dogsGrid.querySelectorAll('.dog-quote').forEach((quoteEl) => {
+            if (quoteEl.scrollHeight > quoteEl.clientHeight + 1) {
+              const toggle = quoteEl.nextElementSibling;
+              if (toggle && toggle.classList.contains('dog-quote-toggle')) toggle.hidden = false;
+            }
+          });
+        });
       } catch (err) {
         if (dogsLoading) dogsLoading.remove();
         if (dogsEmpty) dogsEmpty.hidden = false;
