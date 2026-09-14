@@ -379,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
     shareBtn.addEventListener('click', async () => {
       const shareData = {
         title: 'Dogcytocin et Racines',
-        text: 'Un refuge pour chiens en Bretagne où sauvetage, nature et lien humain se retrouvent.',
+        text: 'Une association de protection animale en Bretagne où sauvetage, nature et lien humain se retrouvent.',
         url: window.location.origin + '/index.html',
       };
 
