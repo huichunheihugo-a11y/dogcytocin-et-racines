@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-16.1';
+const WORKER_VERSION = '2026-09-16.2';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or et chaque
 // nouvelle candidature (famille d'accueil, benevole, adoption).
@@ -200,7 +200,7 @@ async function sendCommentNotification(env, comment) {
       body: JSON.stringify({
         // Expediteur par defaut de Resend : fonctionne sans verifier de domaine, mais tant
         // qu'aucun domaine n'est verifie, Resend ne livre qu'a l'adresse du compte Resend lui-meme.
-        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        from: 'Dogcytocin et Racines <notifications@dogcytocin.fr>',
         to: NOTIFICATION_EMAIL,
         subject: `Nouveau message de ${comment.name} sur le livre d'or`,
         html: `<p><strong>${escapeHtml(comment.name)}</strong> a laissé un message le ${dateLabel} :</p><p>${escapeHtml(comment.message)}</p>`,
@@ -296,7 +296,7 @@ async function handleFosterApplication(request, env) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        from: 'Dogcytocin et Racines <notifications@dogcytocin.fr>',
         to: NOTIFICATION_EMAIL,
         // Permet de repondre directement au candidat depuis la boite mail, sans copier son adresse.
         reply_to: body.email.trim(),
@@ -387,7 +387,7 @@ async function handleVolunteerApplication(request, env) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        from: 'Dogcytocin et Racines <notifications@dogcytocin.fr>',
         to: NOTIFICATION_EMAIL,
         reply_to: body.email.trim(),
         subject: `Nouvelle candidature bénévole — ${body.nom_complet.trim()}`,
@@ -484,7 +484,7 @@ async function handleAdoptionApplication(request, env) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Dogcytocin et Racines <onboarding@resend.dev>',
+        from: 'Dogcytocin et Racines <notifications@dogcytocin.fr>',
         to: NOTIFICATION_EMAIL,
         reply_to: body.email.trim(),
         subject: `Nouvelle candidature d'adoption — ${body.nom_complet.trim()} (${body.chien_interesse.trim()})`,
