@@ -1,7 +1,7 @@
 // Sert uniquement a verifier qu'un deploiement est bien en ligne (via GET /api/version)
 // sans jamais avoir a tester avec une vraie requete qui ecrit des donnees (ex: POST /api/comments).
 // A incrementer a chaque changement cote Worker qui doit etre confirme avant tout autre test.
-const WORKER_VERSION = '2026-09-16.2';
+const WORKER_VERSION = '2026-09-19.1';
 
 // Adresse qui recoit une notification a chaque nouveau message du livre d'or et chaque
 // nouvelle candidature (famille d'accueil, benevole, adoption).
@@ -1514,7 +1514,7 @@ async function handleDeleteBlogPost(request, env, id) {
 // Statuts affiches sur les fiches chiens de la page publique (tampon dore "A l'adoption"
 // vs badge vert "Bientot") -- ces valeurs sont aussi celles utilisees par le filtre client
 // (data-status) et doivent donc rester synchronisees avec nos-chiens.html / script.js.
-const DOG_STATUSES = ['adoption', 'bientot'];
+const DOG_STATUSES = ['adoption', 'accueil', 'bientot'];
 const DOG_SEXES = ['Mâle', 'Femelle'];
 
 function toPublicDog(row) {

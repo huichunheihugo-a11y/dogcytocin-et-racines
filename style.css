@@ -1791,6 +1791,13 @@ select.field {
   border-radius: 50%;
 }
 
+.dog-stamp.is-accueil {
+  color: var(--olive);
+  border-color: rgba(var(--olive-rgb), 0.9);
+}
+
+.dog-stamp.is-accueil::before { border-color: rgba(var(--olive-rgb), 0.9); }
+
 .dog-badge {
   position: absolute;
   bottom: 14px;
@@ -3145,6 +3152,7 @@ select.field {
 
 .admin-dog-status-label.is-adoption { background: rgba(var(--brown-light-rgb), 0.22); color: #6b4d2e; }
 .admin-dog-status-label.is-bientot { background: rgba(var(--olive-rgb), 0.14); color: var(--brown-dark); }
+.admin-dog-status-label.is-accueil { background: rgba(var(--olive-rgb), 0.28); color: var(--brown-dark); }
 
 @media (max-width: 480px) {
   .admin-dog-form-row { grid-template-columns: 1fr; }

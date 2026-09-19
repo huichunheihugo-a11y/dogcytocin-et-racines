@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterPills = document.querySelectorAll('.filter-pill');
     const DOG_STATUS_STAMP = {
       adoption: '<span class="dog-stamp">À<br>l\'adoption</span>',
+      accueil: '<span class="dog-stamp is-accueil">Famille<br>d\'accueil</span>',
       bientot: '<span class="dog-badge"><svg viewBox=\'0 0 24 24\' fill=\'none\' stroke-width=\'1.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'12\' cy=\'12\' r=\'9\'/><path d=\'M12 7v5l3.5 2\'/></svg> Bientôt</span>',
     };
 
@@ -381,16 +382,21 @@ document.addEventListener('DOMContentLoaded', () => {
         data.dogs.forEach((dog) => dogsGrid.appendChild(renderDogCard(dog)));
         wireDogFilters();
 
-        // N'affiche le lien "Voir en detail" que pour les descriptions qui debordent
-        // vraiment une fois affichees (largeur reelle de la carte connue a ce stade).
-        requestAnimationFrame(() => {
-          dogsGrid.querySelectorAll('.dog-quote').forEach((quoteEl) => {
-            if (quoteEl.scrollHeight > quoteEl.clientHeight + 1) {
-              const toggle = quoteEl.nextElementSibling;
-              if (toggle && toggle.classList.contains('dog-quote-toggle')) toggle.hidden = false;
+        // N'affiche le lien "Voir en detail" que pour les descriptions qui debordent vraiment.
+        // Re-mesure une fois les polices chargees (sinon la police de secours, plus large, fait
+        // croire qu'un texte court deborde) et au redimensionnement. Une fiche deja depliee garde
+        // son lien "Voir moins".
+        const updateQuoteToggles = () => {
+          dogsGrid.querySelectorAll('.dog-quote.is-clamped').forEach((quoteEl) => {
+            const toggle = quoteEl.nextElementSibling;
+            if (toggle && toggle.classList.contains('dog-quote-toggle')) {
+              toggle.hidden = quoteEl.scrollHeight <= quoteEl.clientHeight + 1;
             }
           });
-        });
+        };
+        requestAnimationFrame(updateQuoteToggles);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(updateQuoteToggles);
+        window.addEventListener('resize', updateQuoteToggles);
       } catch (err) {
         if (dogsLoading) dogsLoading.remove();
         if (dogsEmpty) dogsEmpty.hidden = false;
@@ -2704,7 +2710,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const DOG_INTRO_CREATE = 'Ajoute une nouvelle fiche chien pour la page "Nos chiens".';
     const DOG_INTRO_EDIT = "Modifie la fiche ci-dessous, puis enregistre.";
-    const DOG_STATUS_LABELS = { adoption: "À l'adoption", bientot: 'Bientôt à l\'adoption' };
+    const DOG_STATUS_LABELS = { adoption: "À l'adoption", accueil: "Cherche une famille d'accueil", bientot: 'Bientôt à l\'adoption' };
 
     let editingDogId = null;
 
@@ -2825,7 +2831,7 @@ document.addEventListener('DOMContentLoaded', () => {
       name.textContent = entry.name;
 
       const statusLabel = document.createElement('span');
-      statusLabel.className = 'admin-dog-status-label ' + (entry.status === 'adoption' ? 'is-adoption' : 'is-bientot');
+      statusLabel.className = 'admin-dog-status-label is-' + entry.status;
       statusLabel.textContent = DOG_STATUS_LABELS[entry.status] || entry.status;
 
       head.appendChild(name);
