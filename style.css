@@ -2040,6 +2040,8 @@ select.field {
   color: rgba(var(--cream-rgb), 0.5);
 }
 
+.footer-credit a:hover { text-decoration: underline; }
+
 /* ===== Hand-drawn feel for feature icons ===== */
 
 .card .icon,
@@ -3633,3 +3635,5 @@ body.links-page {
   color: var(--brown-dark);
   opacity: 0.5;
 }
+
+.links-credit a:hover { text-decoration: underline; }
