@@ -3734,8 +3734,8 @@ body.links-page {
   color: #fff;
   background-color: var(--brown-deepest);
   background-image:
-    linear-gradient(0deg, rgba(29, 32, 19, 0.9) 0%, rgba(29, 32, 19, 0.5) 40%, rgba(29, 32, 19, 0) 72%),
-    linear-gradient(90deg, rgba(29, 32, 19, 0.62) 0%, rgba(29, 32, 19, 0) 58%),
+    linear-gradient(0deg, rgba(29, 32, 19, 0.92) 0%, rgba(29, 32, 19, 0.58) 42%, rgba(29, 32, 19, 0) 74%),
+    linear-gradient(90deg, rgba(29, 32, 19, 0.74) 0%, rgba(29, 32, 19, 0.5) 40%, rgba(29, 32, 19, 0) 68%),
     url("images/chien-caresse.jpg");
   background-repeat: no-repeat;
   background-size: cover;
@@ -3753,15 +3753,27 @@ body.links-page {
 
 .hv2-hero-inner > * { max-width: 640px; }
 
+/* Le sticker est dans le h1 : le titre de la page dit ainsi ce qu'est l'association avant la
+   citation (utile aux lecteurs d'ecran et a Google). Visuellement, rien ne change. */
 .hv2-sticker {
-  display: inline-block;
+  display: block;
+  width: fit-content;
   font-family: var(--font-marker);
+  font-weight: 400;
   font-size: 1.05rem;
+  line-height: 1.3;
+  letter-spacing: 0.3px;
   color: var(--brown-deepest);
   background: var(--pink);
   padding: 4px 14px 6px;
   transform: rotate(-1.5deg);
   margin: 0 0 20px;
+  text-shadow: none;
+}
+
+.hv2-quote {
+  display: block;
+  text-shadow: 0 2px 22px rgba(29, 32, 19, 0.55), 0 1px 2px rgba(29, 32, 19, 0.4);
 }
 
 .hv2-h1 {
@@ -3776,9 +3788,10 @@ body.links-page {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.86);
+  color: #fff;
+  text-shadow: 0 1px 10px rgba(29, 32, 19, 0.6);
   margin: 0 0 32px;
 }
 
@@ -3792,10 +3805,8 @@ body.links-page {
 
 @media (prefers-reduced-motion: no-preference) {
   .hv2-hero-inner > * { animation: heroRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .hv2-hero-inner > .hv2-sticker { animation-name: heroEyebrowRise; }
   .hv2-hero-inner > :nth-child(2) { animation-delay: 0.12s; }
   .hv2-hero-inner > :nth-child(3) { animation-delay: 0.24s; }
-  .hv2-hero-inner > :nth-child(4) { animation-delay: 0.36s; }
 }
 
 /* Mobile : la photo passe au-dessus (entiere, le chien reste visible) et le texte se pose
@@ -3879,6 +3890,24 @@ body.links-page {
   stroke-width: 1.7;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+/* Une seule tuile ressort : l'action principale (le don), en dernier, la ou l'oeil finit. */
+.hv2-tile.is-primary { background: var(--brown-light); }
+
+.hv2-tile.is-primary .hv2-tile-icon {
+  background: rgba(29, 32, 19, 0.14);
+  color: var(--brown-deepest);
+}
+
+.hv2-tile.is-primary .hv2-tile-text { color: var(--brown-deepest); }
+
+/* Anneau de focus clair puis fonce : visible sur le hero sombre comme sur le fond creme. */
+.hv2-tile:focus-visible,
+.hv2-card:focus-visible {
+  outline: 3px solid var(--brown-deepest);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px #fff, 0 18px 44px rgba(var(--brown-dark-rgb), 0.18);
 }
 
 .hv2-tile-title {
