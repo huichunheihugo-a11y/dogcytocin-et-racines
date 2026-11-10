@@ -3634,3 +3634,528 @@ body.links-page {
   opacity: 0.5;
 }
 
+
+/* ===== Refonte de l'accueil (prefixe hv2-) ===== */
+/* Tout est prefixe hv2- : les autres pages (qui partagent header, footer et le reste de ce
+   fichier) ne sont pas touchees. Le header et le footer restent ceux du site. */
+
+.hv2-wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 56px);
+}
+
+.hv2-section { padding: clamp(56px, 8vw, 96px) 0; }
+.hv2-section-tight { padding-top: 0; }
+
+/* --- Boutons : deux variantes seulement --- */
+
+.hv2-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.hv2-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 30px;
+  border-radius: 50px;
+  border: 1.5px solid transparent;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.hv2-btn:active { transform: scale(0.98); }
+
+.hv2-btn.is-fill {
+  background: var(--brown-light);
+  color: var(--brown-deepest);
+}
+
+.hv2-btn.is-fill:hover { box-shadow: 0 6px 18px rgba(var(--brown-light-rgb), 0.45); }
+
+.hv2-btn.is-ghost {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.hv2-btn.is-ghost:hover { background: rgba(255, 255, 255, 0.12); }
+
+.hv2-btn.is-ghost.is-dark {
+  color: var(--brown-dark);
+  border-color: rgba(var(--brown-dark-rgb), 0.5);
+}
+
+.hv2-btn.is-ghost.is-dark:hover { background: rgba(var(--brown-dark-rgb), 0.08); }
+
+.hv2-hero :focus-visible,
+.hv2-cta :focus-visible { outline-color: var(--brown-light); }
+
+/* --- Titres --- */
+
+.hv2-h1,
+.hv2-h2 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  text-transform: none;
+  text-wrap: balance;
+}
+
+.hv2-h2 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  color: var(--brown-deepest);
+  margin: 0 0 12px;
+}
+
+.hv2-head { max-width: 640px; margin-bottom: clamp(28px, 4vw, 48px); }
+
+.hv2-sub {
+  color: var(--text-muted);
+  font-size: 1.02rem;
+  line-height: 1.7;
+  max-width: 560px;
+}
+
+/* --- Hero plein ecran --- */
+
+/* Le texte est ancre en bas a gauche, le visage du chien reste libre a droite. Le bas du hero
+   est plus haut que necessaire : les tuiles d'action (.hv2-quick) viennent le chevaucher. */
+.hv2-hero {
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(540px, calc(100vh - 150px), 720px);
+  padding: 96px 0 128px;
+  color: #fff;
+  background-color: var(--brown-deepest);
+  background-image:
+    linear-gradient(0deg, rgba(29, 32, 19, 0.9) 0%, rgba(29, 32, 19, 0.5) 40%, rgba(29, 32, 19, 0) 72%),
+    linear-gradient(90deg, rgba(29, 32, 19, 0.62) 0%, rgba(29, 32, 19, 0) 58%),
+    url("images/chien-caresse.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* Le chien et la main sont dans la moitie droite de la photo ; ce reglage garde la tete
+     dans le cadre, la photo etant recadree surtout en hauteur sur desktop. */
+  background-position: 0 0, 0 0, 82% 60%;
+}
+
+.hv2-hero-inner {
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 56px);
+}
+
+.hv2-hero-inner > * { max-width: 640px; }
+
+.hv2-sticker {
+  display: inline-block;
+  font-family: var(--font-marker);
+  font-size: 1.05rem;
+  color: var(--brown-deepest);
+  background: var(--pink);
+  padding: 4px 14px 6px;
+  transform: rotate(-1.5deg);
+  margin: 0 0 20px;
+}
+
+.hv2-h1 {
+  font-size: clamp(2rem, 5.4vw, 4.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.8px;
+  color: #fff;
+  margin: 0 0 20px;
+}
+
+.hv2-attrib {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.86);
+  margin: 0 0 32px;
+}
+
+.hv2-attrib::before {
+  content: "";
+  width: 32px;
+  height: 2px;
+  background: var(--brown-light);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hv2-hero-inner > * { animation: heroRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .hv2-hero-inner > .hv2-sticker { animation-name: heroEyebrowRise; }
+  .hv2-hero-inner > :nth-child(2) { animation-delay: 0.12s; }
+  .hv2-hero-inner > :nth-child(3) { animation-delay: 0.24s; }
+  .hv2-hero-inner > :nth-child(4) { animation-delay: 0.36s; }
+}
+
+/* Mobile : la photo passe au-dessus (entiere, le chien reste visible) et le texte se pose
+   dessous sur fond sombre, au lieu de recouvrir le chien. Le bloc photo est un ::before dans le
+   flux (pas de position absolue). */
+@media (max-width: 720px) {
+  .hv2-hero {
+    display: block;
+    min-height: 0;
+    padding: 0 0 64px;
+    background-image: none;
+  }
+
+  .hv2-hero::before {
+    content: "";
+    display: block;
+    height: 300px;
+    background-image:
+      linear-gradient(180deg, rgba(29, 32, 19, 0) 60%, var(--brown-deepest) 100%),
+      url("images/chien-caresse.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 0 0, 92% 62%;
+  }
+
+  .hv2-sticker { margin-top: -20px; font-size: 0.95rem; }
+  .hv2-hero .hv2-btn { padding: 14px 22px; font-size: 0.9rem; }
+}
+
+/* --- Tuiles d'action, chevauchent le bas du hero --- */
+
+.hv2-quick {
+  position: relative;
+  z-index: 2;
+  margin-top: -72px;
+  padding: 0;
+}
+
+.hv2-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.hv2-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 22px 22px 24px;
+  background: #fff;
+  border-radius: 18px;
+  color: inherit;
+  box-shadow: 0 18px 44px rgba(var(--brown-dark-rgb), 0.18);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (hover: hover) {
+  .hv2-tile:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 26px 56px rgba(var(--brown-dark-rgb), 0.24);
+  }
+}
+
+.hv2-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  background: rgba(var(--brown-light-rgb), 0.16);
+  color: var(--brown-light-dark);
+}
+
+.hv2-tile-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hv2-tile-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  color: var(--brown-deepest);
+}
+
+.hv2-tile-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+@media (max-width: 960px) {
+  .hv2-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .hv2-quick { margin-top: -28px; }
+  .hv2-quick-grid { gap: 12px; }
+  .hv2-tile { padding: 18px 16px 20px; }
+  .hv2-tile-title { font-size: 1rem; }
+  .hv2-tile-text { font-size: 0.85rem; }
+}
+
+/* --- Cartes piliers (photo + texte, carte entiere cliquable) --- */
+
+.hv2-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 36px);
+}
+
+.hv2-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  color: inherit;
+  box-shadow: 0 18px 44px rgba(var(--brown-dark-rgb), 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hv2-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+@media (hover: hover) {
+  .hv2-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 26px 56px rgba(var(--brown-dark-rgb), 0.18);
+  }
+  .hv2-card:hover img { transform: scale(1.04); }
+}
+
+.hv2-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 26px 26px 28px;
+}
+
+.hv2-card h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: var(--brown-deepest);
+  margin: 0 0 8px;
+}
+
+.hv2-card p {
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.7;
+  margin: 0 0 20px;
+}
+
+.hv2-card-more {
+  margin-top: auto;
+  align-self: flex-start;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--olive);
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+
+@media (max-width: 900px) {
+  .hv2-cards { grid-template-columns: 1fr; max-width: 560px; margin-inline: auto; }
+}
+
+/* --- Bandeau de faits --- */
+
+.hv2-facts {
+  background: var(--brown-dark);
+  color: var(--cream);
+  padding: clamp(44px, 6vw, 72px) 0;
+}
+
+.hv2-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.hv2-fact {
+  padding: 0 clamp(16px, 3vw, 40px);
+  text-align: center;
+  border-left: 1px solid rgba(var(--brown-light-rgb), 0.4);
+}
+
+.hv2-fact:first-child { border-left: 0; }
+
+.hv2-fact-num {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(2.3rem, 5vw, 3.5rem);
+  font-variant-numeric: lining-nums;
+  line-height: 1;
+  color: var(--brown-light);
+  margin: 0 0 12px;
+}
+
+.hv2-fact-text {
+  max-width: 240px;
+  margin: 0 auto;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: rgba(var(--cream-rgb), 0.82);
+}
+
+@media (max-width: 720px) {
+  .hv2-facts-grid { grid-template-columns: 1fr; gap: 32px; }
+  .hv2-fact { border-left: 0; padding: 0; }
+  .hv2-fact + .hv2-fact { border-top: 1px solid rgba(var(--brown-light-rgb), 0.4); padding-top: 32px; }
+}
+
+/* --- Notre histoire --- */
+
+.hv2-story-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+
+.hv2-story-photo {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 24px;
+  box-shadow: 0 18px 44px rgba(var(--brown-dark-rgb), 0.16);
+}
+
+.hv2-story-lines {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin: 0 0 18px;
+}
+
+.hv2-story-key {
+  max-width: 30em;
+  font-weight: 700;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  line-height: 1.4;
+  color: var(--brown-deepest);
+  margin: 0 0 28px;
+  text-wrap: pretty;
+}
+
+@media (max-width: 800px) {
+  .hv2-story-grid { grid-template-columns: 1fr; }
+  .hv2-story-photo { aspect-ratio: 4 / 3; }
+}
+
+/* --- Galerie asymetrique --- */
+
+.hv2-gallery {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr 1fr;
+  grid-template-rows: repeat(2, clamp(180px, 22vw, 260px));
+  gap: 14px;
+}
+
+.hv2-gallery figure {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  min-height: 0;
+  margin: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--khaki);
+}
+
+.hv2-gallery figure > * { grid-area: 1 / 1; }
+
+.hv2-gallery figure.is-featured { grid-row: 1 / span 2; }
+
+.hv2-gallery img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+}
+
+.hv2-gallery figcaption {
+  align-self: end;
+  padding: 44px 16px 14px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  color: #fff;
+  background: linear-gradient(180deg, transparent, rgba(29, 32, 19, 0.75));
+}
+
+.hv2-more { margin-top: 32px; }
+
+@media (max-width: 720px) {
+  .hv2-gallery {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: 150px;
+  }
+  .hv2-gallery figure.is-featured { grid-column: 1 / -1; grid-row: span 2; }
+}
+
+/* --- Nous trouver (garde le markup existant) --- */
+
+.hv2-find { padding: clamp(56px, 8vw, 96px) 0; }
+
+.hv2-find .contact-location {
+  background: #fff;
+  border: 0;
+  border-radius: 20px;
+  box-shadow: 0 18px 44px rgba(var(--brown-dark-rgb), 0.12);
+}
+
+.hv2-find .contact-location h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: var(--brown-deepest);
+}
+
+/* --- Appel final --- */
+
+.hv2-cta {
+  background: var(--brown-dark);
+  color: var(--cream);
+  border-radius: 28px;
+  padding: clamp(40px, 6vw, 72px) clamp(24px, 5vw, 64px);
+  text-align: center;
+}
+
+.hv2-cta .hv2-h2 { color: var(--cream); }
+
+.hv2-cta p {
+  max-width: 520px;
+  margin: 0 auto 28px;
+  line-height: 1.7;
+  color: rgba(var(--cream-rgb), 0.88);
+}
+
+.hv2-cta .hv2-actions { justify-content: center; }
+
+.hv2-cta p.hv2-cta-note {
+  margin: 24px auto 0;
+  font-size: 0.9rem;
+}
+
+.hv2-cta-note a { text-decoration: underline; text-underline-offset: 3px; }
