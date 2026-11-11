@@ -3727,10 +3727,11 @@ body.links-page {
 /* Le texte est ancre en bas a gauche, le visage du chien reste libre a droite. Le bas du hero
    est plus haut que necessaire : les tuiles d'action (.hv2-quick) viennent le chevaucher. */
 .hv2-hero {
-  display: flex;
-  align-items: flex-end;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-items: end;
   min-height: clamp(540px, calc(100vh - 150px), 720px);
-  padding: 96px 0 128px;
+  padding: 36px 0 128px;
   color: #fff;
   background-color: var(--brown-deepest);
   /* L'ombre ne couvre que le coin du texte (bas gauche) : le chien, a droite, reste lumineux au
@@ -3758,22 +3759,63 @@ body.links-page {
 
 .hv2-hero-inner > * { max-width: 720px; }
 
-/* Le sticker est dans le h1 : le titre de la page dit ainsi ce qu'est l'association avant la
-   citation (utile aux lecteurs d'ecran et a Google). Visuellement, rien ne change. */
-.hv2-sticker {
-  display: block;
-  width: fit-content;
-  font-family: var(--font-marker);
-  font-weight: 400;
-  font-size: 0.9rem;
+/* Le h1 contient aussi la phrase "Association de protection animale en Bretagne", masquee a
+   l'ecran car le tampon rond (.hv2-seal) l'affiche deja : le titre de la page dit ce qu'est
+   l'association (lecteurs d'ecran, Google). */
+.hv2-vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Tampon rond, meme langage que les tampons des fiches chiens : disque sombre, double anneau
+   caramel, legerement incline. Il remplace l'ancienne bande d'une ligne. */
+.hv2-seal-row {
+  align-self: start;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 56px);
+}
+
+.hv2-seal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 148px;
+  height: 148px;
+  border: 2px solid var(--brown-light);
+  border-radius: 50%;
+  background: rgba(29, 32, 19, 0.8);
+  box-shadow:
+    inset 0 0 0 5px rgba(29, 32, 19, 0.8),
+    inset 0 0 0 6px rgba(var(--brown-light-rgb), 0.55),
+    0 12px 28px rgba(0, 0, 0, 0.35);
+  transform: rotate(-8deg);
+  color: var(--cream);
+  text-align: center;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.78rem;
   line-height: 1.3;
-  letter-spacing: 0.3px;
-  color: var(--brown-deepest);
-  background: var(--pink);
-  padding: 3px 12px 5px;
-  transform: rotate(-1.5deg);
-  margin: 0 0 22px;
-  text-shadow: none;
+}
+
+.hv2-seal span { display: block; white-space: nowrap; }
+
+.hv2-seal-paw {
+  width: 22px;
+  height: 22px;
+  margin-bottom: 4px;
+  fill: var(--pink);
 }
 
 /* Guillemet suspendu dans la marge : le texte de la citation reste aligne sur le bord
@@ -3841,7 +3883,22 @@ body.links-page {
     background-position: 0 0, 92% 62%;
   }
 
-  .hv2-sticker { margin-top: -20px; font-size: 0.88rem; }
+  /* Le tampon chevauche le bord bas de la photo, a droite. */
+  .hv2-seal-row {
+    position: relative;
+    z-index: 1;
+    margin-top: -64px;
+    margin-bottom: 6px;
+    padding: 0 20px;
+  }
+
+  .hv2-seal {
+    width: 124px;
+    height: 124px;
+    font-size: 0.66rem;
+  }
+
+  .hv2-seal-paw { width: 18px; height: 18px; }
   .hv2-hero .hv2-btn { padding: 14px 22px; font-size: 0.9rem; }
 }
 
