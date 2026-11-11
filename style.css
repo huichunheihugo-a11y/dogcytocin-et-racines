@@ -3814,7 +3814,7 @@ body.links-page {
   }
 
   /* Photo entiere en haut (rapport 900 x 750), calee a droite, 600px au plus ; le texte se pose
-     dessous. Seul un tout petit raccord sombre en bas, pour ne pas laisser de coupe franche. */
+     dessous. Bord bas net : aucun degrade sombre sur le pied de la photo. */
   .hv2-hero::before {
     position: static;
     display: block;
@@ -3822,10 +3822,9 @@ body.links-page {
     height: auto;
     margin-left: auto;
     background-image:
-      linear-gradient(0deg, var(--brown-deepest) 0%, rgba(29, 32, 19, 0) 7%),
       linear-gradient(90deg, var(--brown-deepest) 0%, var(--brown-deepest) 2%, rgba(29, 32, 19, 0.72) 14%, rgba(29, 32, 19, 0.28) 30%, rgba(29, 32, 19, 0) 46%),
       url("images/chien-caresse.jpg");
-    background-position: 0 0, 0 0, 0 0;
+    background-position: 0 0, 0 0;
   }
 
   .hv2-hero-inner { padding-top: 28px; }
@@ -3834,14 +3833,13 @@ body.links-page {
 /* Sur telephone la photo prend toute la largeur : plus de fondu a gauche. */
 @media (max-width: 600px) {
   .hv2-hero::before {
-    background-image:
-      linear-gradient(0deg, var(--brown-deepest) 0%, rgba(29, 32, 19, 0) 7%),
-      url("images/chien-caresse.jpg");
-    background-position: 0 0, 0 0;
+    background-image: url("images/chien-caresse.jpg");
+    background-position: 0 0;
   }
 }
 
 @media (max-width: 720px) {
+  .hv2-hero { padding-bottom: 64px; }
   .hv2-hero .hv2-btn { padding: 14px 22px; font-size: 0.9rem; }
 }
 
