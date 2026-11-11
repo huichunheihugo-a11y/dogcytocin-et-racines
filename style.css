@@ -3730,7 +3730,7 @@ body.links-page {
   display: flex;
   align-items: flex-end;
   min-height: clamp(540px, calc(100vh - 150px), 720px);
-  padding: 96px 0 128px;
+  padding: 72px 0 188px;
   color: #fff;
   background-color: var(--brown-deepest);
   /* L'ombre ne couvre que le coin du texte (bas gauche) : le chien, a droite, reste lumineux au
@@ -3738,17 +3738,20 @@ body.links-page {
      un pied sombre calme le raccord avec les tuiles. */
   background-image:
     var(--meadow, linear-gradient(transparent, transparent)),
+    var(--meadow, linear-gradient(transparent, transparent)),
     radial-gradient(ellipse 78% 100% at 0% 100%, rgba(29, 32, 19, 0.9) 0%, rgba(29, 32, 19, 0.62) 42%, rgba(29, 32, 19, 0) 78%),
     linear-gradient(90deg, rgba(29, 32, 19, 0.82) 0%, rgba(29, 32, 19, 0.6) 36%, rgba(29, 32, 19, 0) 68%),
     linear-gradient(0deg, rgba(29, 32, 19, 0.5) 0%, rgba(29, 32, 19, 0) 30%),
     linear-gradient(rgba(29, 32, 19, 0.14), rgba(29, 32, 19, 0.14)),
     url("images/chien-caresse.jpg");
-  /* Premiere couche : la prairie, au bas du hero ; ses fleurs depassent derriere les tuiles. */
-  background-repeat: repeat-x, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-  background-size: 720px 100px, cover, cover, cover, cover, cover;
+  /* Deux prairies : la premiere pousse du bord haut des tuiles (72px au-dessus du bas du hero,
+     decalee de 300px pour ne pas repeter l'autre), donc entierement visible ; la seconde est
+     tout en bas, visible sur les cotes et entre les tuiles. */
+  background-repeat: repeat-x, repeat-x, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-size: 720px 100px, 720px 100px, cover, cover, cover, cover, cover;
   /* 100% a droite : le museau du chien est au bord de la photo, un recadrage a 82% le coupait
      sur les ecrans plus etroits que la photo. */
-  background-position: left bottom, 0 0, 0 0, 0 0, 0 0, 100% 62%;
+  background-position: left 300px bottom 72px, left bottom, 0 0, 0 0, 0 0, 0 0, 100% 62%;
 }
 
 .hv2-hero-inner {
