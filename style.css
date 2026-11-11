@@ -4173,3 +4173,254 @@ body.links-page {
 }
 
 .hv2-cta-note a { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ===== Refonte des pages publiques (portee : body.site-v2) ===== */
+/* Menu, bandeau de titre avec photo, titres et cartes communs a toutes les pages publiques.
+   Tout est limite a body.site-v2 : l'administration et la page liens ne sont pas touchees. */
+
+body.site-v2 {
+  --card-shadow: 0 18px 44px rgba(var(--brown-dark-rgb), 0.12);
+  --card-shadow-hover: 0 26px 56px rgba(var(--brown-dark-rgb), 0.18);
+  --caramel-soft: #d9b78f;
+}
+
+/* --- Menu --- */
+
+body.site-v2 .site-header {
+  background: #fff;
+  border-bottom: 1px solid rgba(var(--brown-dark-rgb), 0.08);
+  box-shadow: none;
+}
+
+body.site-v2 .site-header.is-scrolled { box-shadow: 0 8px 28px rgba(var(--brown-dark-rgb), 0.1); }
+
+body.site-v2 .nav-cta {
+  background: var(--brown-light);
+  color: var(--brown-deepest);
+  font-weight: 700;
+  padding: 11px 22px;
+}
+
+body.site-v2 .nav-cta:hover { box-shadow: 0 6px 16px rgba(var(--brown-light-rgb), 0.45); }
+
+@media (min-width: 1151px) {
+  body.site-v2 .nav-links { gap: 4px; margin-right: 18px; }
+
+  body.site-v2 .nav-links a {
+    padding: 9px 14px;
+    border-bottom: 0;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--brown-dark);
+  }
+
+  body.site-v2 .nav-links a:hover {
+    background: rgba(var(--olive-rgb), 0.1);
+    color: var(--brown-deepest);
+  }
+
+  body.site-v2 .nav-links a.active {
+    background: rgba(var(--olive-rgb), 0.16);
+    color: var(--brown-deepest);
+  }
+}
+
+@media (min-width: 1151px) and (max-width: 1360px) {
+  body.site-v2 .nav-links { gap: 2px; margin-right: 10px; }
+  body.site-v2 .nav-links a { padding: 8px 9px; font-size: 0.82rem; }
+}
+
+@media (max-width: 1150px) {
+  body.site-v2 .nav-links { background: #fff; }
+
+  body.site-v2 .nav-links a {
+    border-bottom: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  body.site-v2 .nav-links a.active {
+    color: var(--olive);
+    background: rgba(var(--olive-rgb), 0.08);
+  }
+}
+
+/* --- Bandeau de titre : texte a gauche, photo a droite (la photo est affichee a sa taille
+   reelle, nette, au lieu d'etre etiree sur toute la largeur) --- */
+
+body.site-v2 .page-header {
+  background: var(--brown-dark);
+  color: #fff;
+  text-align: left;
+  padding: 18px 0 clamp(40px, 6vw, 64px);
+  border-radius: 0 0 32px 32px;
+}
+
+body.site-v2 .page-header .container {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  grid-template-rows: auto auto auto auto 1fr;
+  column-gap: clamp(28px, 6vw, 72px);
+  align-items: start;
+}
+
+body.site-v2 .page-header .breadcrumb {
+  grid-column: 1;
+  grid-row: 1;
+  padding: 6px 0 0;
+  margin-bottom: clamp(20px, 4vw, 40px);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+body.site-v2 .page-header .breadcrumb a { color: rgba(255, 255, 255, 0.72); }
+body.site-v2 .page-header .breadcrumb a:hover { color: #fff; }
+body.site-v2 .page-header .breadcrumb .sep { color: rgba(255, 255, 255, 0.35); }
+body.site-v2 .page-header .breadcrumb .current { color: #fff; }
+
+body.site-v2 .page-header .kicker {
+  grid-column: 1;
+  grid-row: 2;
+  margin-bottom: 10px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--caramel-soft);
+}
+
+body.site-v2 .page-header h1 {
+  grid-column: 1;
+  grid-row: 3;
+  margin: 0 0 18px;
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-weight: 800;
+  font-size: clamp(2.1rem, 4.8vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -1.2px;
+  color: #fff;
+  text-wrap: balance;
+}
+
+body.site-v2 .page-header .divider { display: none; }
+
+body.site-v2 .page-header p {
+  grid-column: 1;
+  grid-row: 4;
+  max-width: 34em;
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+body.site-v2 .page-header .btn-row {
+  grid-column: 1;
+  grid-row: 5;
+  justify-content: flex-start;
+  margin-top: 26px;
+}
+
+body.site-v2 .page-header .container::after {
+  content: "";
+  grid-column: 2;
+  grid-row: 2 / span 4;
+  align-self: stretch;
+  min-height: 260px;
+  border-radius: 24px;
+  background-image: var(--ph-img);
+  background-size: cover;
+  background-position: var(--ph-pos, center);
+  background-color: var(--olive);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 800px) {
+  body.site-v2 .page-header .container { grid-template-columns: 1fr; grid-template-rows: none; }
+  body.site-v2 .page-header .container::after {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 190px;
+    margin-bottom: 26px;
+  }
+  body.site-v2 .page-header .kicker { grid-row: 3; }
+  body.site-v2 .page-header h1 { grid-row: 4; }
+  body.site-v2 .page-header p { grid-row: 5; }
+  body.site-v2 .page-header .btn-row { grid-row: 6; }
+}
+
+/* --- Titres et textes des sections --- */
+
+body.site-v2 section:not([class*="hv2"]) h2 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.8vw, 2.05rem);
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  text-transform: none;
+}
+
+body.site-v2 section:not([class*="hv2"]) h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+body.site-v2 .divider { display: none; }
+
+body.site-v2 .section-intro {
+  max-width: 640px;
+  margin: 0 0 40px;
+  text-align: left;
+}
+
+body.site-v2 .card-number { display: none; }
+
+/* --- Cartes : meme rayon, meme ombre partout --- */
+
+body.site-v2 :is(.card, .action-block, .support-item, .contact-method, .blog-post, .guestbook-entry, .dog-card, .form-card, .fundraiser-box, .contact-location) {
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+body.site-v2 :is(.support-item, a.contact-method, .blog-post):hover { box-shadow: var(--card-shadow-hover); }
+
+@media (hover: hover) {
+  body.site-v2 .dog-card:hover { box-shadow: var(--card-shadow-hover); }
+}
+
+body.site-v2 :is(.fundraiser-box, .volunteer-feature, .foster-feature) {
+  background: #fff;
+  border: 0;
+}
+
+body.site-v2 .fundraiser-box .icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(var(--brown-light-rgb), 0.16);
+  color: var(--brown-light-dark);
+}
+
+body.site-v2 .contact-location {
+  background: #fff;
+  border: 0;
+}
+
+body.site-v2 .cta-box {
+  border-radius: 28px;
+  padding: clamp(40px, 6vw, 72px) clamp(24px, 5vw, 64px);
+}
+
+body.site-v2 .btn { font-weight: 700; }
+
+body.site-v2 .fundraiser-box h2,
+body.site-v2 .cta-box h2 { font-size: clamp(1.3rem, 2.2vw, 1.55rem); }
