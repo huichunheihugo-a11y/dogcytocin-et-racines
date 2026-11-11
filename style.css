@@ -3727,26 +3727,35 @@ body.links-page {
 /* Le texte est ancre en bas a gauche, le visage du chien reste libre a droite. Le bas du hero
    est plus haut que necessaire : les tuiles d'action (.hv2-quick) viennent le chevaucher. */
 .hv2-hero {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: flex-end;
   min-height: clamp(540px, calc(100vh - 150px), 720px);
   padding: 96px 0 128px;
   color: #fff;
   background-color: var(--brown-deepest);
-  /* L'ombre ne couvre que le coin du texte (bas gauche) : le chien, a droite, reste lumineux au
-     lieu d'etre assombri par un degrade sur toute la largeur. Un voile leger unifie la photo et
-     un pied sombre calme le raccord avec les tuiles. */
+}
+
+/* La photo est ENTIERE (aucun recadrage) : sa hauteur suit celle du hero, moins les 72px que les
+   tuiles recouvrent, et sa largeur en decoule (rapport 900 x 750). Elle est calee a droite ; seul
+   son bord gauche se fond dans le fond sombre, la ou passe le texte. Plus de voile sombre sur le
+   bas : le pied de la photo reste net jusqu'aux tuiles. */
+.hv2-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  height: calc(100% - 72px);
+  aspect-ratio: 900 / 750;
   background-image:
-    radial-gradient(ellipse 78% 100% at 0% 100%, rgba(29, 32, 19, 0.9) 0%, rgba(29, 32, 19, 0.62) 42%, rgba(29, 32, 19, 0) 78%),
-    linear-gradient(90deg, rgba(29, 32, 19, 0.82) 0%, rgba(29, 32, 19, 0.6) 36%, rgba(29, 32, 19, 0) 68%),
-    linear-gradient(0deg, rgba(29, 32, 19, 0.5) 0%, rgba(29, 32, 19, 0) 30%),
-    linear-gradient(rgba(29, 32, 19, 0.14), rgba(29, 32, 19, 0.14)),
+    linear-gradient(0deg, var(--brown-deepest) 0%, rgba(29, 32, 19, 0) 6%),
+    linear-gradient(90deg, var(--brown-deepest) 0%, var(--brown-deepest) 2%, rgba(29, 32, 19, 0.72) 14%, rgba(29, 32, 19, 0.28) 30%, rgba(29, 32, 19, 0) 46%),
     url("images/chien-caresse.jpg");
   background-repeat: no-repeat;
-  background-size: cover;
-  /* 100% a droite : le museau du chien est au bord de la photo, un recadrage a 82% le coupait
-     sur les ecrans plus etroits que la photo. */
-  background-position: 0 0, 0 0, 0 0, 0 0, 100% 62%;
+  background-size: 100% 100%;
+  background-position: 0 0, 0 0, 0 0;
 }
 
 .hv2-hero-inner {
@@ -3797,27 +3806,42 @@ body.links-page {
 /* Mobile : la photo passe au-dessus (entiere, le chien reste visible) et le texte se pose
    dessous sur fond sombre, au lieu de recouvrir le chien. Le bloc photo est un ::before dans le
    flux (pas de position absolue). */
-@media (max-width: 720px) {
+@media (max-width: 1000px) {
   .hv2-hero {
     display: block;
     min-height: 0;
     padding: 0 0 112px;
-    background-image: none;
   }
 
+  /* Photo entiere en haut (rapport 900 x 750), calee a droite, 600px au plus ; le texte se pose
+     dessous. Seul un tout petit raccord sombre en bas, pour ne pas laisser de coupe franche. */
   .hv2-hero::before {
-    content: "";
+    position: static;
     display: block;
-    height: 300px;
+    width: min(100%, 600px);
+    height: auto;
+    margin-left: auto;
     background-image:
-      linear-gradient(180deg, rgba(29, 32, 19, 0) 60%, var(--brown-deepest) 100%),
+      linear-gradient(0deg, var(--brown-deepest) 0%, rgba(29, 32, 19, 0) 7%),
+      linear-gradient(90deg, var(--brown-deepest) 0%, var(--brown-deepest) 2%, rgba(29, 32, 19, 0.72) 14%, rgba(29, 32, 19, 0.28) 30%, rgba(29, 32, 19, 0) 46%),
       url("images/chien-caresse.jpg");
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: 0 0, 92% 62%;
+    background-position: 0 0, 0 0, 0 0;
   }
 
   .hv2-hero-inner { padding-top: 28px; }
+}
+
+/* Sur telephone la photo prend toute la largeur : plus de fondu a gauche. */
+@media (max-width: 600px) {
+  .hv2-hero::before {
+    background-image:
+      linear-gradient(0deg, var(--brown-deepest) 0%, rgba(29, 32, 19, 0) 7%),
+      url("images/chien-caresse.jpg");
+    background-position: 0 0, 0 0;
+  }
+}
+
+@media (max-width: 720px) {
   .hv2-hero .hv2-btn { padding: 14px 22px; font-size: 0.9rem; }
 }
 
