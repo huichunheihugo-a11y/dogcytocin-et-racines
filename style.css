@@ -3727,11 +3727,10 @@ body.links-page {
 /* Le texte est ancre en bas a gauche, le visage du chien reste libre a droite. Le bas du hero
    est plus haut que necessaire : les tuiles d'action (.hv2-quick) viennent le chevaucher. */
 .hv2-hero {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  align-items: end;
+  display: flex;
+  align-items: flex-end;
   min-height: clamp(540px, calc(100vh - 150px), 720px);
-  padding: 36px 0 128px;
+  padding: 96px 0 128px;
   color: #fff;
   background-color: var(--brown-deepest);
   /* L'ombre ne couvre que le coin du texte (bas gauche) : le chien, a droite, reste lumineux au
@@ -3759,65 +3758,6 @@ body.links-page {
 
 .hv2-hero-inner > * { max-width: 720px; }
 
-/* Le h1 contient aussi la phrase "Association de protection animale en Bretagne", masquee a
-   l'ecran car le tampon rond (.hv2-seal) l'affiche deja : le titre de la page dit ce qu'est
-   l'association (lecteurs d'ecran, Google). */
-.hv2-vh {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Tampon rond, meme langage que les tampons des fiches chiens : disque sombre, double anneau
-   caramel, legerement incline. Il remplace l'ancienne bande d'une ligne. */
-.hv2-seal-row {
-  align-self: start;
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 0 clamp(20px, 4vw, 56px);
-}
-
-.hv2-seal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 148px;
-  height: 148px;
-  border: 2px solid var(--brown-light);
-  border-radius: 50%;
-  background: rgba(29, 32, 19, 0.8);
-  box-shadow:
-    inset 0 0 0 5px rgba(29, 32, 19, 0.8),
-    inset 0 0 0 6px rgba(var(--brown-light-rgb), 0.55),
-    0 12px 28px rgba(0, 0, 0, 0.35);
-  transform: rotate(-8deg);
-  color: var(--cream);
-  text-align: center;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 0.78rem;
-  line-height: 1.3;
-}
-
-.hv2-seal span { display: block; white-space: nowrap; }
-
-.hv2-seal-paw {
-  width: 22px;
-  height: 22px;
-  margin-bottom: 4px;
-  fill: var(--pink);
-}
-
 /* Guillemet suspendu dans la marge : le texte de la citation reste aligne sur le bord
    gauche (ponctuation suspendue, comme dans un livre). */
 .hv2-quote {
@@ -3832,32 +3772,26 @@ body.links-page {
   line-height: 1.03;
   letter-spacing: -1.4px;
   color: #fff;
-  margin: 0 0 22px;
-}
-
-.hv2-attrib {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #fff;
-  text-shadow: 0 1px 10px rgba(29, 32, 19, 0.6);
   margin: 0 0 32px;
 }
 
-.hv2-attrib::before {
-  content: "";
-  width: 32px;
-  height: 2px;
-  background: var(--brown-light);
-  flex-shrink: 0;
+/* Signature de la citation, dans le h1 : une seule phrase, sans decor. */
+.hv2-attrib {
+  display: block;
+  max-width: 34em;
+  margin-top: 22px;
+  font-weight: 600;
+  font-size: 0.98rem;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-indent: 0;
+  color: #fff;
+  text-shadow: 0 1px 10px rgba(29, 32, 19, 0.6);
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .hv2-hero-inner > * { animation: heroRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .hv2-hero-inner > :nth-child(2) { animation-delay: 0.12s; }
-  .hv2-hero-inner > :nth-child(3) { animation-delay: 0.24s; }
+  .hv2-hero-inner > :nth-child(2) { animation-delay: 0.14s; }
 }
 
 /* Mobile : la photo passe au-dessus (entiere, le chien reste visible) et le texte se pose
@@ -3883,22 +3817,7 @@ body.links-page {
     background-position: 0 0, 92% 62%;
   }
 
-  /* Le tampon chevauche le bord bas de la photo, a droite. */
-  .hv2-seal-row {
-    position: relative;
-    z-index: 1;
-    margin-top: -64px;
-    margin-bottom: 6px;
-    padding: 0 20px;
-  }
-
-  .hv2-seal {
-    width: 124px;
-    height: 124px;
-    font-size: 0.66rem;
-  }
-
-  .hv2-seal-paw { width: 18px; height: 18px; }
+  .hv2-hero-inner { padding-top: 28px; }
   .hv2-hero .hv2-btn { padding: 14px 22px; font-size: 0.9rem; }
 }
 
