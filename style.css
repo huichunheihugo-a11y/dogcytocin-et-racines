@@ -1,6 +1,6 @@
 /* ===== Dogcytocin et Racines — styles ===== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IM+Fell+English:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Permanent+Marker&family=Amatic+SC:wght@400;700&family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IM+Fell+English:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=Permanent+Marker&family=Amatic+SC:wght@400;700&family=Roboto:wght@400;500;700&display=swap');
 
 :root {
   --brown-deepest: #1D2013;
@@ -3733,15 +3733,20 @@ body.links-page {
   padding: 96px 0 128px;
   color: #fff;
   background-color: var(--brown-deepest);
+  /* L'ombre ne couvre que le coin du texte (bas gauche) : le chien, a droite, reste lumineux au
+     lieu d'etre assombri par un degrade sur toute la largeur. Un voile leger unifie la photo et
+     un pied sombre calme le raccord avec les tuiles. */
   background-image:
-    linear-gradient(0deg, rgba(29, 32, 19, 0.92) 0%, rgba(29, 32, 19, 0.58) 42%, rgba(29, 32, 19, 0) 74%),
-    linear-gradient(90deg, rgba(29, 32, 19, 0.74) 0%, rgba(29, 32, 19, 0.5) 40%, rgba(29, 32, 19, 0) 68%),
+    radial-gradient(ellipse 78% 100% at 0% 100%, rgba(29, 32, 19, 0.9) 0%, rgba(29, 32, 19, 0.62) 42%, rgba(29, 32, 19, 0) 78%),
+    linear-gradient(90deg, rgba(29, 32, 19, 0.82) 0%, rgba(29, 32, 19, 0.6) 36%, rgba(29, 32, 19, 0) 68%),
+    linear-gradient(0deg, rgba(29, 32, 19, 0.5) 0%, rgba(29, 32, 19, 0) 30%),
+    linear-gradient(rgba(29, 32, 19, 0.14), rgba(29, 32, 19, 0.14)),
     url("images/chien-caresse.jpg");
   background-repeat: no-repeat;
   background-size: cover;
-  /* Le chien et la main sont dans la moitie droite de la photo ; ce reglage garde la tete
-     dans le cadre, la photo etant recadree surtout en hauteur sur desktop. */
-  background-position: 0 0, 0 0, 82% 60%;
+  /* 100% a droite : le museau du chien est au bord de la photo, un recadrage a 82% le coupait
+     sur les ecrans plus etroits que la photo. */
+  background-position: 0 0, 0 0, 0 0, 0 0, 100% 62%;
 }
 
 .hv2-hero-inner {
@@ -3751,7 +3756,7 @@ body.links-page {
   padding: 0 clamp(20px, 4vw, 56px);
 }
 
-.hv2-hero-inner > * { max-width: 640px; }
+.hv2-hero-inner > * { max-width: 720px; }
 
 /* Le sticker est dans le h1 : le titre de la page dit ainsi ce qu'est l'association avant la
    citation (utile aux lecteurs d'ecran et a Google). Visuellement, rien ne change. */
@@ -3760,28 +3765,32 @@ body.links-page {
   width: fit-content;
   font-family: var(--font-marker);
   font-weight: 400;
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   line-height: 1.3;
   letter-spacing: 0.3px;
   color: var(--brown-deepest);
   background: var(--pink);
-  padding: 4px 14px 6px;
+  padding: 3px 12px 5px;
   transform: rotate(-1.5deg);
-  margin: 0 0 20px;
+  margin: 0 0 22px;
   text-shadow: none;
 }
 
+/* Guillemet suspendu dans la marge : le texte de la citation reste aligne sur le bord
+   gauche (ponctuation suspendue, comme dans un livre). */
 .hv2-quote {
   display: block;
+  text-indent: -0.42em;
   text-shadow: 0 2px 22px rgba(29, 32, 19, 0.55), 0 1px 2px rgba(29, 32, 19, 0.4);
 }
 
 .hv2-h1 {
-  font-size: clamp(2rem, 5.4vw, 4.1rem);
-  line-height: 1.08;
-  letter-spacing: -0.8px;
+  font-weight: 800;
+  font-size: clamp(2.1rem, 5.8vw, 4.5rem);
+  line-height: 1.03;
+  letter-spacing: -1.4px;
   color: #fff;
-  margin: 0 0 20px;
+  margin: 0 0 22px;
 }
 
 .hv2-attrib {
@@ -3832,7 +3841,7 @@ body.links-page {
     background-position: 0 0, 92% 62%;
   }
 
-  .hv2-sticker { margin-top: -20px; font-size: 0.95rem; }
+  .hv2-sticker { margin-top: -20px; font-size: 0.88rem; }
   .hv2-hero .hv2-btn { padding: 14px 22px; font-size: 0.9rem; }
 }
 
