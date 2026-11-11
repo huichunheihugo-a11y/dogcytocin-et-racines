@@ -3808,8 +3808,9 @@ body.links-page {
   .hv2-hero-inner > :nth-child(2) { animation-delay: 0.14s; }
 }
 
-/* Petits ecrans : la photo passe au-dessus du texte, entiere, sans aucun fondu (bords nets). Le
-   bloc photo est un ::before dans le flux (pas de position absolue), 600px au plus, centre. */
+/* Petits ecrans : la photo passe au-dessus du texte, entiere, sur toute la largeur de l'ecran
+   (aucune bande sombre sur les cotes), sans aucun fondu. Le bloc photo est un ::before dans le
+   flux (pas de position absolue). */
 @media (max-width: 1000px) {
   .hv2-hero {
     display: block;
@@ -3820,8 +3821,8 @@ body.links-page {
   .hv2-hero::before {
     position: static;
     display: block;
-    width: min(100%, 600px);
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
   }
 
   .hv2-hero-inner { padding-top: 28px; }
